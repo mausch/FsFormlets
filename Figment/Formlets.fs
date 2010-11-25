@@ -5,16 +5,25 @@ type xml_item =
     | Tag of string * (string*string) list * xml_item list 
 
 /// Compose two applicatives
-module ApplicCompose =
-    let puree (f_pure, g_pure) x = f_pure (g_pure x)
-    let ap (f_ap, f_pure, g_ap) f x =
-        let (<*>) a b = f_ap a b
-        f_pure g_ap <*> f <*> x
-    let refine (f_ap, f_pure, g_pure) v = f_ap (f_pure g_pure) v
+module Applic =
+    let compose (f, g) =
+        let f_pure, f_ap = f
+        let g_pure, g_ap = g
+        let puree x = f_pure (g_pure x) // composed pure
+        let ap f x = // composed ap
+            let inline (<*>) a b = f_ap a b
+            let ff = f_pure g_ap
+            ff <*> f <*> x
+        puree, ap
+    let refine (f, g) v = 
+        let f_pure, f_ap = f
+        let g_pure = fst g
+        f_ap (f_pure g_pure) v
 
 module XmlWriter =
     let puree v = [],v
     let ap (x,f) (y,a) = x @ y, f a
+    let applicative = puree, ap
     let plug k (x,v) = k x, v
     let xml e = plug (fun _ -> e) (puree ())
     let text s = xml [Text s]
@@ -27,12 +36,14 @@ module NameGen =
         let v,gen = f gen
         let w,gen = a gen
         v w, gen
+    let applicative = puree, ap
     let nextName gen = "input_" + gen.ToString(), gen+1
     let run c = fst (c 0)
 
 module Environ =
     let puree v env = v
     let ap f a env = f env (a env)
+    let applicative = puree, ap
     let rec lookup n = function
     | []                    -> failwith ("Not found : " + n)
     | (m,v)::_   when n = m -> v
@@ -40,7 +51,9 @@ module Environ =
     let run = id
 
 module Formlet =
-    let XmlEnv_refine v = ApplicCompose.refine (XmlWriter.ap, XmlWriter.puree, Environ.puree) v
+    let ae = Applic.compose (XmlWriter.applicative, Environ.applicative)
+    let applicative = Applic.compose (NameGen.applicative, ae)
+    let XmlEnv_refine v = Applic.refine (XmlWriter.applicative, Environ.applicative) v
     let xml x = NameGen.puree (XmlEnv_refine (XmlWriter.xml x))
     let text s = NameGen.puree (XmlEnv_refine (XmlWriter.text s))
     let tag t ats f = NameGen.ap (NameGen.puree (XmlWriter.tag t ats)) f
