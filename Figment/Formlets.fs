@@ -30,12 +30,12 @@ module XmlWriter =
     let tag t ats v = plug (fun x -> [Tag (t, ats, x)]) v
     let run = id
     open System.Xml.Linq
-    let render (xml: xml_item list) =
+    let render xml =
         let (!!) x = XName.op_Implicit x
         let xattr (name, value: string) = XAttribute(!!name, value)
         let xelem name (attributes: obj list) (children: obj list) = XElement(!!name, attributes @ children)
-        let rec render' (xml: xml_item list): obj list = 
-            match xml with
+        let rec render' = 
+            function
             | [] -> []
             | x::xs -> 
                 let this = 
