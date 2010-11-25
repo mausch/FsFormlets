@@ -113,7 +113,7 @@ module Formlet =
 open System
 open Formlet
 
-let inputInt = puree (fun (v: string) -> int v) <*> input
+let inputInt = puree int <*> input
 
 let dateFormlet =
     tag "div" ["style","padding:8px"] (
