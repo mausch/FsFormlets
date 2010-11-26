@@ -21,7 +21,7 @@ let dateFormlet =
 
 [<Fact>]
 let renderTest() =
-    let form = render dateFormlet
+    let form = render "get" "/posturl" dateFormlet
     printfn "%s" (form.ToString())
 
 [<Fact>]
