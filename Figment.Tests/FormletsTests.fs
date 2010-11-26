@@ -18,5 +18,7 @@ let dateFormlet =
         )
     )
 
-let form = render dateFormlet
-printfn "%s" (form.ToString())
+[<Fact>]
+let renderTest() =
+    let form = render dateFormlet
+    printfn "%s" (form.ToString())
