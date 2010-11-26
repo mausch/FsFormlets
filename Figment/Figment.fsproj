@@ -5,12 +5,12 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{a080b979-6e39-44c4-ac1a-4850e32c355a}</ProjectGuid>
+    <ProjectGuid>{d5a17cef-e6a6-459d-961f-588a1a1dcd49}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Figment</RootNamespace>
-    <AssemblyName>Figment</AssemblyName>
+    <RootNamespace>FSharpMVC.Tests</RootNamespace>
+    <AssemblyName>FSharpMVC.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <Name>Figment</Name>
+    <Name>FSharpMVC.Tests</Name>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -20,7 +20,7 @@
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <DocumentationFile>bin\Debug\Figment.XML</DocumentationFile>
+    <DocumentationFile>bin\Debug\FSharpMVC.Tests.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -29,37 +29,44 @@
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <DocumentationFile>bin\Release\Figment.XML</DocumentationFile>
+    <DocumentationFile>bin\Release\FSharpMVC.Tests.XML</DocumentationFile>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath32)\FSharp\1.0\Microsoft.FSharp.Targets" Condition="!Exists('$(MSBuildBinPath)\Microsoft.Build.Tasks.v4.0.dll')" />
   <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft F#\v4.0\Microsoft.FSharp.Targets" Condition=" Exists('$(MSBuildBinPath)\Microsoft.Build.Tasks.v4.0.dll')" />
   <ItemGroup>
-    <Compile Include="Extensions.fs" />
-    <Compile Include="Helpers.fs" />
-    <Compile Include="RouteHandler.fs" />
-    <Compile Include="Result.fs" />
-    <Compile Include="Binding.fs" />
-    <Compile Include="Actions.fs" />
-    <Compile Include="RoutingConstraints.fs" />
-    <Compile Include="Routing.fs" />
-    <Compile Include="Filters.fs" />
-    <Compile Include="Formlets.fs" />
-    <EmbeddedResource Include="web.config" />
+    <Compile Include="RoutingTests.fs" />
+    <None Include="xunit.dll.tdnet">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <Compile Include="ExtensionsTests.fs" />
+    <Compile Include="FormletsTests.fs" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="FSharp.PowerPack.Metadata, Version=1.9.9.9, Culture=neutral, PublicKeyToken=a19089b1c74d0809" />
     <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core" />
     <Reference Include="System" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Web" />
-    <Reference Include="System.Web.Abstractions" />
-    <Reference Include="System.Web.Mvc, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
-    <Reference Include="System.Web.Routing" />
+    <Reference Include="System.Web.Mvc, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
+    <Reference Include="xunit">
+      <HintPath>..\lib\xunit.dll</HintPath>
+    </Reference>
+    <Reference Include="xunit.runner.tdnet">
+      <HintPath>..\lib\xunit.runner.tdnet.dll</HintPath>
+    </Reference>
+    <Reference Include="xunit.runner.utility">
+      <HintPath>..\lib\xunit.runner.utility.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Figment\Figment.fsproj">
+      <Name>Figment</Name>
+      <Project>{a080b979-6e39-44c4-ac1a-4850e32c355a}</Project>
+      <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
 	     Other similar extension points exist, see Microsoft.Common.targets.

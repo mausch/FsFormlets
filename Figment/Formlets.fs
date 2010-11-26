@@ -1,4 +1,4 @@
-﻿module Formlets
+﻿module Figment.Formlets
 
 open System.Collections.Specialized
 
@@ -102,27 +102,11 @@ module Formlet =
     let run v = 
         let xml, collector = XmlWriter.run (NameGen.run v)
         xml, Environ.run collector
-    let input =
+    let input x =
         let (<*>) a b = NameGen.ap a b
-        NameGen.puree (fun n -> XmlWriter.tag "input" [("name", n)] (XmlWriter.puree (Environ.lookup n))) <*> NameGen.nextName
+        let f = NameGen.puree (fun n -> XmlWriter.tag "input" [("name", n)] (XmlWriter.puree (Environ.lookup n))) <*> NameGen.nextName
+        f x
     let render v = 
         let xml = (run >> fst) v
         XmlWriter.render xml
         
-
-open System
-open Formlet
-
-let inputInt = puree int <*> input
-
-let dateFormlet =
-    tag "div" ["style","padding:8px"] (
-        tag "span" ["style", "border: 2px solid; padding: 4px"] (
-            puree (fun _ month _ day -> new DateTime(2010, month, day)) <*>
-            text "Month: " <*> inputInt <*>
-            text "Day: " <*> inputInt
-        )
-    )
-
-let form = render dateFormlet
-printfn "%s" (form.ToString())
