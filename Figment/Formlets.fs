@@ -40,7 +40,7 @@ module XmlWriter =
             | x::xs -> 
                 let this = 
                     match x with
-                    | Text t -> box (XCData(t))
+                    | Text t -> box (XText(t))
                     | Tag (name, attr, children) -> box (xelem name (attr |> List.map (xattr >> box)) (render' children))
                 this::(render' xs)
         XDocument(xelem "html" [] (render' xml))
