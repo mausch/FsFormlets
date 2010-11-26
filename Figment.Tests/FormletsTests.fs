@@ -34,3 +34,14 @@ let processTest() =
     let result = proc env
     printfn "%A" result
     Assert.Equal(DateTime(2010, 12, 22), result)
+
+[<Fact>]
+let processWithError() =
+    let _, proc = run dateFormlet
+    let env = NameValueCollection()
+    env.Add("input_0", "aa")
+    env.Add("input_1", "22")
+    let env = NameValueCollection.toList env
+    let proc() = proc env |> ignore
+    Assert.Throws<FormatException>(Assert.ThrowsDelegate(proc)) |> ignore
+    
