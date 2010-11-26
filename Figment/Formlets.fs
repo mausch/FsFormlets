@@ -1,5 +1,15 @@
 ﻿module Figment.Formlets
 
+(*
+Formlets implementation based on http://groups.inf.ed.ac.uk/links/formlets/
+TODO:
+* process NameValueCollection instead of (string*string) list
+* validation
+* use wing beats in syntax
+* default values for form elements
+* implement all form elements (textarea, select, radio, checkbox)
+*)
+
 open System.Collections.Specialized
 
 type xml_item = 
