@@ -29,7 +29,6 @@ module NameValueCollection =
 module XmlWriter =
     let puree v = [],v
     let ap (x,f) (y,a) = x @ y, f a
-    let applicative = puree, ap
     let plug k (x,v) = k x, v
     let xml e = plug (fun _ -> e) (puree ())
     let text s = xml [Text s]
@@ -58,14 +57,12 @@ module NameGen =
         let v,gen = f gen
         let w,gen = a gen
         v w, gen
-    let applicative = puree, ap
     let nextName gen = "input_" + gen.ToString(), gen+1
     let run c = fst (c 0)
 
 module Environ = 
     let puree v env = v
     let ap f a env = f env (a env)
-    let applicative = puree, ap
     let lookup (n: string) (env: NameValueCollection) = 
         let v = env.[n]
         if v = null
@@ -87,7 +84,6 @@ module Formlet =
         let (<*>) a b = NameGen.ap a b
         NameGen.puree ae_ap <*> f <*> x
     let (<*>) f x = ap f x
-    let applicative = puree, ap
 
     let lift f x = puree f <*> x
     let lift2 f x y = puree f <*> x <*> y
