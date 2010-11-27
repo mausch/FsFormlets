@@ -98,6 +98,7 @@ module Formlet =
         NameGen.puree ae_ap <*> f <*> x
     let (<*>) f x = ap f x
     let applicative = puree, ap
+
     let lift f x = puree f <*> x
     let lift2 f x y = puree f <*> x <*> y
     let apr x y = lift2 (fun _ z -> z) x y
@@ -105,13 +106,13 @@ module Formlet =
     let apl x y = lift2 (fun z _ -> z) x y
     let (<*) x y = apl x y
 
-    let refine (f, g) v = 
-        let f_pure, f_ap = f
-        let g_pure = fst g
-        f_ap (f_pure g_pure) v
-    let XmlEnv_refine v = refine (XmlWriter.applicative, Environ.applicative) v
-    let xml x = NameGen.puree (XmlEnv_refine (XmlWriter.xml x))
-    let text s = NameGen.puree (XmlEnv_refine (XmlWriter.text s))
+    let XmlEnv_refine v = XmlWriter.ap (XmlWriter.puree Environ.puree) v
+    let xml x = 
+        NameGen.puree (XmlEnv_refine (XmlWriter.xml x))
+        //NameGen.puree ((XmlWriter.ap (XmlWriter.puree Environ.puree)) (XmlWriter.xml x))
+    let text s = 
+        NameGen.puree (XmlEnv_refine (XmlWriter.text s))
+        //NameGen.puree ((XmlWriter.ap (XmlWriter.puree Environ.puree)) (XmlWriter.text s))
     let tag t ats f = 
         let (<*>) a b = NameGen.ap a b
         NameGen.puree (XmlWriter.tag t ats) <*> f
