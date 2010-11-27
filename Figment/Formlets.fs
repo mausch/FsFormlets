@@ -84,7 +84,6 @@ module Environ =
     let run = id
 
 module Formlet =
-    let konst a b = a
     //  AE = Compose (XmlWriter) (Environment) 
     let ae_pure x = XmlWriter.puree (Environ.puree x)
     let ae_ap f x = 
@@ -101,9 +100,9 @@ module Formlet =
     let applicative = puree, ap
     let lift f x = puree f <*> x
     let lift2 f x y = puree f <*> x <*> y
-    let apr x y = lift2 (konst id) x y
+    let apr x y = lift2 (fun _ z -> z) x y
     let ( *>) x y = apr x y
-    let apl x y = lift2 konst x y
+    let apl x y = lift2 (fun z _ -> z) x y
     let (<*) x y = apl x y
 
     let refine (f, g) v = 
