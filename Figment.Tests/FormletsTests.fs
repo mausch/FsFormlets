@@ -13,9 +13,9 @@ let inputInt = puree int <*> input
 let dateFormlet =
     tag "div" ["style","padding:8px"] (
         tag "span" ["style", "border: 2px solid; padding: 4px"] (
-            puree (fun _ month _ day -> DateTime(2010, month, day)) <*>
-            text "Month: " <*> inputInt <*>
-            text "Day: " <*> inputInt
+            puree (fun month day -> DateTime(2010, month, day)) <*>
+            text "Month: " *> inputInt <*>
+            text "Day: " *> inputInt
         )
     )
 
