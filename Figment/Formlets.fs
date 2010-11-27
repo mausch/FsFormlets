@@ -33,7 +33,6 @@ module XmlWriter =
     let xml e = plug (fun _ -> e) (puree ())
     let text s = xml [Text s]
     let tag t ats v = plug (fun x -> [Tag (t, ats, x)]) v
-    let run = id
     open System.Xml.Linq
     let render hmethod action xml =
         let (!!) x = XName.op_Implicit x
@@ -68,7 +67,6 @@ module Environ =
         if v = null
             then failwith ("Not found : " + n)
             else v
-    let run = id
 
 module Formlet =
     //  AE = Compose (XmlWriter) (Environment) 
@@ -102,9 +100,7 @@ module Formlet =
     let tag t ats f = 
         let (<*>) a b = NameGen.ap a b
         NameGen.puree (XmlWriter.tag t ats) <*> f
-    let run v = 
-        let xml, collector = XmlWriter.run (NameGen.run v)
-        xml, Environ.run collector
+    let run v = NameGen.run v
     let input x =
         let (<*>) a b = NameGen.ap a b
         let f = NameGen.puree (fun n -> XmlWriter.tag "input" [("name", n)] (XmlWriter.puree (Environ.lookup n))) <*> NameGen.nextName
