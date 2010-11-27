@@ -3,7 +3,6 @@
 (*
 Formlets implementation based on http://groups.inf.ed.ac.uk/links/formlets/
 TODO:
-* process NameValueCollection instead of (string*string) list
 * validation
 * use wing beats in syntax
 * default values for form elements
@@ -29,10 +28,7 @@ module NameValueCollection =
 
 module XmlWriter =
     let puree v = [],v
-        //NameValueCollection(),v
-    let ap (x,f) (y,a) = 
-        x @ y, f a
-        //NameValueCollection.concat x y, f a
+    let ap (x,f) (y,a) = x @ y, f a
     let applicative = puree, ap
     let plug k (x,v) = k x, v
     let xml e = plug (fun _ -> e) (puree ())
@@ -70,17 +66,11 @@ module Environ =
     let puree v env = v
     let ap f a env = f env (a env)
     let applicative = puree, ap
-    (*
     let lookup (n: string) (env: NameValueCollection) = 
         let v = env.[n]
         if v = null
             then failwith ("Not found : " + n)
             else v
-            *)
-    let rec lookup n = function
-    | []                    -> failwith ("Not found : " + n)
-    | (m,v)::_   when n = m -> v
-    | _    ::env            -> lookup n env 
     let run = id
 
 module Formlet =

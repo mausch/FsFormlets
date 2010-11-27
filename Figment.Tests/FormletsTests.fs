@@ -30,7 +30,6 @@ let processTest() =
     let env = NameValueCollection()
     env.Add("input_0", "12")
     env.Add("input_1", "22")
-    let env = NameValueCollection.toList env
     let result = proc env
     printfn "%A" result
     Assert.Equal(DateTime(2010, 12, 22), result)
@@ -41,7 +40,6 @@ let processWithError() =
     let env = NameValueCollection()
     env.Add("input_0", "aa")
     env.Add("input_1", "22")
-    let env = NameValueCollection.toList env
     let proc() = proc env |> ignore
     Assert.Throws<FormatException>(Assert.ThrowsDelegate(proc)) |> ignore
     
