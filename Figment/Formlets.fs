@@ -30,6 +30,9 @@ module NameValueCollection =
 module XmlWriter =
     let puree v = ([]: xml_item list),v
     let ap (x: xml_item list,f) (y,a) = x @ y, f a
+    let (<*>) f x = ap f x
+    let lift f x = puree f <*> x
+    let lift2 f x y = puree f <*> x <*> y
     let plug k (x,v) = k x, v
     let xml e = plug (fun _ -> e) (puree ())
     let text s = xml [Text s]
@@ -58,12 +61,18 @@ module NameGen =
             let v,gen = f gen
             let w,gen = a gen
             v w, gen
+    let (<*>) f x = ap f x
+    let lift f x = puree f <*> x
+    let lift2 f x y = puree f <*> x <*> y
     let nextName gen = "input_" + gen.ToString(), gen+1
     let run c = fst (c 0)
 
 module Environ = 
     let puree v = fun (env: NameValueCollection) -> v
     let ap f a = fun (env: NameValueCollection) -> f env (a env)
+    let (<*>) f x = ap f x
+    let lift f x = puree f <*> x
+    let lift2 f x y = puree f <*> x <*> y
     let lookup (n: string) (env: NameValueCollection) = 
         let v = env.[n]
         if v = null
@@ -73,18 +82,13 @@ module Environ =
 module Formlet =
     //  AE = Compose (XmlWriter) (Environment) 
     let ae_pure x = XmlWriter.puree (Environ.puree x)
-    let ae_ap f x = 
-        let (<*>) a b = XmlWriter.ap a b
-        XmlWriter.puree Environ.ap <*> f <*> x
-    let ae = ae_pure, ae_ap
+    let ae_ap f = (XmlWriter.lift2 Environ.ap) f
 
     // Compose (NameGen) (AE)
     let puree x = NameGen.puree (ae_pure x)
-    let ap f x = 
-        let (<*>) a b = NameGen.ap a b
-        NameGen.puree ae_ap <*> f <*> x
-    let (<*>) f x = ap f x
+    let ap f = (NameGen.lift2 ae_ap) f
 
+    let (<*>) f x = ap f x
     let lift f x = puree f <*> x
     let lift2 f x y = puree f <*> x <*> y
     let apr x y = lift2 (fun _ z -> z) x y
@@ -100,12 +104,12 @@ module Formlet =
         NameGen.puree (XmlEnv_refine (XmlWriter.text s))
         //NameGen.puree ((XmlWriter.ap (XmlWriter.puree Environ.puree)) (XmlWriter.text s))
     let tag name attributes f = 
-        let (<*>) a b = NameGen.ap a b
-        NameGen.puree (XmlWriter.tag name attributes) <*> f
+        let g = NameGen.lift (XmlWriter.tag name attributes)
+        g f
     let run v = NameGen.run v
     let input x =
-        let (<*>) a b = NameGen.ap a b
-        let f = NameGen.puree (fun n -> XmlWriter.tag "input" [("name", n)] (XmlWriter.puree (Environ.lookup n))) <*> NameGen.nextName
+        let inputTag name = XmlWriter.tag "input" [("name", name)] (XmlWriter.puree (Environ.lookup name))
+        let f = (NameGen.lift inputTag) NameGen.nextName
         f x
     let render hmethod action v = 
         let xml = (run >> fst) v
