@@ -21,18 +21,19 @@ module NameValueCollection =
         x.Add a
         x.Add b
         x
+
     let toList (a: NameValueCollection) =
         a.AllKeys
         |> Seq.map (fun k -> k, a.[k])
         |> Seq.toList
 
 module XmlWriter =
-    let puree v = [],v
-    let ap (x,f) (y,a) = x @ y, f a
+    let puree v = ([]: xml_item list),v
+    let ap (x: xml_item list,f) (y,a) = x @ y, f a
     let plug k (x,v) = k x, v
     let xml e = plug (fun _ -> e) (puree ())
     let text s = xml [Text s]
-    let tag t ats v = plug (fun x -> [Tag (t, ats, x)]) v
+    let tag name attributes v = plug (fun x -> [Tag (name, attributes, x)]) v
     open System.Xml.Linq
     let render hmethod action xml =
         let (!!) x = XName.op_Implicit x
@@ -51,17 +52,18 @@ module XmlWriter =
         
 
 module NameGen =
-    let puree v gen = v,gen
-    let ap f a gen =
-        let v,gen = f gen
-        let w,gen = a gen
-        v w, gen
+    let puree v = fun (gen: int) -> v,gen
+    let ap f a =
+        fun (gen: int) ->
+            let v,gen = f gen
+            let w,gen = a gen
+            v w, gen
     let nextName gen = "input_" + gen.ToString(), gen+1
     let run c = fst (c 0)
 
 module Environ = 
-    let puree v env = v
-    let ap f a env = f env (a env)
+    let puree v = fun (env: NameValueCollection) -> v
+    let ap f a = fun (env: NameValueCollection) -> f env (a env)
     let lookup (n: string) (env: NameValueCollection) = 
         let v = env.[n]
         if v = null
@@ -97,9 +99,9 @@ module Formlet =
     let text s = 
         NameGen.puree (XmlEnv_refine (XmlWriter.text s))
         //NameGen.puree ((XmlWriter.ap (XmlWriter.puree Environ.puree)) (XmlWriter.text s))
-    let tag t ats f = 
+    let tag name attributes f = 
         let (<*>) a b = NameGen.ap a b
-        NameGen.puree (XmlWriter.tag t ats) <*> f
+        NameGen.puree (XmlWriter.tag name attributes) <*> f
     let run v = NameGen.run v
     let input x =
         let (<*>) a b = NameGen.ap a b
