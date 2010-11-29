@@ -8,14 +8,26 @@ open System.Xml.Linq
 open Figment.Formlets
 open Formlet
 
-let inputInt = puree int <*> input
+let inputInt = lift int input
 
 let dateFormlet =
     tag "div" ["style","padding:8px"] (
         tag "span" ["style", "border: 2px solid; padding: 4px"] (
-            puree (fun month day -> DateTime(2010, month, day)) <*>
+(*            puree (fun month day -> DateTime(2010, month, day)) <*>
             text "Month: " *> inputInt <*>
             text "Day: " *> inputInt
+*)
+
+            //lift2 (fun month day -> DateTime(2010, month, day)) inputInt inputInt
+(*
+            lift4 (fun _ month _ day -> DateTime(2010, month, day))
+                (text "Month: ")
+                inputInt
+                (text "Day: ")
+                inputInt
+*)
+                (text "Month: " *> inputInt) ** (text "Day: " *> inputInt)
+                |>> fun (month,day) -> DateTime(2010, month, day)
         )
     )
 

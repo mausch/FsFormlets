@@ -94,6 +94,7 @@ module Formlet =
 
     let (<*>) f x = ap f x
     let lift f a = puree f <*> a
+    let (|>>) x f = lift f x
     let lift2 f a b = puree f <*> a <*> b
     let lift3 f a b c = puree f <*> a <*> b <*> c
     let lift4 f a b c d = puree f <*> a <*> b <*> c <*> d
@@ -101,6 +102,8 @@ module Formlet =
     let ( *>) x y = apr x y
     let apl x y = lift2 (fun z _ -> z) x y
     let (<*) x y = apl x y
+    let pair a b = lift2 (fun x y -> x,y) a b
+    let ( **) a b = pair a b
 
     let private XmlEnv_refine v = XmlWriter.ap (XmlWriter.puree Environ.puree) v
     let private refineAndLift f x = NameGen.puree (XmlEnv_refine (f x))
