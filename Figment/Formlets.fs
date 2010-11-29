@@ -79,38 +79,42 @@ module Environ =
             then failwith ("Not found : " + n)
             else v
 
+type 'a Formlet = int -> (xml_item list * (NameValueCollection -> 'a)) * int
+
 module Formlet =
     //  AE = Compose (XmlWriter) (Environment) 
-    let ae_pure x = XmlWriter.puree (Environ.puree x)
-    let ae_ap f = (XmlWriter.lift2 Environ.ap) f
+    let private ae_pure x = XmlWriter.puree (Environ.puree x)
+    let private ae_ap f = (XmlWriter.lift2 Environ.ap) f
 
     // Compose (NameGen) (AE)
-    let puree x = NameGen.puree (ae_pure x)
-    let ap f = (NameGen.lift2 ae_ap) f
+    let puree x : 'a Formlet = NameGen.puree (ae_pure x)
+    let ap (f: ('a -> 'b) Formlet) (x: 'a Formlet) : 'b Formlet = 
+        let liftedAp = NameGen.lift2 ae_ap
+        liftedAp f x
 
     let (<*>) f x = ap f x
-    let lift f x = puree f <*> x
-    let lift2 f x y = puree f <*> x <*> y
+    let lift f a = puree f <*> a
+    let lift2 f a b = puree f <*> a <*> b
+    let lift3 f a b c = puree f <*> a <*> b <*> c
+    let lift4 f a b c d = puree f <*> a <*> b <*> c <*> d
     let apr x y = lift2 (fun _ z -> z) x y
     let ( *>) x y = apr x y
     let apl x y = lift2 (fun z _ -> z) x y
     let (<*) x y = apl x y
 
-    let XmlEnv_refine v = XmlWriter.ap (XmlWriter.puree Environ.puree) v
-    let xml x = 
-        NameGen.puree (XmlEnv_refine (XmlWriter.xml x))
-        //NameGen.puree ((XmlWriter.ap (XmlWriter.puree Environ.puree)) (XmlWriter.xml x))
-    let text s = 
-        NameGen.puree (XmlEnv_refine (XmlWriter.text s))
-        //NameGen.puree ((XmlWriter.ap (XmlWriter.puree Environ.puree)) (XmlWriter.text s))
-    let tag name attributes f = 
+    let private XmlEnv_refine v = XmlWriter.ap (XmlWriter.puree Environ.puree) v
+    let private refineAndLift f x = NameGen.puree (XmlEnv_refine (f x))
+    let xml x : unit Formlet = refineAndLift XmlWriter.xml x
+    let text s : unit Formlet = refineAndLift XmlWriter.text s
+    let tag name attributes (f: 'a Formlet) : 'a Formlet = 
         let g = NameGen.lift (XmlWriter.tag name attributes)
         g f
-    let run v = NameGen.run v
-    let input x =
-        let inputTag name = XmlWriter.tag "input" [("name", name)] (XmlWriter.puree (Environ.lookup name))
-        let f = (NameGen.lift inputTag) NameGen.nextName
-        f x
+    let run (v: 'a Formlet) = NameGen.run v
+    let input : string Formlet =
+        fun x -> 
+            let inputTag name = XmlWriter.tag "input" [("name", name)] (XmlWriter.puree (Environ.lookup name))
+            let f = (NameGen.lift inputTag) NameGen.nextName
+            f x
     let render hmethod action v = 
         let xml = (run >> fst) v
         XmlWriter.render hmethod action xml
