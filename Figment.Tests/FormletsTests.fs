@@ -50,7 +50,7 @@ let processTest() =
     env.Add("input_1", "22")
     let result = proc env
     printfn "%A" result
-    Assert.Equal(DateTime(2010, 12, 22), result)
+    Assert.Equal(DateTime(2010, 12, 22), result.Value)
 
 [<Fact>]
 let processWithError() =
