@@ -105,13 +105,18 @@ module Formlet =
     let pair a b = lift2 (fun x y -> x,y) a b
     let ( **) a b = pair a b
 
+    let yields = puree // friendly alias
+
     let private XmlEnv_refine v = XmlWriter.ap (XmlWriter.puree Environ.puree) v
     let private refineAndLift f x = NameGen.puree (XmlEnv_refine (f x))
     let xml x : unit Formlet = refineAndLift XmlWriter.xml x
+    let nop = xml []
     let text s : unit Formlet = refineAndLift XmlWriter.text s
     let tag name attributes (f: 'a Formlet) : 'a Formlet = 
         let g = NameGen.lift (XmlWriter.tag name attributes)
         g f
+    let submit n = tag "input" ["type","submit"; "value",n] nop
+    let br = tag "br" [] nop
     let run (v: 'a Formlet) = NameGen.run v
     let input : string Formlet =
         fun x -> 

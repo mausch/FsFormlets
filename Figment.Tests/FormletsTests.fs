@@ -26,8 +26,14 @@ let dateFormlet =
                 (text "Day: ")
                 inputInt
 *)
+(*
                 (text "Month: " *> inputInt) ** (text "Day: " *> inputInt)
                 |>> fun (month,day) -> DateTime(2010, month, day)
+*)
+            yields (fun month day -> DateTime(2010, month, day)) <*>
+            text "Month: " *> inputInt <*>
+            text "Day: " *> inputInt
+            <* br <* submit "Send"
         )
     )
 
