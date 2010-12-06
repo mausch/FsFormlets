@@ -198,14 +198,15 @@ module Formlet =
         let xml = (run >> fst) v
         XmlWriter.render hmethod action xml
 
-    let check (p: 'a Validator) (a: 'a AO) : 'a AO =
+    let check (validator: 'a Validator) (a: 'a AO) : 'a AO =
         let result =
             let errorToValidationResult o =
+                let pred = fst validator
                 let check' p v =
                     if p v
                         then Pass v
                         else Fail v
-                let liftedCheck = Error.lift (check' (fst p))
+                let liftedCheck = Error.lift (check' pred)
                 match liftedCheck o with
                 | Some v -> v
                 | _ -> Dead
@@ -215,7 +216,7 @@ module Formlet =
             | Pass v -> Error.puree v 
             | _ -> Error.failure
         let w = XmlWriter.lift validationResultToError result
-        let errorMsg = snd p
+        let errorMsg = snd validator
         match result with
         | _, Fail v -> XmlWriter.plug (errorMsg v) w
         | _ -> w
