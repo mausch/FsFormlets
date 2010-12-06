@@ -40,8 +40,10 @@ module XmlWriter =
     let (<*>) f x = ap f x
     let lift f x = puree f <*> x
     let lift2 f x y = puree f <*> x <*> y
-    let plug k (v: 'a XmlWriter): 'a XmlWriter = k (fst v), snd v
-    let xml (e: xml_item list) = plug (fun _ -> e) (puree ())
+    let plug (k: xml_item list -> xml_item list) (v: 'a XmlWriter): 'a XmlWriter = 
+        k (fst v), snd v
+    let xml (e: xml_item list) : unit XmlWriter = 
+        plug (fun _ -> e) (puree ())
     let text s = xml [Text s]
     let tag name attributes (v: 'a XmlWriter) : 'a XmlWriter = 
         plug (fun x -> [Tag (name, attributes, x)]) v
@@ -138,6 +140,8 @@ module Formlet =
     let private nae_pure x : 'a NAE = NameGen.puree (ae_pure x)
     let private nae_ap (f: ('a -> 'b) NAE) (x: 'a NAE) : 'b NAE =
         (NameGen.lift2 ae_ap) f x
+    let private nae_lift (f: 'a -> 'b) (x: 'a NAE) : 'b NAE = 
+        nae_ap (nae_pure f) x
 
     // AO = Compose (XmlWriter) (Error)
     let private ao_pure x : 'a AO = XmlWriter.puree (Error.puree x)
@@ -222,7 +226,7 @@ module Formlet =
         | _ -> w
 
     let satisfies (validator: 'a Validator) (f: 'a Formlet) : 'a Formlet =
-        nae_ap (nae_pure (check validator)) f
+        nae_lift (check validator) f
 
     let err (isValid: 'a -> bool) (errorMsg: 'a -> string) : 'a Validator = 
         let addError value xml = 
