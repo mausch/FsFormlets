@@ -8,7 +8,12 @@ open System.Xml.Linq
 open Figment.Formlets
 open Formlet
 
-let inputInt = lift int input
+let intValidator : string Validator = 
+    let isInt v = Int32.TryParse v |> fst
+    let showerr v items = [Text "oh crap"]
+    isInt,showerr
+
+let inputInt = lift int (input |> satisfies intValidator)
 
 let dateFormlet =
     tag "div" ["style","padding:8px"] (
@@ -54,10 +59,12 @@ let processTest() =
 
 [<Fact>]
 let processWithError() =
-    let _, proc = run dateFormlet
+    let xml, proc = run dateFormlet
     let env = NameValueCollection()
     env.Add("input_0", "aa")
     env.Add("input_1", "22")
-    let proc() = proc env |> ignore
-    Assert.Throws<FormatException>(Assert.ThrowsDelegate(proc)) |> ignore
+    let err,value = proc env
+    let xdoc = XmlWriter.render "" "" err
+    printfn "Error form:\n%s" (xdoc.ToString())
+    Assert.True(value.IsNone)
     

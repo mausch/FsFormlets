@@ -213,7 +213,7 @@ module Formlet =
         | _, Fail v -> XmlWriter.plug ((snd p) v) w
         | _ -> w
 
-    let satisfies (f: 'a Formlet) (validator: 'a Validator) : 'a Formlet =
+    let satisfies (validator: 'a Validator) (f: 'a Formlet) : 'a Formlet =
         nae_ap (nae_pure (check validator)) f
 
 (*
