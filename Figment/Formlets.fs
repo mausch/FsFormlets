@@ -40,8 +40,8 @@ module XmlWriter =
     let (<*>) f x = ap f x
     let lift f x = puree f <*> x
     let lift2 f x y = puree f <*> x <*> y
-    let plug k (x,v) = k x, v
-    let xml e = plug (fun _ -> e) (puree ())
+    let plug k (v: 'a XmlWriter): 'a XmlWriter = k (fst v), snd v
+    let xml (e: xml_item list) = plug (fun _ -> e) (puree ())
     let text s = xml [Text s]
     let tag name attributes (v: 'a XmlWriter) : 'a XmlWriter = 
         plug (fun x -> [Tag (name, attributes, x)]) v
@@ -72,8 +72,9 @@ module NameGen =
     let (<*>) f x = ap f x
     let lift f x = puree f <*> x
     let lift2 f x y = puree f <*> x <*> y
-    let nextName gen = "input_" + gen.ToString(), gen+1
-    let run c = fst (c 0)
+    let nextName : string NameGen = 
+        fun gen -> "input_" + gen.ToString(), gen+1
+    let run (c: 'a NameGen) = fst (c 0)
 
 type 'a Environ = NameValueCollection -> 'a
 module Environ = 
@@ -83,11 +84,12 @@ module Environ =
     let (<*>) f x = ap f x
     let lift f x = puree f <*> x
     let lift2 f x y = puree f <*> x <*> y
-    let lookup (n: string) (env: NameValueCollection) = 
-        let v = env.[n]
-        if v = null
-            then failwith ("Not found : " + n)
-            else v
+    let lookup (n: string) : string Environ = 
+        fun (env: NameValueCollection) -> 
+            let v = env.[n]
+            if v = null
+                then failwith ("Not found : " + n)
+                else v
 
 type 'a Error = 'a option
 module Error =
@@ -99,13 +101,22 @@ module Error =
     let (<*>) f x = ap f x
     let lift f x = puree f <*> x
     let lift2 f x y = puree f <*> x <*> y
-    let failure = None
+    let failure : 'a Error = None
 
-type 'a Formlet = 'a Error Environ XmlWriter NameGen
-type 'a Validator = ('a -> bool) * ('a -> xml_item list -> xml_item)
+type 'a Validator = ('a -> bool) * ('a -> xml_item list -> xml_item list)
+type 'a ValidationResult =
+    | Pass of 'a
+    | Fail of 'a
+    | Dead
 
 type private 'a EO = 'a Error Environ
-type private 'a AE = 'a EO XmlWriter
+type private 'a AEO = 'a EO XmlWriter
+type private 'a AE = 'a Environ XmlWriter
+type private 'a AO = 'a Error XmlWriter
+type private 'a NAE = 'a AE NameGen
+type private 'a EAO = 'a AO Environ
+type private 'a AEAO = 'a EAO XmlWriter
+type 'a Formlet = 'a Error XmlWriter Environ XmlWriter NameGen
 
 module Formlet =
     // EO = Compose (Environment) (Error)
@@ -113,16 +124,42 @@ module Formlet =
     let private eo_ap (f: ('a -> 'b) EO) (x: 'a EO) : 'b EO = 
         (Environ.lift2 Error.ap) f x
 
-    // AE = Compose (XmlWriter) (EO) 
-    let private ae_pure x : 'a AE = XmlWriter.puree (eo_pure x)
-    let private ae_ap (f: ('a -> 'b) AE) (x: 'a AE) : 'b AE = 
+    // AEO = Compose (XmlWriter) (EO) 
+    let private aeo_pure x : 'a AEO = XmlWriter.puree (eo_pure x)
+    let private aeo_ap (f: ('a -> 'b) AEO) (x: 'a AEO) : 'b AEO = 
         (XmlWriter.lift2 eo_ap) f x
 
-    // Compose (NameGen) (AE)
-    let puree x : 'a Formlet = NameGen.puree (ae_pure x)
+    // AE = Compose (XmlWriter) (Environment)
+    let private ae_pure x : 'a AE = XmlWriter.puree (Environ.puree x)
+    let private ae_ap (f: ('a -> 'b) AE) (x: 'a AE) : 'b AE =
+        (XmlWriter.lift2 Environ.ap) f x
+
+    // NAE = Compose (NameGen) (AE)
+    let private nae_pure x : 'a NAE = NameGen.puree (ae_pure x)
+    let private nae_ap (f: ('a -> 'b) NAE) (x: 'a NAE) : 'b NAE =
+        (NameGen.lift2 ae_ap) f x
+
+    // AO = Compose (XmlWriter) (Error)
+    let private ao_pure x : 'a AO = XmlWriter.puree (Error.puree x)
+    let private ao_ap (f: ('a -> 'b) AO) (x: 'a AO) : 'b AO = 
+        (XmlWriter.lift2 Error.ap) f x
+    let private ao_lift (f: 'a -> 'b) (x: 'a AO) : 'b AO =
+        ao_ap (ao_pure f) x
+
+    // EAO = Compose (Environ) (AO)
+    let private eao_pure x : 'a EAO = Environ.puree (ao_pure x)
+    let private eao_ap (f: ('a -> 'b) EAO) (x: 'a EAO) : 'b EAO =
+        (Environ.lift2 ao_ap) f x
+
+    // AEAO = Compose (XmlWriter) (EAO)
+    let private aeao_pure x: 'a AEAO = XmlWriter.puree (eao_pure x)
+    let private aeao_ap (f: ('a -> 'b) AEAO) (x: 'a AEAO) : 'b AEAO =
+        (XmlWriter.lift2 eao_ap) f x
+
+    // Compose (NameGen) (AEAO)
+    let puree x : 'a Formlet = NameGen.puree (aeao_pure x)
     let ap (f: ('a -> 'b) Formlet) (x: 'a Formlet) : 'b Formlet = 
-        let liftedAp = NameGen.lift2 ae_ap
-        liftedAp f x
+        (NameGen.lift2 aeao_ap) f x
 
     let (<*>) f x = ap f x
     let lift f a = puree f <*> a
@@ -139,7 +176,7 @@ module Formlet =
 
     let yields = puree // friendly alias
 
-    let private XmlEnv_refine v = XmlWriter.ap (XmlWriter.puree eo_pure) v
+    let private XmlEnv_refine v = XmlWriter.lift eao_pure v
     let private refineAndLift f x = NameGen.puree (XmlEnv_refine (f x))
     let xml x : unit Formlet = refineAndLift XmlWriter.xml x
     let nop = xml []
@@ -149,15 +186,37 @@ module Formlet =
         g f
     let submit n = tag "input" ["type","submit"; "value",n] nop
     let br = tag "br" [] nop
-    let run (v: 'a Formlet) = NameGen.run v
+    let run (v: 'a Formlet) : (xml_item list) * (NameValueCollection -> (xml_item list * 'a option))  = 
+        NameGen.run v
     let input : string Formlet =
-        fun x -> 
-            let lookup name env =
-                let v = Environ.lookup name env
-                Error.puree v
-            let inputTag name = XmlWriter.tag "input" [("name", name)] (XmlWriter.puree (lookup name))
-            let f = (NameGen.lift inputTag) NameGen.nextName
-            f x
+        let inputTag name : string AEAO = 
+            let tag = XmlWriter.tag "input" ["name", name]
+            let ao value = XmlWriter.puree (Error.puree value)
+            tag (XmlWriter.puree (Environ.ap (Environ.puree ao) (Environ.lookup name)))
+        (NameGen.lift inputTag) NameGen.nextName
     let render hmethod action v = 
         let xml = (run >> fst) v
         XmlWriter.render hmethod action xml
+
+    let check (p: 'a Validator) (a: 'a AO) : 'a AO =
+        let check1 p v =
+            if p v
+                then Pass v
+                else Fail v
+        let result =
+            XmlWriter.ap (XmlWriter.puree (fun o -> 
+                match (Error.ap (Error.puree (fun v -> if (fst p) v then Pass v else Fail v)) o) with
+                | Some v -> v
+                | _ -> Dead)) a
+        let w = XmlWriter.lift (function Pass v -> Error.puree v | _ -> Error.failure) result
+        match result with
+        | _, Fail v -> XmlWriter.plug ((snd p) v) w
+        | _ -> w
+
+    let satisfies (f: 'a Formlet) (validator: 'a Validator) : 'a Formlet =
+        nae_ap (nae_pure (check validator)) f
+
+(*
+    let err (v: 'a -> bool) (e: 'a -> string) : 'a Validator = 
+        nop
+        *)
