@@ -196,7 +196,7 @@ module Formlet =
         let inputTag name : string AEAO = 
             let tag = XmlWriter.tag "input" ["name", name]
             let ao value = XmlWriter.puree (Error.puree value)
-            tag (XmlWriter.puree (Environ.ap (Environ.puree ao) (Environ.lookup name)))
+            tag (XmlWriter.puree (Environ.lift ao (Environ.lookup name)))
         (NameGen.lift inputTag) NameGen.nextName
     let render hmethod action v = 
         let xml = (run >> fst) v
