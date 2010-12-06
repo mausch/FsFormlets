@@ -8,10 +8,10 @@ open System.Xml.Linq
 open Figment.Formlets
 open Formlet
 
-let intValidator : string Validator = 
-    let isInt v = Int32.TryParse v |> fst
-    let showerr v items = [Text "oh crap"]
-    isInt,showerr
+let isInt v = Int32.TryParse v |> fst
+
+let intValidator : string Validator =
+    err isInt (sprintf "%s is not a valid number")
 
 let inputInt = lift int (input |> satisfies intValidator)
 

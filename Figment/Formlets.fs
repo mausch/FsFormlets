@@ -216,7 +216,10 @@ module Formlet =
     let satisfies (validator: 'a Validator) (f: 'a Formlet) : 'a Formlet =
         nae_ap (nae_pure (check validator)) f
 
-(*
-    let err (v: 'a -> bool) (e: 'a -> string) : 'a Validator = 
-        nop
-        *)
+    let err (isValid: 'a -> bool) (errorMsg: 'a -> string) : 'a Validator = 
+        let addError value xml = 
+            [
+                Tag("span", ["class","errorinput"], xml)
+                Tag("span", ["class","error"], [Text(errorMsg value)])
+            ]
+        isValid, addError
