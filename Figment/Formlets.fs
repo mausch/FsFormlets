@@ -3,7 +3,6 @@
 (*
 Formlets implementation based on http://groups.inf.ed.ac.uk/links/formlets/
 TODO:
-* validation
 * use wing beats in syntax
 * default values for form elements
 * implement all form elements (textarea, select, radio, checkbox)
