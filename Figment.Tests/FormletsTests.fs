@@ -4,20 +4,23 @@ open Xunit
 
 open System
 open System.Collections.Specialized
+open System.Globalization
 open System.Xml.Linq
 open Figment.Formlets
 open Formlet
 
-let isInt v = Int32.TryParse v |> fst
+let isInt = Int32.TryParse >> fst
 
 let intValidator : string Validator =
     err isInt (sprintf "%s is not a valid number")
 
 let inputInt = lift int (input |> satisfies intValidator)
+//let inputInt = yields (fun i -> int i) <*> (input |> satisfies intValidator) // equivalent to above
 
 let dateFormlet =
-    tag "div" ["style","padding:8px"] (
-        tag "span" ["style", "border: 2px solid; padding: 4px"] (
+    let baseFormlet = 
+        tag "div" ["style","padding:8px"] (
+            tag "span" ["style", "border: 2px solid; padding: 4px"] (
 (*            puree (fun month day -> DateTime(2010, month, day)) <*>
             text "Month: " *> inputInt <*>
             text "Day: " *> inputInt
@@ -35,12 +38,25 @@ let dateFormlet =
                 (text "Month: " *> inputInt) ** (text "Day: " *> inputInt)
                 |>> fun (month,day) -> DateTime(2010, month, day)
 *)
+(*
             yields (fun month day -> DateTime(2010, month, day)) <*>
             text "Month: " *> inputInt <*>
             text "Day: " *> inputInt
-            <* br <* submit "Send"
+            <* br <* submit "Send" 
+*)
+
+                yields (fun month day -> month,day) <*>
+                text "Month: " *> inputInt <*>
+                text "Day: " *> inputInt
+                <* br <* submit "Send" 
+            )
         )
-    )
+    let isDate (month,day) = 
+        DateTime.TryParseExact(sprintf "%d%d%d" 2010 month day, "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None) |> fst
+    let dateValidator = err isDate (fun (month,day) -> sprintf "%d/%d is not a valid date" month day)
+    let validatingFormlet = baseFormlet |> satisfies dateValidator
+    lift (fun (month,day) -> DateTime(2010, month, day)) validatingFormlet
+
 
 [<Fact>]
 let renderTest() =
@@ -58,13 +74,24 @@ let processTest() =
     Assert.Equal(DateTime(2010, 12, 22), (snd result).Value)
 
 [<Fact>]
-let processWithError() =
+let processWithInvalidInt() =
     let xml, proc = run dateFormlet
     let env = NameValueCollection()
     env.Add("input_0", "aa")
     env.Add("input_1", "22")
     let err,value = proc env
-    let xdoc = XmlWriter.render "" "" err
+    let xdoc = XmlWriter.render "" "" (xml @ err)
+    printfn "Error form:\n%s" (xdoc.ToString())
+    Assert.True(value.IsNone)
+
+[<Fact>]
+let processWithInvalidDate() =
+    let xml, proc = run dateFormlet
+    let env = NameValueCollection()
+    env.Add("input_0", "22")
+    env.Add("input_1", "22")
+    let err,value = proc env
+    let xdoc = XmlWriter.render "" "" (xml @ err)
     printfn "Error form:\n%s" (xdoc.ToString())
     Assert.True(value.IsNone)
     
