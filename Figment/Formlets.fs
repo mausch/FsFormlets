@@ -47,7 +47,7 @@ module XmlWriter =
     let tag name attributes (v: 'a XmlWriter) : 'a XmlWriter = 
         plug (fun x -> [Tag (name, attributes, x)]) v
     open System.Xml.Linq
-    let render hmethod action xml =
+    let render xml =
         let (!!) x = XName.op_Implicit x
         let xattr (name, value: string) = XAttribute(!!name, value)
         let xelem name (attributes: obj list) (children: obj list) = XElement(!!name, attributes @ children)
@@ -60,7 +60,7 @@ module XmlWriter =
                     | Text t -> box (XText(t))
                     | Tag (name, attr, children) -> box (xelem name (attr |> List.map (xattr >> box)) (render' children))
                 this::(render' xs)
-        XDocument(xelem "form" [xattr("action",action); xattr("method",hmethod)] (render' xml))
+        XDocument(render' xml)
         
 type 'a NameGen = int -> 'a * int
 module NameGen =
@@ -197,9 +197,11 @@ module Formlet =
             let ao value = XmlWriter.puree (Error.puree value)
             tag (XmlWriter.puree (Environ.lift ao (Environ.lookup name)))
         (NameGen.lift inputTag) NameGen.nextName
-    let render hmethod action v = 
+    let form hmethod haction (v: 'a Formlet) : 'a Formlet = 
+        tag "form" ["method",hmethod; "action",haction] v
+    let render v = 
         let xml = (run >> fst) v
-        XmlWriter.render hmethod action xml
+        XmlWriter.render xml
 
     let check (validator: 'a Validator) (a: 'a AO) : 'a AO =
         let result =

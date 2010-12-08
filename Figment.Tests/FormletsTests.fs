@@ -60,7 +60,7 @@ let dateFormlet =
 
 [<Fact>]
 let renderTest() =
-    let form = render "get" "/posturl" dateFormlet
+    let form = render dateFormlet
     printfn "%s" (form.ToString())
 
 [<Fact>]
@@ -80,7 +80,7 @@ let processWithInvalidInt() =
     env.Add("input_0", "aa")
     env.Add("input_1", "22")
     let err,value = proc env
-    let xdoc = XmlWriter.render "" "" (xml @ err)
+    let xdoc = XmlWriter.render [Tag("div", [], xml @ err)]
     printfn "Error form:\n%s" (xdoc.ToString())
     Assert.True(value.IsNone)
 
@@ -91,7 +91,7 @@ let processWithInvalidDate() =
     env.Add("input_0", "22")
     env.Add("input_1", "22")
     let err,value = proc env
-    let xdoc = XmlWriter.render "" "" (xml @ err)
+    let xdoc = XmlWriter.render [Tag("div", [], xml @ err)]
     printfn "Error form:\n%s" (xdoc.ToString())
     Assert.True(value.IsNone)
     
