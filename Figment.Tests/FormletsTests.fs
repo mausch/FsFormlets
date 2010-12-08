@@ -85,6 +85,17 @@ let processWithInvalidInt() =
     Assert.True(value.IsNone)
 
 [<Fact>]
+let processWithInvalidInts() =
+    let xml, proc = run dateFormlet
+    let env = NameValueCollection()
+    env.Add("input_0", "aa")
+    env.Add("input_1", "bb")
+    let err,value = proc env
+    let xdoc = XmlWriter.render [Tag("div", [], xml @ err)]
+    printfn "Error form:\n%s" (xdoc.ToString())
+    Assert.True(value.IsNone)
+
+[<Fact>]
 let processWithInvalidDate() =
     let xml, proc = run dateFormlet
     let env = NameValueCollection()

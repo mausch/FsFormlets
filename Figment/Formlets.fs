@@ -3,7 +3,8 @@
 (*
 Formlets implementation based on http://groups.inf.ed.ac.uk/links/formlets/
 TODO:
-* use wing beats in syntax
+* extend to use with querystring
+* use wing beats in syntax?
 * default values for form elements
 * implement all form elements (textarea, select, radio, checkbox)
 *)
