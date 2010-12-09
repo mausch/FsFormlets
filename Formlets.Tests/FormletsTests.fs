@@ -115,3 +115,10 @@ let processWithInvalidDate() =
     printfn "Error form:\n%s" (xdoc.ToString())
     Assert.True(value.IsNone)
     
+[<Fact>]
+let processWithMissingField() =
+    let xml, proc = run dateFormlet
+    let env = NameValueCollection()
+    env.Add("input_0", "22")
+    let err,value = proc env
+    ()

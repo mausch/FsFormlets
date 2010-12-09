@@ -8,11 +8,11 @@ module Environ =
     let ap (f: ('a -> 'b) Environ) (a: 'a Environ) : 'b Environ = 
         fun (env: NameValueCollection) -> f env (a env)
     let (<*>) f x = ap f x
-    let lift f x = puree f <*> x
-    let lift2 f x y = puree f <*> x <*> y
-    let lookup (n: string) : string Environ = 
+    let lift f x : 'b Environ = puree f <*> x
+    let lift2 f x y : 'c Environ = puree f <*> x <*> y
+    let lookup (n: string) : string option Environ = 
         fun (env: NameValueCollection) -> 
             let v = env.[n]
             if v = null
-                then failwith ("Not found : " + n)
-                else v
+                then None
+                else Some v
