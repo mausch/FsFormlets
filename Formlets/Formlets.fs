@@ -107,7 +107,14 @@ module Formlet =
         (NameGen.lift inputTag) NameGen.nextName
     let input attributes : string Formlet =
         let optInput = optionalInput attributes
-        NameGen.lift (XmlWriter.lift (Environ.lift (XmlWriter.lift (Error.lift Option.get)))) optInput
+        let liftedGet =
+            Option.get
+            |> Error.lift
+            |> XmlWriter.lift
+            |> Environ.lift
+            |> XmlWriter.lift
+            |> NameGen.lift
+        liftedGet optInput
     let password : string Formlet = 
         input ["type","password"]
     let form hmethod haction attributes (v: 'a Formlet) : 'a Formlet = 
