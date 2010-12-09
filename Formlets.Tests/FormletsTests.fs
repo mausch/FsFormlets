@@ -14,6 +14,8 @@ let isInt = Int32.TryParse >> fst
 let intValidator : string Validator =
     err isInt (sprintf "%s is not a valid number")
 
+let input = input [] // no additional attributes
+
 let inputInt = lift int (input |> satisfies intValidator)
 //let inputInt = yields (fun i -> int i) <*> (input |> satisfies intValidator) // equivalent to above
 
@@ -56,6 +58,11 @@ let dateFormlet =
     let dateValidator = err isDate (fun (month,day) -> sprintf "%d/%d is not a valid date" month day)
     let validatingFormlet = baseFormlet |> satisfies dateValidator
     lift (fun (month,day) -> DateTime(2010, month, day)) validatingFormlet
+
+let fullFormlet =
+    yields (fun d ok -> d,ok) 
+    <*> dateFormlet
+    <*> password
 
 
 [<Fact>]
