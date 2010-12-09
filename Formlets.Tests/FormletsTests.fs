@@ -60,14 +60,16 @@ let dateFormlet =
     lift (fun (month,day) -> DateTime(2010, month, day)) validatingFormlet
 
 let fullFormlet =
-    yields (fun d ok -> d,ok) 
-    <*> dateFormlet
-    <*> password
+    tag "div" [] (
+        yields (fun d ok -> d,ok)
+        <*> dateFormlet
+        <*> password
+    )
 
 
 [<Fact>]
 let renderTest() =
-    let form = render dateFormlet
+    let form = render fullFormlet
     printfn "%s" (form.ToString())
 
 [<Fact>]
