@@ -99,24 +99,22 @@ module Formlet =
     let br = tag "br" [] nop
     let run (v: 'a Formlet) : (xml_item list) * (NameValueCollection -> (xml_item list * 'a option))  = 
         NameGen.run v
+    let private inputTag lookup attributes name : 'a AEAO = 
+        let tag = XmlWriter.tag "input" (["name", name] @ attributes)
+        let ao value = XmlWriter.puree (Error.puree value)
+        tag (XmlWriter.puree (Environ.lift ao (lookup name)))
     let private optionalInput attributes: string option Formlet =
-        let inputTag name : string option AEAO = 
-            let tag = XmlWriter.tag "input" (["name", name] @ attributes)
-            let ao value = XmlWriter.puree (Error.puree value)
-            tag (XmlWriter.puree (Environ.lift ao (Environ.lookup name)))
-        (NameGen.lift inputTag) NameGen.nextName
+        (NameGen.lift (inputTag Environ.optionalLookup attributes)) NameGen.nextName
     let input attributes : string Formlet =
-        let optInput = optionalInput attributes
-        let liftedGet =
-            Option.get
-            |> Error.lift
-            |> XmlWriter.lift
-            |> Environ.lift
-            |> XmlWriter.lift
-            |> NameGen.lift
-        liftedGet optInput
+        (NameGen.lift (inputTag Environ.lookup attributes)) NameGen.nextName
     let password : string Formlet = 
         input ["type","password"]
+    let checkbox : bool Formlet =
+        let transform =
+            function
+            | None -> false
+            | Some _ -> true
+        lift transform (optionalInput ["type","checkbox"])
     let form hmethod haction attributes (v: 'a Formlet) : 'a Formlet = 
         tag "form" (["method",hmethod; "action",haction] @ attributes) v
     let render v = 

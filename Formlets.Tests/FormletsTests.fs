@@ -61,9 +61,10 @@ let dateFormlet =
 
 let fullFormlet =
     tag "div" [] (
-        yields (fun d ok -> d,ok)
+        yields (fun d pass ok -> d,pass,ok)
         <*> dateFormlet
         <*> password
+        <*> checkbox
     )
 
 
