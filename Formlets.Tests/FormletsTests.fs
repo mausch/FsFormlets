@@ -75,13 +75,15 @@ let renderTest() =
 
 [<Fact>]
 let processTest() =
-    let _, proc = run dateFormlet
+    let _, proc = run fullFormlet
     let env = NameValueCollection()
     env.Add("input_0", "12")
     env.Add("input_1", "22")
-    let result = proc env
-    printfn "%A" result
-    Assert.Equal(DateTime(2010, 12, 22), (snd result).Value)
+    env.Add("input_2", "")
+    let dt,pass,chk = proc env |> snd |> Option.get
+    Assert.Equal(DateTime(2010, 12, 22), dt)
+    Assert.Equal("", pass)
+    Assert.False chk
 
 [<Fact>]
 let processWithInvalidInt() =
