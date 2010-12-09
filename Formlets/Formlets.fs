@@ -109,6 +109,8 @@ module Formlet =
         (NameGen.lift (inputTag Environ.lookup attributes)) NameGen.nextName
     let password : string Formlet = 
         input ["type","password"]
+    let hidden : string Formlet = 
+        input ["type","hidden"]
     let checkbox : bool Formlet =
         let transform =
             function
