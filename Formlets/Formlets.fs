@@ -101,8 +101,7 @@ module Formlet =
         NameGen.run v
     let private inputTag lookup attributes : 'a Formlet = 
         let tag name = XmlWriter.tag "input" (["name", name] @ attributes)
-        let ao value = XmlWriter.puree (Error.puree value)
-        let t name = tag name (XmlWriter.puree (Environ.lift ao (lookup name)))
+        let t name = tag name (XmlWriter.puree (Environ.lift ao_pure (lookup name)))
         (NameGen.lift t) NameGen.nextName
     let private optionalInput attributes: string option Formlet =
         inputTag Environ.optionalLookup attributes
