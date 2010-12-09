@@ -1,4 +1,4 @@
-﻿module Figment.Formlets
+﻿module Formlets
 
 (*
 Formlets implementation based on http://groups.inf.ed.ac.uk/links/formlets/

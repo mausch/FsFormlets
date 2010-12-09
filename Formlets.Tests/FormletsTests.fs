@@ -6,7 +6,7 @@ open System
 open System.Collections.Specialized
 open System.Globalization
 open System.Xml.Linq
-open Figment.Formlets
+open Formlets
 open Formlet
 
 let isInt = Int32.TryParse >> fst
