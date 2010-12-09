@@ -43,6 +43,11 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="NameValueCollection.fs" />
+    <Compile Include="XmlWriter.fs" />
+    <Compile Include="NameGen.fs" />
+    <Compile Include="Environ.fs" />
+    <Compile Include="Error.fs" />
     <Compile Include="Formlets.fs" />
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
