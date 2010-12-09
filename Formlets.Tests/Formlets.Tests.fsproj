@@ -34,11 +34,6 @@
   <Import Project="$(MSBuildExtensionsPath32)\FSharp\1.0\Microsoft.FSharp.Targets" Condition="!Exists('$(MSBuildBinPath)\Microsoft.Build.Tasks.v4.0.dll')" />
   <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft F#\v4.0\Microsoft.FSharp.Targets" Condition=" Exists('$(MSBuildBinPath)\Microsoft.Build.Tasks.v4.0.dll')" />
   <ItemGroup>
-    <Compile Include="RoutingTests.fs" />
-    <None Include="xunit.dll.tdnet">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <Compile Include="ExtensionsTests.fs" />
     <Compile Include="FormletsTests.fs" />
   </ItemGroup>
   <ItemGroup>
@@ -47,8 +42,6 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
-    <Reference Include="System.Web" />
-    <Reference Include="System.Web.Mvc, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="xunit">
@@ -62,9 +55,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Figment\Figment.fsproj">
-      <Name>Figment</Name>
-      <Project>{a080b979-6e39-44c4-ac1a-4850e32c355a}</Project>
+    <ProjectReference Include="..\Formlets\Formlets.fsproj">
+      <Name>Formlets</Name>
+      <Project>{d5a17cef-e6a6-459d-961f-588a1a1dcd49}</Project>
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
