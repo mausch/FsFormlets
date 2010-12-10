@@ -61,10 +61,11 @@ let dateFormlet =
 
 let fullFormlet =
     tag "div" [] (
-        yields (fun d pass ok -> d,pass,ok)
+        yields (fun d pass ok number -> d,pass,ok,number)
         <*> dateFormlet
         <*> password
         <*> checkbox
+        <*> radio ["1","uno"; "2","dos"]
     )
 
 
@@ -80,10 +81,12 @@ let processTest() =
     env.Add("input_0", "12")
     env.Add("input_1", "22")
     env.Add("input_2", "")
-    let dt,pass,chk = proc env |> snd |> Option.get
+    env.Add("input_4", "1")
+    let dt,pass,chk,n = proc env |> snd |> Option.get
     Assert.Equal(DateTime(2010, 12, 22), dt)
     Assert.Equal("", pass)
     Assert.False chk
+    Assert.Equal("1", n)
 
 [<Fact>]
 let processWithInvalidInt() =

@@ -9,6 +9,7 @@ TODO:
 * implement all form elements (textarea, select, radio, checkbox)
 *)
 
+open System
 open System.Collections.Specialized
 
 type 'a Validator = ('a -> bool) * ('a -> xml_item list -> xml_item list)
@@ -101,7 +102,7 @@ module Formlet =
         NameGen.run v
     let private inputTag lookup attributes : 'a Formlet = 
         let tag name = XmlWriter.tag "input" (["name", name] @ attributes)
-        let t name = tag name (XmlWriter.puree (Environ.lift ao_pure (lookup name)))
+        let t name : 'a AEAO = tag name (XmlWriter.puree (Environ.lift ao_pure (lookup name)))
         (NameGen.lift t) NameGen.nextName
     let private optionalInput attributes: string option Formlet =
         inputTag Environ.optionalLookup attributes
@@ -112,11 +113,24 @@ module Formlet =
     let hidden : string Formlet = 
         input ["type","hidden"]
     let checkbox : bool Formlet =
-        let transform =
+        let transform = 
             function
             | None -> false
             | Some _ -> true
         lift transform (optionalInput ["type","checkbox"])
+    let radio (choices: (string*string) seq): string Formlet =
+        let makeLabel id text = Tag("label", ["for", id], [Text text])
+        let makeRadio name value id = 
+            Tag("input", ["type","radio"; "name",name; "id",id; "value",value], [])
+        let t name : string AEAO = 
+            let xml = 
+                choices 
+                |> Seq.zip {1..Int32.MaxValue} 
+                |> Seq.map (fun (i,(value,label)) -> name,value,label,name + "_" + i.ToString())
+                |> Seq.collect (fun (name,value,label,id) -> [makeRadio name value id; makeLabel id label])
+                |> Seq.toList
+            XmlWriter.plug (fun _ -> xml) (XmlWriter.puree (Environ.lift ao_pure (Environ.lookup name)))
+        (NameGen.lift t) NameGen.nextName
     let form hmethod haction attributes (v: 'a Formlet) : 'a Formlet = 
         tag "form" (["method",hmethod; "action",haction] @ attributes) v
     let render v = 
