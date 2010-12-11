@@ -29,16 +29,6 @@ type 'a Formlet = 'a Error XmlWriter Environ XmlWriter NameGen
 
 module Formlet =
 
-    // EO = Compose (Environment) (Error)
-    let private eo_pure x : 'a EO = Environ.puree (Error.puree x)
-    let private eo_ap (f: ('a -> 'b) EO) (x: 'a EO) : 'b EO = 
-        (Environ.lift2 Error.ap) f x
-
-    // AEO = Compose (XmlWriter) (EO) 
-    let private aeo_pure x : 'a AEO = XmlWriter.puree (eo_pure x)
-    let private aeo_ap (f: ('a -> 'b) AEO) (x: 'a AEO) : 'b AEO = 
-        (XmlWriter.lift2 eo_ap) f x
-
     // AE = Compose (XmlWriter) (Environment)
     let private ae_pure x : 'a AE = XmlWriter.puree (Environ.puree x)
     let private ae_ap (f: ('a -> 'b) AE) (x: 'a AE) : 'b AE =
@@ -55,8 +45,6 @@ module Formlet =
     let private ao_pure x : 'a AO = XmlWriter.puree (Error.puree x)
     let private ao_ap (f: ('a -> 'b) AO) (x: 'a AO) : 'b AO = 
         (XmlWriter.lift2 Error.ap) f x
-    let private ao_lift (f: 'a -> 'b) (x: 'a AO) : 'b AO =
-        ao_ap (ao_pure f) x
 
     // EAO = Compose (Environ) (AO)
     let private eao_pure x : 'a EAO = Environ.puree (ao_pure x)
