@@ -6,7 +6,6 @@ TODO:
 * extend to use with querystring
 * use wing beats in syntax?
 * default values for form elements
-* implement all form elements (textarea, select, radio, checkbox)
 *)
 
 open System
@@ -137,6 +136,14 @@ module Formlet =
         let t name : string AEAO =
             let xml = choices |> Seq.map makeOption |> Seq.toList |> makeSelect name
             XmlWriter.plug (fun _ -> [xml]) (XmlWriter.puree (Environ.lift ao_pure (Environ.lookup name)))
+        (NameGen.lift t) NameGen.nextName
+    let textarea (rows: int option) (cols: int option) : string Formlet = 
+        let attributes = 
+            let rows = match rows with Some r -> ["rows",r.ToString()] | _ -> []
+            let cols = match cols with Some r -> ["cols",r.ToString()] | _ -> []
+            rows @ cols
+        let tag name = XmlWriter.tag "textarea" (["name", name] @ attributes)
+        let t name : string AEAO = tag name (XmlWriter.puree (Environ.lift ao_pure (Environ.lookup name)))
         (NameGen.lift t) NameGen.nextName
     let form hmethod haction attributes (v: 'a Formlet) : 'a Formlet = 
         tag "form" (["method",hmethod; "action",haction] @ attributes) v
