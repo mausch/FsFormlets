@@ -6,6 +6,7 @@ TODO:
 * extend to use with querystring
 * use wing beats in syntax?
 * default values for form elements
+* file input
 *)
 
 open System
@@ -99,14 +100,19 @@ module Formlet =
     let br = tag "br" [] nop
     let run (v: 'a Formlet) : (xml_item list) * (NameValueCollection -> (xml_item list * 'a option))  = 
         NameGen.run v
-    let private inputTag lookup attributes : 'a Formlet = 
-        let tag name = XmlWriter.tag "input" (["name", name] @ attributes)
-        let t name : 'a AEAO = tag name (XmlWriter.puree (Environ.lift ao_pure (lookup name)))
-        (NameGen.lift t) NameGen.nextName
+    let private generalElement lookup (tag: string -> xml_item list): 'a Formlet =
+        let t name : 'a AEAO = 
+            let xml = tag name
+            XmlWriter.plug (fun _ -> xml) (XmlWriter.puree (Environ.lift ao_pure (lookup name)))
+        (NameGen.lift t) NameGen.nextName 
+    let private generalStrictElement = generalElement Environ.lookup
+    let private generalOptionalElement = generalElement Environ.optionalLookup
     let private optionalInput attributes: string option Formlet =
-        inputTag Environ.optionalLookup attributes
-    let input attributes : string Formlet =
-        inputTag Environ.lookup attributes
+        let tag name = [Tag("input", ["name", name] @ attributes, [])]
+        generalOptionalElement tag
+    let input attributes : string Formlet = 
+        let tag name = [Tag("input", ["name", name] @ attributes, [])]
+        generalStrictElement tag
     let password : string Formlet = 
         input ["type","password"]
     let hidden : string Formlet = 
@@ -118,33 +124,33 @@ module Formlet =
             | Some _ -> true
         lift transform (optionalInput ["type","checkbox"])
     let radio (choices: (string*string) seq): string Formlet =
-        let makeLabel id text = Tag("label", ["for", id], [Text text])
+        let makeLabel id text = 
+            Tag("label", ["for", id], [Text text])
         let makeRadio name value id = 
             Tag("input", ["type","radio"; "name",name; "id",id; "value",value], [])
-        let t name : string AEAO = 
-            let xml = 
-                choices 
-                |> Seq.zip {1..Int32.MaxValue} 
-                |> Seq.map (fun (i,(value,label)) -> name,value,label,name + "_" + i.ToString())
-                |> Seq.collect (fun (name,value,label,id) -> [makeRadio name value id; makeLabel id label])
-                |> Seq.toList
-            XmlWriter.plug (fun _ -> xml) (XmlWriter.puree (Environ.lift ao_pure (Environ.lookup name)))
-        (NameGen.lift t) NameGen.nextName
+        let tag name = 
+            choices 
+            |> Seq.zip {1..Int32.MaxValue} 
+            |> Seq.map (fun (i,(value,label)) -> name,value,label,name + "_" + i.ToString())
+            |> Seq.collect (fun (name,value,label,id) -> [makeRadio name value id; makeLabel id label])
+            |> Seq.toList
+        generalStrictElement tag
     let select (choices: (string*string) seq): string Formlet = 
-        let makeOption (value,text) = Tag("option", ["value",value], [Text text])
-        let makeSelect name options = Tag("select", ["name",name], options)
-        let t name : string AEAO =
-            let xml = choices |> Seq.map makeOption |> Seq.toList |> makeSelect name
-            XmlWriter.plug (fun _ -> [xml]) (XmlWriter.puree (Environ.lift ao_pure (Environ.lookup name)))
-        (NameGen.lift t) NameGen.nextName
+        let makeOption (value,text) = 
+            Tag("option", ["value",value], [Text text])
+        let makeSelect name options = 
+            Tag("select", ["name",name], options)
+        let tag name =
+            [choices |> Seq.map makeOption |> Seq.toList |> makeSelect name]
+        generalStrictElement tag
     let textarea (rows: int option) (cols: int option) : string Formlet = 
         let attributes = 
             let rows = match rows with Some r -> ["rows",r.ToString()] | _ -> []
             let cols = match cols with Some r -> ["cols",r.ToString()] | _ -> []
             rows @ cols
-        let tag name = XmlWriter.tag "textarea" (["name", name] @ attributes)
-        let t name : string AEAO = tag name (XmlWriter.puree (Environ.lift ao_pure (Environ.lookup name)))
-        (NameGen.lift t) NameGen.nextName
+        let tag name = 
+            [Tag("textarea", ["name", name] @ attributes, [])]
+        generalStrictElement tag
     let form hmethod haction attributes (v: 'a Formlet) : 'a Formlet = 
         tag "form" (["method",hmethod; "action",haction] @ attributes) v
     let render v = 
