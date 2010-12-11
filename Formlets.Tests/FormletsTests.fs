@@ -61,11 +61,12 @@ let dateFormlet =
 
 let fullFormlet =
     tag "div" [] (
-        yields (fun d pass ok number -> d,pass,ok,number)
+        yields (fun d pass ok number opt -> d,pass,ok,number,opt)
         <*> dateFormlet
         <*> password
         <*> checkbox
         <*> radio ["1","uno"; "2","dos"]
+        <*> select ["a","uno"; "b","dos"]
     )
 
 
@@ -82,11 +83,13 @@ let processTest() =
     env.Add("input_1", "22")
     env.Add("input_2", "")
     env.Add("input_4", "1")
-    let dt,pass,chk,n = proc env |> snd |> Option.get
+    env.Add("input_5", "b")
+    let dt,pass,chk,n,opt = proc env |> snd |> Option.get
     Assert.Equal(DateTime(2010, 12, 22), dt)
     Assert.Equal("", pass)
     Assert.False chk
     Assert.Equal("1", n)
+    Assert.Equal("b", opt)
 
 [<Fact>]
 let processWithInvalidInt() =
@@ -126,5 +129,4 @@ let processWithMissingField() =
     let xml, proc = run dateFormlet
     let env = NameValueCollection()
     env.Add("input_0", "22")
-    let err,value = proc env
-    ()
+    Assert.Throws<Exception>(Assert.ThrowsDelegateWithReturn(fun () -> proc env |> unbox))

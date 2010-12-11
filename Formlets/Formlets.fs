@@ -131,6 +131,13 @@ module Formlet =
                 |> Seq.toList
             XmlWriter.plug (fun _ -> xml) (XmlWriter.puree (Environ.lift ao_pure (Environ.lookup name)))
         (NameGen.lift t) NameGen.nextName
+    let select (choices: (string*string) seq): string Formlet = 
+        let makeOption (value,text) = Tag("option", ["value",value], [Text text])
+        let makeSelect name options = Tag("select", ["name",name], options)
+        let t name : string AEAO =
+            let xml = choices |> Seq.map makeOption |> Seq.toList |> makeSelect name
+            XmlWriter.plug (fun _ -> [xml]) (XmlWriter.puree (Environ.lift ao_pure (Environ.lookup name)))
+        (NameGen.lift t) NameGen.nextName
     let form hmethod haction attributes (v: 'a Formlet) : 'a Formlet = 
         tag "form" (["method",hmethod; "action",haction] @ attributes) v
     let render v = 
