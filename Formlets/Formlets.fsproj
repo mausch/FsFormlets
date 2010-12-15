@@ -5,7 +5,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{d5a17cef-e6a6-459d-961f-588a1a1dcd49}</ProjectGuid>
+    <ProjectGuid>{d628a18c-7c64-48cd-bc52-add7a88a8770}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>FSharpMVC.Tests</RootNamespace>
     <AssemblyName>Formlets</AssemblyName>
