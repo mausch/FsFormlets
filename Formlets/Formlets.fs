@@ -86,7 +86,7 @@ module Formlet =
         g f
     let submit n = tag "input" ["type","submit"; "value",n] nop
     let br = tag "br" [] nop
-    let run (v: 'a Formlet) : (xml_item list) * (NameValueCollection -> (xml_item list * 'a option))  = 
+    let run (v: 'a Formlet) : (xml_item list) * (EnvDict -> (xml_item list * 'a option))  = 
         NameGen.run v
     let private generalElement lookup (tag: string -> xml_item list): 'a Formlet =
         let t name : 'a AEAO = 
@@ -95,12 +95,14 @@ module Formlet =
         (NameGen.lift t) NameGen.nextName 
     let private generalStrictElement = generalElement Environ.lookup
     let private generalOptionalElement = generalElement Environ.optionalLookup
+    let private generalStrictNonFileElement = generalElement Environ.lookupNonFile
+    let private generalOptionalNonFileElement = generalElement Environ.optionalLookupNonFile
     let private optionalInput attributes: string option Formlet =
         let tag name = [Tag("input", ["name", name] @ attributes, [])]
-        generalOptionalElement tag
+        generalOptionalNonFileElement tag
     let input attributes : string Formlet = 
         let tag name = [Tag("input", ["name", name] @ attributes, [])]
-        generalStrictElement tag
+        generalStrictNonFileElement tag
     let password : string Formlet = 
         input ["type","password"]
     let hidden : string Formlet = 
@@ -122,7 +124,7 @@ module Formlet =
             |> Seq.map (fun (i,(value,label)) -> name,value,label,name + "_" + i.ToString())
             |> Seq.collect (fun (name,value,label,id) -> [makeRadio name value id; makeLabel id label])
             |> Seq.toList
-        generalStrictElement tag
+        generalStrictNonFileElement tag
     let select (choices: (string*string) seq): string Formlet = 
         let makeOption (value,text) = 
             Tag("option", ["value",value], [Text text])
@@ -130,7 +132,7 @@ module Formlet =
             Tag("select", ["name",name], options)
         let tag name =
             [choices |> Seq.map makeOption |> Seq.toList |> makeSelect name]
-        generalStrictElement tag
+        generalStrictNonFileElement tag
     let textarea (rows: int option) (cols: int option) : string Formlet = 
         let attributes = 
             let rows = match rows with Some r -> ["rows",r.ToString()] | _ -> []
@@ -138,7 +140,7 @@ module Formlet =
             rows @ cols
         let tag name = 
             [Tag("textarea", ["name", name] @ attributes, [])]
-        generalStrictElement tag
+        generalStrictNonFileElement tag
     let form hmethod haction attributes (v: 'a Formlet) : 'a Formlet = 
         tag "form" (["method",hmethod; "action",haction] @ attributes) v
     let render v = 

@@ -79,13 +79,15 @@ let renderTest() =
 [<Fact>]
 let processTest() =
     let _, proc = run fullFormlet
-    let env = NameValueCollection()
-    env.Add("input_0", "12")
-    env.Add("input_1", "22")
-    env.Add("input_2", "")
-    env.Add("input_4", "1")
-    env.Add("input_5", "b")
-    env.Add("input_6", "blah blah")
+    let env = [
+                "input_0", "12"
+                "input_1", "22"
+                "input_2", ""
+                "input_4", "1"
+                "input_5", "b"
+                "input_6", "blah blah"
+              ]
+    let env = EnvDict.fromValueSeq env
     let dt,pass,chk,n,opt,t = proc env |> snd |> Option.get
     Assert.Equal(DateTime(2010, 12, 22), dt)
     Assert.Equal("", pass)
@@ -97,9 +99,11 @@ let processTest() =
 [<Fact>]
 let processWithInvalidInt() =
     let xml, proc = run dateFormlet
-    let env = NameValueCollection()
-    env.Add("input_0", "aa")
-    env.Add("input_1", "22")
+    let env = [
+                "input_0", "aa"
+                "input_1", "22"
+              ]
+    let env = EnvDict.fromValueSeq env
     let err,value = proc env
     let xdoc = XmlWriter.render [Tag("div", [], xml @ err)]
     printfn "Error form:\n%s" (xdoc.ToString())
@@ -108,9 +112,11 @@ let processWithInvalidInt() =
 [<Fact>]
 let processWithInvalidInts() =
     let xml, proc = run dateFormlet
-    let env = NameValueCollection()
-    env.Add("input_0", "aa")
-    env.Add("input_1", "bb")
+    let env = [
+                "input_0", "aa"
+                "input_1", "bb"
+              ]
+    let env = EnvDict.fromValueSeq env
     let err,value = proc env
     let xdoc = XmlWriter.render [Tag("div", [], xml @ err)]
     printfn "Error form:\n%s" (xdoc.ToString())
@@ -119,9 +125,11 @@ let processWithInvalidInts() =
 [<Fact>]
 let processWithInvalidDate() =
     let xml, proc = run dateFormlet
-    let env = NameValueCollection()
-    env.Add("input_0", "22")
-    env.Add("input_1", "22")
+    let env = [
+                "input_0", "22"
+                "input_1", "22"
+              ]
+    let env = EnvDict.fromValueSeq env
     let err,value = proc env
     let xdoc = XmlWriter.render [Tag("div", [], xml @ err)]
     printfn "Error form:\n%s" (xdoc.ToString())
@@ -130,6 +138,5 @@ let processWithInvalidDate() =
 [<Fact>]
 let processWithMissingField() =
     let xml, proc = run dateFormlet
-    let env = NameValueCollection()
-    env.Add("input_0", "22")
+    let env = ["input_0", "22"] |> EnvDict.fromValueSeq
     Assert.Throws<Exception>(Assert.ThrowsDelegateWithReturn(fun () -> proc env |> unbox))
