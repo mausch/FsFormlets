@@ -5,6 +5,7 @@ open Xunit
 open System
 open System.Collections.Specialized
 open System.Globalization
+open System.Web
 open System.Xml.Linq
 open Formlets
 open Formlets.Formlet
@@ -61,13 +62,14 @@ let dateFormlet =
 
 let fullFormlet =
     tag "div" [] (
-        yields (fun d pass ok number opt t -> d,pass,ok,number,opt,t)
+        yields (fun d pass ok number opt t file -> d,pass,ok,number,opt,t,file)
         <*> dateFormlet
         <*> password
         <*> checkbox
         <*> radio ["1","uno"; "2","dos"]
         <*> select ["a","uno"; "b","dos"]
         <*> textarea None None
+        <*> file
     )
 
 
@@ -88,13 +90,18 @@ let processTest() =
                 "input_6", "blah blah"
               ]
     let env = EnvDict.fromValueSeq env
-    let dt,pass,chk,n,opt,t = proc env |> snd |> Option.get
+    let filemock = { new HttpPostedFileBase() with
+                        member x.ContentLength = 2
+                        member x.ContentType = "" }
+    let env = env |> EnvDict.addFromFileSeq ["input_7", filemock]
+    let dt,pass,chk,n,opt,t,f = proc env |> snd |> Option.get
     Assert.Equal(DateTime(2010, 12, 22), dt)
     Assert.Equal("", pass)
     Assert.False chk
     Assert.Equal("1", n)
     Assert.Equal("b", opt)
     Assert.Equal("blah blah", t)
+    Assert.True(f.IsSome)
 
 [<Fact>]
 let processWithInvalidInt() =

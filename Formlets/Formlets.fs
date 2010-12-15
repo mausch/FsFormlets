@@ -11,6 +11,7 @@ TODO:
 
 open System
 open System.Collections.Specialized
+open System.Web
 
 type 'a Validator = ('a -> bool) * ('a -> xml_item list -> xml_item list)
 type 'a ValidationResult =
@@ -141,6 +142,17 @@ module Formlet =
         let tag name = 
             [Tag("textarea", ["name", name] @ attributes, [])]
         generalStrictNonFileElement tag
+    let file : HttpPostedFileBase option Formlet = 
+        let tag name = 
+            [Tag("input", ["type", "file"; "name", name], [])]
+        let fileOnly =
+            function
+            | Some (File f) -> Some f
+            | None -> None
+            | _ -> failwith "File expected, got value instead"
+        let r = generalOptionalElement tag
+        lift fileOnly r
+            
     let form hmethod haction attributes (v: 'a Formlet) : 'a Formlet = 
         tag "form" (["method",hmethod; "action",haction] @ attributes) v
     let render v = 
