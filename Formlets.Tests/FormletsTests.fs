@@ -10,6 +10,9 @@ open System.Xml.Linq
 open Formlets
 open Formlets.Formlet
 
+let assertThrows<'e when 'e :> exn> f = 
+    Assert.Throws<'e>(Assert.ThrowsDelegate(f)) |> ignore
+
 let isInt = Int32.TryParse >> fst
 
 let intValidator : string Validator =
@@ -146,4 +149,4 @@ let processWithInvalidDate() =
 let processWithMissingField() =
     let xml, proc = run dateFormlet
     let env = ["input_0", "22"] |> EnvDict.fromValueSeq
-    Assert.Throws<Exception>(Assert.ThrowsDelegateWithReturn(fun () -> proc env |> unbox))
+    assertThrows(fun() -> proc env |> ignore)
