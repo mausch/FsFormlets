@@ -192,3 +192,7 @@ module Formlet =
                 Tag("span", ["class","error"], [Text(errorMsg value)])
             ]
         isValid, addError
+
+    let errx (rx: string) (errorMsg: string -> string) : string Validator =
+        let v value = System.Text.RegularExpressions.Regex(rx).IsMatch(value)
+        err v errorMsg
