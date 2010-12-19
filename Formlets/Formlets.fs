@@ -4,9 +4,10 @@
 Formlets implementation based on http://groups.inf.ed.ac.uk/links/formlets/
 TODO:
 * extend to use with querystring
-* use wing beats in syntax?
+* make rendering pluggable, to allow using wing beats
 * default values for form elements
-* file input
+* inline error messages
+* change return type to Success | Fail | Error
 *)
 
 open System
