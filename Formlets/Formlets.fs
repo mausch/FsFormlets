@@ -7,7 +7,9 @@ TODO:
 * make rendering pluggable, to allow using wing beats
 * default values for form elements
 * inline error messages
-* change return type to Success | Fail | Error
+* change return type to Success | Fail | Invalid
+* radio and select: accept any type as value, not just strings, map them dynamically to string and back
+* multi-select
 *)
 
 open System
