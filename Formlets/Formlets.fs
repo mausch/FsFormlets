@@ -86,10 +86,59 @@ module Formlet =
     let tag name attributes (f: 'a Formlet) : 'a Formlet = 
         let g = NameGen.lift (XmlWriter.tag name attributes)
         g f
-    let submit n = tag "input" ["type","submit"; "value",n] nop
-    let br = tag "br" [] nop
     let run (v: 'a Formlet) : (xml_item list) * (EnvDict -> (xml_item list * 'a option))  = 
         NameGen.run v
+    
+    let renderToXml v = 
+        let xml = (run >> fst) v
+        XmlWriter.render xml
+
+    let render v = 
+        let x = renderToXml v
+        x.ToString()
+
+    // Validation functions
+
+    let private check (validator: 'a Validator) (a: 'a AO) : 'a AO =
+        let result =
+            let errorToValidationResult o =
+                let pred = fst validator
+                let check' p v =
+                    if p v
+                        then Pass v
+                        else Fail v
+                let liftedCheck = Error.lift (check' pred)
+                match liftedCheck o with
+                | Some v -> v
+                | _ -> Dead
+            XmlWriter.lift errorToValidationResult a
+        let validationResultToError = 
+            function 
+            | Pass v -> Error.puree v 
+            | _ -> Error.failure
+        let w = XmlWriter.lift validationResultToError result
+        let errorMsg = snd validator
+        match result with
+        | _, Fail v -> XmlWriter.plug (errorMsg v) w
+        | _ -> w
+
+    let satisfies (validator: 'a Validator) (f: 'a Formlet) : 'a Formlet =
+        nae_lift (check validator) f
+
+    let err (isValid: 'a -> bool) (errorMsg: 'a -> string) : 'a Validator = 
+        let addError value xml = 
+            [
+                Tag("span", ["class","errorinput"], xml)
+                Tag("span", ["class","error"], [Text(errorMsg value)])
+            ]
+        isValid, addError
+
+    let errx (rx: string) (errorMsg: string -> string) : string Validator =
+        let v value = System.Text.RegularExpressions.Regex(rx).IsMatch(value)
+        err v errorMsg
+
+    // Generic HTML functions
+
     let private generalElement lookup (tag: string -> xml_item list): 'a Formlet =
         let t name : 'a AEAO = 
             let xml = tag name
@@ -102,6 +151,9 @@ module Formlet =
     let private optionalInput attributes: string option Formlet =
         let tag name = [Tag("input", ["name", name] @ attributes, [])]
         generalOptionalNonFileElement tag
+
+    // Concrete HTML functions
+
     let input attributes : string Formlet = 
         let tag name = [Tag("input", ["name", name] @ attributes, [])]
         generalStrictNonFileElement tag
@@ -156,49 +208,6 @@ module Formlet =
             
     let form hmethod haction attributes (v: 'a Formlet) : 'a Formlet = 
         tag "form" (["method",hmethod; "action",haction] @ attributes) v
-    
-    let renderToXml v = 
-        let xml = (run >> fst) v
-        XmlWriter.render xml
 
-    let render v = 
-        let x = renderToXml v
-        x.ToString()
-
-    let private check (validator: 'a Validator) (a: 'a AO) : 'a AO =
-        let result =
-            let errorToValidationResult o =
-                let pred = fst validator
-                let check' p v =
-                    if p v
-                        then Pass v
-                        else Fail v
-                let liftedCheck = Error.lift (check' pred)
-                match liftedCheck o with
-                | Some v -> v
-                | _ -> Dead
-            XmlWriter.lift errorToValidationResult a
-        let validationResultToError = 
-            function 
-            | Pass v -> Error.puree v 
-            | _ -> Error.failure
-        let w = XmlWriter.lift validationResultToError result
-        let errorMsg = snd validator
-        match result with
-        | _, Fail v -> XmlWriter.plug (errorMsg v) w
-        | _ -> w
-
-    let satisfies (validator: 'a Validator) (f: 'a Formlet) : 'a Formlet =
-        nae_lift (check validator) f
-
-    let err (isValid: 'a -> bool) (errorMsg: 'a -> string) : 'a Validator = 
-        let addError value xml = 
-            [
-                Tag("span", ["class","errorinput"], xml)
-                Tag("span", ["class","error"], [Text(errorMsg value)])
-            ]
-        isValid, addError
-
-    let errx (rx: string) (errorMsg: string -> string) : string Validator =
-        let v value = System.Text.RegularExpressions.Regex(rx).IsMatch(value)
-        err v errorMsg
+    let submit n = tag "input" ["type","submit"; "value",n] nop
+    let br = tag "br" [] nop
