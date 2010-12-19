@@ -78,8 +78,7 @@ let fullFormlet =
 
 [<Fact>]
 let renderTest() =
-    let form = render fullFormlet
-    printfn "%s" (form.ToString())
+    printfn "%s" (render fullFormlet)
 
 [<Fact>]
 let processTest() =

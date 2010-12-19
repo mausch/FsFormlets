@@ -156,9 +156,14 @@ module Formlet =
             
     let form hmethod haction attributes (v: 'a Formlet) : 'a Formlet = 
         tag "form" (["method",hmethod; "action",haction] @ attributes) v
-    let render v = 
+    
+    let renderToXml v = 
         let xml = (run >> fst) v
         XmlWriter.render xml
+
+    let render v = 
+        let x = renderToXml v
+        x.ToString()
 
     let private check (validator: 'a Validator) (a: 'a AO) : 'a AO =
         let result =
