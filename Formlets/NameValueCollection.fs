@@ -8,10 +8,8 @@ let concat a b =
     x.Add b
     x
 
-/// Ignores duplicate keys
 let toSeq (a: NameValueCollection) =
     a.AllKeys
-    |> Seq.map (fun k -> k, a.[k])    
+    |> Seq.collect (fun k -> a.GetValues k |> Seq.map (fun v -> k,v))
 
-/// Ignores duplicate keys
 let toList a = toSeq a |> Seq.toList

@@ -153,3 +153,12 @@ let processWithMissingField() =
     let xml, proc = run dateFormlet
     let env = ["input_0", "22"] |> EnvDict.fromValueSeq
     assertThrows(fun() -> proc env |> ignore)
+
+[<Fact>]
+let ``NameValueCollection to seq does not ignore duplicate keys``() =
+    let e = NameValueCollection()
+    e.Add("1", "one")
+    e.Add("1", "uno")
+    let values = NameValueCollection.toSeq e
+    let values = values |> Seq.filter (fun (k,_) -> k = "1") |> Seq.toList
+    Assert.Equal(2, values.Length)
