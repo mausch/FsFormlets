@@ -141,16 +141,16 @@ module Formlet =
 
     // Generic HTML functions
 
-    let private generalElement lookup (tag: string -> xml_item list): 'a Formlet =
+    let generalElement lookup (tag: string -> xml_item list): 'a Formlet =
         let t name : 'a AEAO = 
             let xml = tag name
             XmlWriter.plug (fun _ -> xml) (XmlWriter.puree (Environ.lift ao_pure (lookup name)))
         (NameGen.lift t) NameGen.nextName 
-    let private generalStrictElement = generalElement Environ.lookup
-    let private generalOptionalElement = generalElement Environ.optionalLookup
-    let private generalStrictNonFileElement = generalElement Environ.lookupNonFile
-    let private generalOptionalNonFileElement = generalElement Environ.optionalLookupNonFile
-    let private optionalInput attributes: string option Formlet =
+    let generalStrictElement = generalElement Environ.lookup
+    let generalOptionalElement = generalElement Environ.optionalLookup
+    let generalStrictNonFileElement = generalElement Environ.lookupNonFile
+    let generalOptionalNonFileElement = generalElement Environ.optionalLookupNonFile
+    let optionalInput attributes: string option Formlet =
         let tag name = [Tag("input", ["name", name] @ attributes, [])]
         generalOptionalNonFileElement tag
 
