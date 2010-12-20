@@ -159,16 +159,20 @@ module Formlet =
     let input attributes : string Formlet = 
         let tag name = [Tag("input", ["name", name] @ attributes, [])]
         generalStrictNonFileElement tag
+
     let password : string Formlet = 
         input ["type","password"]
+
     let hidden : string Formlet = 
         input ["type","hidden"]
+
     let checkbox : bool Formlet =
         let transform = 
             function
             | None -> false
             | Some _ -> true
         lift transform (optionalInput ["type","checkbox"])
+
     let radio (choices: (string*string) seq): string Formlet =
         let makeLabel id text = 
             Tag("label", ["for", id], [Text text])
@@ -181,6 +185,7 @@ module Formlet =
             |> Seq.collect (fun (name,value,label,id) -> [makeRadio name value id; makeLabel id label])
             |> Seq.toList
         generalStrictNonFileElement tag
+
     let select (choices: (string*string) seq): string Formlet = 
         let makeOption (value,text) = 
             Tag("option", ["value",value], [Text text])
@@ -189,6 +194,7 @@ module Formlet =
         let tag name =
             [choices |> Seq.map makeOption |> Seq.toList |> makeSelect name]
         generalStrictNonFileElement tag
+
     let textarea (rows: int option) (cols: int option) : string Formlet = 
         let attributes = 
             let rows = match rows with Some r -> ["rows",r.ToString()] | _ -> []
@@ -197,6 +203,7 @@ module Formlet =
         let tag name = 
             [Tag("textarea", ["name", name] @ attributes, [])]
         generalStrictNonFileElement tag
+
     let file : HttpPostedFileBase option Formlet = 
         let tag name = 
             [Tag("input", ["type", "file"; "name", name], [])]
@@ -212,4 +219,5 @@ module Formlet =
         tag "form" (["method",hmethod; "action",haction] @ attributes) v
 
     let submit n = tag "input" ["type","submit"; "value",n] nop
+
     let br = tag "br" [] nop
