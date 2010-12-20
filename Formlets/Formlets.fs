@@ -9,7 +9,6 @@ TODO:
 * inline error messages
 * change return type to Success | Fail | Invalid
 * radio and select: accept any type as value, not just strings, map them dynamically to string and back
-* multi-select
 *)
 
 open System
@@ -158,7 +157,9 @@ module Formlet =
         let t name : 'a AEAO = 
             let xml = tag name
             XmlWriter.plug (fun _ -> xml) (XmlWriter.puree (Environ.lift ao_pure (lookup name)))
-        (NameGen.lift t) NameGen.nextName 
+        (NameGen.lift t) NameGen.nextName
+    let generalElementMulti = generalElement Environ.lookups
+    let generalNonFileElementMulti = generalElement Environ.lookupsNonFile
     let generalStrictElement = generalElement Environ.lookup
     let generalOptionalElement = generalElement Environ.optionalLookup
     let generalStrictNonFileElement = generalElement Environ.lookupNonFile
@@ -199,14 +200,18 @@ module Formlet =
             |> Seq.toList
         generalStrictNonFileElement tag
 
+    let internal makeOption (value,text) = 
+        Tag("option", ["value",value], [Text text])
+    let internal makeSelect name attr options = 
+        Tag("select", ["name",name] @ attr, options)
+    let internal selectTag choices attr name =
+        [choices |> Seq.map makeOption |> Seq.toList |> makeSelect name attr]
+
     let select (choices: (string*string) seq): string Formlet = 
-        let makeOption (value,text) = 
-            Tag("option", ["value",value], [Text text])
-        let makeSelect name options = 
-            Tag("select", ["name",name], options)
-        let tag name =
-            [choices |> Seq.map makeOption |> Seq.toList |> makeSelect name]
-        generalStrictNonFileElement tag
+        generalStrictNonFileElement (selectTag choices [])
+
+    let selectMulti (choices: (string*string) seq): string list Formlet = 
+        generalNonFileElementMulti (selectTag choices ["multiple","multiple"])
 
     let textarea (rows: int option) (cols: int option) : string Formlet = 
         let attributes = 

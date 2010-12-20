@@ -48,6 +48,23 @@ module Environ =
                     else finder xs
         finder
 
+    let lookups (n: string) : InputValue list Environ = 
+        fun (env: EnvDict) ->
+            let folder acc elem = 
+                let key,value = elem
+                if key = n
+                    then value::acc
+                    else acc
+            List.fold folder [] env
+
+    let lookupsNonFile (n: string) : string list Environ =
+        fun (env: EnvDict) ->
+            lookups n env
+            |> List.map
+                (function
+                    | Value v -> v
+                    | _ -> failwithf "File not expected for key %s" n)
+
     let lookup (n: string) : InputValue Environ =
         fun (env: EnvDict) ->
             match optionalLookup n env with

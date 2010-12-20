@@ -65,13 +65,14 @@ let dateFormlet =
 
 let fullFormlet =
     tag "div" [] (
-        yields (fun d pass ok number opt t file -> d,pass,ok,number,opt,t,file)
+        yields (fun d pass ok number opt t many file -> d,pass,ok,number,opt,t,many,file)
         <*> dateFormlet
         <*> password
         <*> checkbox
         <*> radio ["1","uno"; "2","dos"]
         <*> select ["a","uno"; "b","dos"]
         <*> textarea None None
+        <*> selectMulti ["a","uno"; "b","dos"]
         <*> file
     )
 
@@ -90,19 +91,22 @@ let processTest() =
                 "input_4", "1"
                 "input_5", "b"
                 "input_6", "blah blah"
+                "input_7", "a"
+                "input_7", "b"
               ]
     let env = EnvDict.fromValueSeq env
     let filemock = { new HttpPostedFileBase() with
                         member x.ContentLength = 2
                         member x.ContentType = "" }
-    let env = env |> EnvDict.addFromFileSeq ["input_7", filemock]
-    let dt,pass,chk,n,opt,t,f = proc env |> snd |> Option.get
+    let env = env |> EnvDict.addFromFileSeq ["input_8", filemock]
+    let dt,pass,chk,n,opt,t,many,f = proc env |> snd |> Option.get
     Assert.Equal(DateTime(2010, 12, 22), dt)
     Assert.Equal("", pass)
     Assert.False chk
     Assert.Equal("1", n)
     Assert.Equal("b", opt)
     Assert.Equal("blah blah", t)
+    Assert.Equal(2, many.Length)
     Assert.True(f.IsSome)
 
 [<Fact>]
