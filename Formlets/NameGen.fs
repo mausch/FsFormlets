@@ -2,6 +2,7 @@
 
 type 'a NameGen = int -> 'a * int
 
+/// Applicative functor that generates form element names
 module NameGen =
     let puree v : 'a NameGen = fun (gen: int) -> v,gen
     let ap (f: ('a -> 'b) NameGen) (a: 'a NameGen) : 'b NameGen =

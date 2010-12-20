@@ -1,6 +1,8 @@
 ﻿namespace Formlets
 
 type 'a Error = 'a option
+
+/// Option as applicative functor
 module Error =
     let puree v : 'a Error = Some v
     let ap (f: ('a -> 'b) Error) (a: 'a Error) : 'b Error = 

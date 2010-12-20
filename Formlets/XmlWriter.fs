@@ -7,6 +7,7 @@ type xml_item =
 
 type 'a XmlWriter = xml_item list * 'a
 
+/// Applicative functor that manipulates HTML as XML
 module XmlWriter =
     let puree v : 'a XmlWriter = [],v
     //let ap (x: xml_item list,f) (y,a) = x @ y, f a

@@ -67,13 +67,20 @@ module Formlet =
 
     let (<*>) f x = ap f x
     let lift f a = puree f <*> a
+
+    /// Convenience 'lift' with flipped parameters
     let (|>>) x f = lift f x
     let lift2 f a b = puree f <*> a <*> b
     let lift3 f a b c = puree f <*> a <*> b <*> c
     let lift4 f a b c d = puree f <*> a <*> b <*> c <*> d
+
+    /// Sequence actions, discarding the value of the first argument.
     let apr x y = lift2 (fun _ z -> z) x y
+    /// Sequence actions, discarding the value of the first argument.
     let ( *>) x y = apr x y
+    /// Sequence actions, discarding the value of the second argument.
     let apl x y = lift2 (fun z _ -> z) x y
+    /// Sequence actions, discarding the value of the second argument.
     let (<*) x y = apl x y
     let pair a b = lift2 (fun x y -> x,y) a b
     let ( **) a b = pair a b
@@ -88,13 +95,16 @@ module Formlet =
     let tag name attributes (f: 'a Formlet) : 'a Formlet = 
         let g = NameGen.lift (XmlWriter.tag name attributes)
         g f
+
     let run (v: 'a Formlet) : (xml_item list) * (EnvDict -> (xml_item list * 'a option))  = 
         NameGen.run v
     
+    /// Renders a formlet to XDocument
     let renderToXml v = 
         let xml = (run >> fst) v
         XmlWriter.render xml
 
+    /// Renders a formlet to string
     let render v = 
         let x = renderToXml v
         x.ToString()
@@ -124,9 +134,11 @@ module Formlet =
         | _, Fail v -> XmlWriter.plug (errorMsg v) w
         | _ -> w
 
+    /// Applies a validator to a formlet
     let satisfies (validator: 'a Validator) (f: 'a Formlet) : 'a Formlet =
         nae_lift (check validator) f
 
+    /// Constructs a validator
     let err (isValid: 'a -> bool) (errorMsg: 'a -> string) : 'a Validator = 
         let addError value xml = 
             [
@@ -135,6 +147,7 @@ module Formlet =
             ]
         isValid, addError
 
+    /// Constructs a validator from a regular expression
     let errx (rx: string) (errorMsg: string -> string) : string Validator =
         let v value = System.Text.RegularExpressions.Regex(rx).IsMatch(value)
         err v errorMsg

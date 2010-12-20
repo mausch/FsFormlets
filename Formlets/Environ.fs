@@ -28,7 +28,10 @@ module EnvDict =
         l |> Seq.map (fun (k,v) -> k, File v) |> addFromSeq
     let fromFileSeq l = addFromFileSeq l empty
 
+
 type 'a Environ = EnvDict -> 'a
+
+/// Applicative functor that handles value lookup from submitted form
 module Environ = 
     let puree v : 'a Environ = fun (env: EnvDict) -> v
     let ap (f: ('a -> 'b) Environ) (a: 'a Environ) : 'b Environ = 
