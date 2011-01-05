@@ -31,14 +31,19 @@ module XmlWriter =
     let render xml =
         let (!!) x = XName.op_Implicit x
         let xattr (name, value: string) = XAttribute(!!name, value)
-        let xelem name (attributes: obj list) (children: obj list) = XElement(!!name, attributes @ children)
+        let xelem name (attributes: obj list) (children: obj list) = 
+            let children = 
+                match children with
+                | [] -> [box (XText "")]
+                | x -> x
+            XElement(!!name, attributes @ children)
         let rec render' = 
             function
             | [] -> []
             | x::xs -> 
                 let this = 
                     match x with
-                    | Text t -> box (XText(t))
+                    | Text t -> box (XText t)
                     | Tag (name, attr, children) -> box (xelem name (attr |> List.map (xattr >> box)) (render' children))
                 this::(render' xs)
         XDocument(render' xml)
