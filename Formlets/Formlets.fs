@@ -4,7 +4,6 @@
 Formlets implementation based on http://groups.inf.ed.ac.uk/links/formlets/
 TODO:
 * extend to use with querystring
-* make rendering pluggable, to allow using wing beats
 * default values for form elements
 * inline error messages
 * change return type to Success | Fail | Invalid
