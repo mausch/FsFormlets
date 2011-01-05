@@ -64,27 +64,27 @@ module Formlet =
     let ap (f: ('a -> 'b) Formlet) (x: 'a Formlet) : 'b Formlet = 
         (NameGen.lift2 aeao_ap) f x
 
-    let (<*>) f x = ap f x
-    let lift f a = puree f <*> a
+    let inline (<*>) f x = ap f x
+    let inline lift f a = puree f <*> a
 
     /// Convenience 'lift' with flipped parameters
-    let (|>>) x f = lift f x
-    let lift2 f a b = puree f <*> a <*> b
-    let lift3 f a b c = puree f <*> a <*> b <*> c
-    let lift4 f a b c d = puree f <*> a <*> b <*> c <*> d
+    let inline (|>>) x f = lift f x
+    let inline lift2 f a b = puree f <*> a <*> b
+    let inline lift3 f a b c = puree f <*> a <*> b <*> c
+    let inline lift4 f a b c d = puree f <*> a <*> b <*> c <*> d
 
     /// Sequence actions, discarding the value of the first argument.
-    let apr x y = lift2 (fun _ z -> z) x y
+    let inline apr x y = lift2 (fun _ z -> z) x y
     /// Sequence actions, discarding the value of the first argument.
-    let ( *>) x y = apr x y
+    let inline ( *>) x y = apr x y
     /// Sequence actions, discarding the value of the second argument.
-    let apl x y = lift2 (fun z _ -> z) x y
+    let inline apl x y = lift2 (fun z _ -> z) x y
     /// Sequence actions, discarding the value of the second argument.
-    let (<*) x y = apl x y
-    let pair a b = lift2 (fun x y -> x,y) a b
-    let ( **) a b = pair a b
+    let inline (<*) x y = apl x y
+    let inline pair a b = lift2 (fun x y -> x,y) a b
+    let inline ( **) a b = pair a b
 
-    let yields = puree // friendly alias
+    let inline yields x = puree x // friendly alias
 
     let private XmlEnv_refine v = XmlWriter.lift eao_pure v
     let private refineAndLift f x = NameGen.puree (XmlEnv_refine (f x))
