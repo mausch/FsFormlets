@@ -186,6 +186,9 @@ module Formlet =
     let hidden : string Formlet = 
         input ["type","hidden"]
 
+    let assignedHidden name value : string Formlet =
+        assignedInput name ["type","hidden"; "value",value]
+
     let checkbox : bool Formlet =
         let transform = 
             function
@@ -219,14 +222,18 @@ module Formlet =
     let selectMulti (choices: (string*string) seq): string list Formlet = 
         generalNonFileElementMulti (selectTag choices ["multiple","multiple"])
 
-    let textarea (rows: int option) (cols: int option) : string Formlet = 
+    let generalTextarea elemBuilder (rows: int option) (cols: int option) : string Formlet = 
         let attributes = 
             let rows = match rows with Some r -> ["rows",r.ToString()] | _ -> []
             let cols = match cols with Some r -> ["cols",r.ToString()] | _ -> []
             rows @ cols
         let tag name = 
             [Tag("textarea", ["name", name] @ attributes, [])]
-        generalStrictNonFileElement tag
+        elemBuilder tag
+
+    let textarea = generalTextarea generalStrictNonFileElement
+
+    let assignedTextarea name = generalTextarea (generalStrictNonFileAssignedElement name)
 
     let file : HttpPostedFileBase option Formlet = 
         let tag name = 
