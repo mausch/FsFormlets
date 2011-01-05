@@ -76,6 +76,22 @@ let fullFormlet =
         <*> file
     )
 
+let manualNameFormlet =
+    yields id <*> assignedInput "somename" []
+
+[<Fact>]
+let manualFormletRenderTest() =
+    let html = render manualNameFormlet
+    printfn "%s" html
+    Assert.Equal("<input name=\"somename\" />", html)
+
+[<Fact>]
+let manualFormletProcessTest() =
+    let _, proc = run manualNameFormlet
+    let env = ["somename", "somevalue"]
+    let env = EnvDict.fromValueSeq env
+    let r = proc env |> snd |> Option.get
+    Assert.Equal("somevalue", r)
 
 [<Fact>]
 let renderTest() =

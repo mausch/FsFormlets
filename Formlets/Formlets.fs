@@ -153,17 +153,20 @@ module Formlet =
 
     // Generic HTML functions
 
-    let generalElement lookup (tag: string -> xml_item list): 'a Formlet =
+    let generalElement nameGen lookup (tag: string -> xml_item list): 'a Formlet =
         let t name : 'a AEAO = 
             let xml = tag name
             XmlWriter.plug (fun _ -> xml) (XmlWriter.puree (Environ.lift ao_pure (lookup name)))
-        (NameGen.lift t) NameGen.nextName
-    let generalElementMulti = generalElement Environ.lookups
-    let generalNonFileElementMulti = generalElement Environ.lookupsNonFile
-    let generalStrictElement = generalElement Environ.lookup
-    let generalOptionalElement = generalElement Environ.optionalLookup
-    let generalStrictNonFileElement = generalElement Environ.lookupNonFile
-    let generalOptionalNonFileElement = generalElement Environ.optionalLookupNonFile
+        (NameGen.lift t) nameGen
+    let generalGeneratedElement x = generalElement NameGen.nextName x
+    let generalAssignedElement name = generalElement (NameGen.fixedName name)
+    let generalElementMulti = generalGeneratedElement Environ.lookups
+    let generalNonFileElementMulti = generalGeneratedElement Environ.lookupsNonFile
+    let generalStrictElement = generalGeneratedElement Environ.lookup
+    let generalOptionalElement = generalGeneratedElement Environ.optionalLookup
+    let generalStrictNonFileElement = generalGeneratedElement Environ.lookupNonFile
+    let generalStrictNonFileAssignedElement name = generalAssignedElement name Environ.lookupNonFile
+    let generalOptionalNonFileElement = generalGeneratedElement Environ.optionalLookupNonFile
     let optionalInput attributes: string option Formlet =
         let tag name = [Tag("input", ["name", name] @ attributes, [])]
         generalOptionalNonFileElement tag
@@ -173,6 +176,10 @@ module Formlet =
     let input attributes : string Formlet = 
         let tag name = [Tag("input", ["name", name] @ attributes, [])]
         generalStrictNonFileElement tag
+
+    let assignedInput name attributes : string Formlet =
+        let tag name = [Tag("input", ["name", name] @ attributes, [])]
+        generalStrictNonFileAssignedElement name tag
 
     let password : string Formlet = 
         input ["type","password"]
