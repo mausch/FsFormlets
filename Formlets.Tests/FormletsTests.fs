@@ -18,7 +18,7 @@ let isInt = Int32.TryParse >> fst
 let intValidator : string Validator =
     err isInt (sprintf "%s is not a valid number")
 
-let input = input [] // no additional attributes
+let input = input "" [] // no additional attributes
 
 let inputInt = lift int (input |> satisfies intValidator)
 //let inputInt = yields (fun i -> int i) <*> (input |> satisfies intValidator) // equivalent to above
@@ -68,22 +68,22 @@ let fullFormlet =
         yields (fun d pass ok number opt t many file -> d,pass,ok,number,opt,t,many,file)
         <*> dateFormlet
         <*> password
-        <*> checkbox
-        <*> radio ["1","uno"; "2","dos"]
-        <*> select ["a","uno"; "b","dos"]
-        <*> textarea None None
-        <*> selectMulti ["a","uno"; "b","dos"]
+        <*> checkbox false
+        <*> radio "1" ["1","uno"; "2","dos"]
+        <*> select "a" ["a","uno"; "b","dos"]
+        <*> textarea "" None None
+        <*> selectMulti "a" ["a","uno"; "b","dos"]
         <*> file
     )
 
 let manualNameFormlet =
-    yields id <*> assignedInput "somename" []
+    yields id <*> assignedInput "somename" "" []
 
 [<Fact>]
 let manualFormletRenderTest() =
     let html = render manualNameFormlet
     printfn "%s" html
-    Assert.Equal("<input name=\"somename\" />", html)
+    Assert.Equal("<input name=\"somename\" value=\"\"></input>", html)
 
 [<Fact>]
 let manualFormletProcessTest() =

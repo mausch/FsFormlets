@@ -172,35 +172,37 @@ module Formlet =
 
     // Concrete HTML functions
 
-    let input attributes : string Formlet = 
-        let tag name = [Tag("input", ["name", name] @ attributes, [])]
+    let input value attributes : string Formlet = 
+        let tag name = [Tag("input", ["name", name; "value",value] @ attributes, [])]
         generalStrictNonFileElement tag
 
-    let assignedInput name attributes : string Formlet =
-        let tag name = [Tag("input", ["name", name] @ attributes, [])]
+    let assignedInput name value attributes : string Formlet =
+        let tag name = [Tag("input", ["name", name; "value",value] @ attributes, [])]
         generalStrictNonFileAssignedElement name tag
 
     let password : string Formlet = 
-        input ["type","password"]
+        input "" ["type","password"]
 
-    let hidden : string Formlet = 
-        input ["type","hidden"]
+    let hidden value: string Formlet = 
+        input value ["type","hidden"]
 
     let assignedHidden name value : string Formlet =
-        assignedInput name ["type","hidden"; "value",value]
+        assignedInput name value ["type","hidden"]
 
-    let checkbox : bool Formlet =
+    let checkbox on : bool Formlet =
         let transform = 
             function
             | None -> false
             | Some _ -> true
-        lift transform (optionalInput ["type","checkbox"])
+        let on = if on then ["checked","checked"] else []
+        lift transform (optionalInput (["type","checkbox"] @ on))
 
-    let radio (choices: (string*string) seq): string Formlet =
+    let radio selected (choices: (string*string) seq): string Formlet =
         let makeLabel id text = 
             Tag("label", ["for", id], [Text text])
         let makeRadio name value id = 
-            Tag("input", ["type","radio"; "name",name; "id",id; "value",value], [])
+            let on = if value = selected then ["checked","checked"] else []
+            Tag("input", ["type","radio"; "name",name; "id",id; "value",value] @ on, [])
         let tag name = 
             choices 
             |> Seq.zip {1..Int32.MaxValue} 
@@ -209,29 +211,30 @@ module Formlet =
             |> Seq.toList
         generalStrictNonFileElement tag
 
-    let internal makeOption (value,text) = 
-        Tag("option", ["value",value], [Text text])
+    let internal makeOption selected (value,text) = 
+        let on = if selected = value then ["selected","selected"] else []
+        Tag("option", ["value",value] @ on, [Text text])
     let internal makeSelect name attr options = 
         Tag("select", ["name",name] @ attr, options)
-    let internal selectTag choices attr name =
-        [choices |> Seq.map makeOption |> Seq.toList |> makeSelect name attr]
+    let internal selectTag selected choices attr name =
+        [choices |> Seq.map (makeOption selected) |> Seq.toList |> makeSelect name attr]
 
-    let select (choices: (string*string) seq): string Formlet = 
-        generalStrictNonFileElement (selectTag choices [])
+    let select selected (choices: (string*string) seq): string Formlet = 
+        generalStrictNonFileElement (selectTag selected choices [])
 
-    let selectMulti (choices: (string*string) seq): string list Formlet = 
-        generalNonFileElementMulti (selectTag choices ["multiple","multiple"])
+    let selectMulti selected (choices: (string*string) seq): string list Formlet = 
+        generalNonFileElementMulti (selectTag selected choices ["multiple","multiple"])
 
-    let generalTextarea elemBuilder (rows: int option) (cols: int option) : string Formlet = 
+    let generalTextarea elemBuilder value (rows: int option) (cols: int option) : string Formlet = 
         let attributes = 
             let rows = match rows with Some r -> ["rows",r.ToString()] | _ -> []
             let cols = match cols with Some r -> ["cols",r.ToString()] | _ -> []
             rows @ cols
         let tag name = 
-            [Tag("textarea", ["name", name] @ attributes, [])]
+            [Tag("textarea", ["name",name; "value",value] @ attributes, [])]
         elemBuilder tag
 
-    let textarea = generalTextarea generalStrictNonFileElement
+    let textarea value = generalTextarea generalStrictNonFileElement value
 
     let assignedTextarea name = generalTextarea (generalStrictNonFileAssignedElement name)
 
