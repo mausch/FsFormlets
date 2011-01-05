@@ -8,8 +8,15 @@ let concat a b =
     x.Add b
     x
 
+let add (x: NameValueCollection) (a,b) = x.Add(a,b)
+
 let toSeq (a: NameValueCollection) =
     a.AllKeys
     |> Seq.collect (fun k -> a.GetValues k |> Seq.map (fun v -> k,v))
 
 let toList a = toSeq a |> Seq.toList
+
+let fromSeq l =
+    let x = NameValueCollection()
+    Seq.iter (add x) l
+    x
