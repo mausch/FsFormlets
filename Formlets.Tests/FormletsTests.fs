@@ -72,7 +72,7 @@ let fullFormlet =
         <*> radio "1" ["1","uno"; "2","dos"]
         <*> select "a" ["a","uno"; "b","dos"]
         <*> textarea "" None None
-        <*> selectMulti "a" ["a","uno"; "b","dos"]
+        <*> selectMulti ["a";"b"] ["a","uno"; "b","dos"]
         <*> file
     )
 

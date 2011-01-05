@@ -212,7 +212,10 @@ module Formlet =
         generalStrictNonFileElement tag
 
     let internal makeOption selected (value,text) = 
-        let on = if selected = value then ["selected","selected"] else []
+        let on = 
+            if Seq.exists ((=) value) selected
+                then ["selected","selected"] 
+                else []
         Tag("option", ["value",value] @ on, [Text text])
     let internal makeSelect name attr options = 
         Tag("select", ["name",name] @ attr, options)
@@ -220,7 +223,7 @@ module Formlet =
         [choices |> Seq.map (makeOption selected) |> Seq.toList |> makeSelect name attr]
 
     let select selected (choices: (string*string) seq): string Formlet = 
-        generalStrictNonFileElement (selectTag selected choices [])
+        generalStrictNonFileElement (selectTag [selected] choices [])
 
     let selectMulti selected (choices: (string*string) seq): string list Formlet = 
         generalNonFileElementMulti (selectTag selected choices ["multiple","multiple"])
