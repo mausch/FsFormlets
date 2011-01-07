@@ -187,15 +187,17 @@ module Formlet =
             | _ -> failwith "Unexpected file"
         lift (List.map extractOne) f
 
+    let getValueAttr =
+        function
+        | [v] -> 
+            match v with
+            | Value v -> ["value", v]
+            | _ -> failwith "file not expected"
+        | _ -> []
+
     let optionalInput attributes: string option Formlet =
         let tag name (boundValue: InputValue list) = 
-            let valueAttr =
-                match boundValue with
-                | [v] -> 
-                    match v with
-                    | Value v -> ["value", v]
-                    | _ -> failwith "file not expected"
-                | _ -> []
+            let valueAttr = getValueAttr boundValue
             [Tag("input", ["name", name] @ valueAttr @ attributes, [])]
         generalGeneratedElement [] tag |> extractOptional
 
@@ -203,25 +205,13 @@ module Formlet =
 
     let input value attributes : string Formlet = 
         let tag name boundValue = 
-            let valueAttr =
-                match boundValue with
-                | [v] -> 
-                    match v with
-                    | Value v -> ["value", v]
-                    | _ -> failwith "file not expected"
-                | _ -> []
+            let valueAttr = getValueAttr boundValue
             [Tag("input", ["name", name] @ valueAttr @ attributes, [])]
         generalGeneratedElement [Value value] tag |> extractString
 
     let assignedInput name value attributes : string Formlet =
         let tag name boundValue = 
-            let valueAttr =
-                match boundValue with
-                | [v] -> 
-                    match v with
-                    | Value v -> ["value", v]
-                    | _ -> failwith "file not expected"
-                | _ -> []
+            let valueAttr = getValueAttr boundValue
             [Tag("input", ["name", name] @ valueAttr @ attributes, [])]
         generalAssignedElement name [Value value] tag |> extractString
 
