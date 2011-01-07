@@ -88,7 +88,7 @@ module Formlet =
     let private XmlEnv_refine v = XmlWriter.lift eao_pure v
     let private refineAndLift f x = NameGen.puree (XmlEnv_refine (f x))
     let xml x : unit Formlet = refineAndLift XmlWriter.xml x
-    let nop = xml []
+    let nop = puree ()
     let text s : unit Formlet = refineAndLift XmlWriter.text s
     let tag name attributes (f: 'a Formlet) : 'a Formlet = 
         let g = NameGen.lift (XmlWriter.tag name attributes)
@@ -110,7 +110,7 @@ module Formlet =
     // Validation functions
 
     let private check (validator: 'a Validator) (a: 'a AO) : 'a AO =
-        let result =
+        let result: 'a ValidationResult XmlWriter =
             let errorToValidationResult o =
                 let pred = fst validator
                 let check' p v =
@@ -122,15 +122,15 @@ module Formlet =
                 | Some v -> v
                 | _ -> Dead
             XmlWriter.lift errorToValidationResult a
-        let validationResultToError = 
+        let validationResultToError: 'b ValidationResult -> 'b Error = 
             function 
             | Pass v -> Error.puree v 
             | _ -> Error.failure
         let w = XmlWriter.lift validationResultToError result
         let errorMsg = snd validator
         match result with
-        | _, Fail v -> XmlWriter.plug (errorMsg v) w
-        | _ -> w
+        | x, Fail v -> XmlWriter.plug (errorMsg v) w
+        | x -> w
 
     /// Applies a validator to a formlet
     let satisfies (validator: 'a Validator) (f: 'a Formlet) : 'a Formlet =
@@ -152,33 +152,78 @@ module Formlet =
 
     // Generic HTML functions
 
-    let generalElement nameGen lookup (tag: string -> xml_item list): 'a Formlet =
-        let t name : 'a AEAO = 
+    let generalElement nameGen defaultValue (tag: string -> InputValue list -> xml_item list): InputValue list Formlet =
+        let t name = 
             let xml = tag name
-            XmlWriter.plug (fun _ -> xml) (XmlWriter.puree (Environ.lift ao_pure (lookup name)))
-        (NameGen.lift t) nameGen
+            let eao = 
+                fun env -> 
+                    let value = Environ.lookup name env
+                    let xml = xml value
+                    xml,Some value
+            XmlWriter.plug (fun _ -> xml defaultValue) (XmlWriter.puree eao)
+        NameGen.lift t nameGen
+            
     let generalGeneratedElement x = generalElement NameGen.nextName x
-    let generalAssignedElement name = generalElement (NameGen.fixedName name)
-    let generalElementMulti = generalGeneratedElement Environ.lookups
-    let generalNonFileElementMulti = generalGeneratedElement Environ.lookupsNonFile
-    let generalStrictElement = generalGeneratedElement Environ.lookup
-    let generalOptionalElement = generalGeneratedElement Environ.optionalLookup
-    let generalStrictNonFileElement = generalGeneratedElement Environ.lookupNonFile
-    let generalStrictNonFileAssignedElement name = generalAssignedElement name Environ.lookupNonFile
-    let generalOptionalNonFileElement = generalGeneratedElement Environ.optionalLookupNonFile
+    let generalAssignedElement name = generalElement (NameGen.puree name)
+
+    let extractOptional (f: InputValue list Formlet) : string option Formlet =
+        let extract =
+            function
+            | [] -> None
+            | [x] -> 
+                match x with
+                | Value v -> Some v
+                | _ -> failwith "Unexpected file"
+            | _ -> failwith "Unexpected multiple values"
+        lift extract f
+
+    let extractString (f: InputValue list Formlet) : string Formlet =
+        extractOptional f |> lift Option.get
+
+    let extractStrings (f: InputValue list Formlet) : string list Formlet =
+        let extractOne =
+            function
+            | Value v -> v
+            | _ -> failwith "Unexpected file"
+        lift (List.map extractOne) f
+
     let optionalInput attributes: string option Formlet =
-        let tag name = [Tag("input", ["name", name] @ attributes, [])]
-        generalOptionalNonFileElement tag
+        let tag name (boundValue: InputValue list) = 
+            let valueAttr =
+                match boundValue with
+                | [v] -> 
+                    match v with
+                    | Value v -> ["value", v]
+                    | _ -> failwith "file not expected"
+                | _ -> []
+            [Tag("input", ["name", name] @ valueAttr @ attributes, [])]
+        generalGeneratedElement [] tag |> extractOptional
 
     // Concrete HTML functions
 
     let input value attributes : string Formlet = 
-        let tag name = [Tag("input", ["name", name; "value",value] @ attributes, [])]
-        generalStrictNonFileElement tag
+        let tag name boundValue = 
+            let valueAttr =
+                match boundValue with
+                | [v] -> 
+                    match v with
+                    | Value v -> ["value", v]
+                    | _ -> failwith "file not expected"
+                | _ -> []
+            [Tag("input", ["name", name] @ valueAttr @ attributes, [])]
+        generalGeneratedElement [Value value] tag |> extractString
 
     let assignedInput name value attributes : string Formlet =
-        let tag name = [Tag("input", ["name", name; "value",value] @ attributes, [])]
-        generalStrictNonFileAssignedElement name tag
+        let tag name boundValue = 
+            let valueAttr =
+                match boundValue with
+                | [v] -> 
+                    match v with
+                    | Value v -> ["value", v]
+                    | _ -> failwith "file not expected"
+                | _ -> []
+            [Tag("input", ["name", name] @ valueAttr @ attributes, [])]
+        generalAssignedElement name [Value value] tag |> extractString
 
     let password : string Formlet = 
         input "" ["type","password"]
@@ -203,13 +248,14 @@ module Formlet =
         let makeRadio name value id = 
             let on = if value = selected then ["checked","checked"] else []
             Tag("input", ["type","radio"; "name",name; "id",id; "value",value] @ on, [])
-        let tag name = 
+        let tag name boundValue = 
             choices 
             |> Seq.zip {1..Int32.MaxValue} 
             |> Seq.map (fun (i,(value,label)) -> name,value,label,name + "_" + i.ToString())
             |> Seq.collect (fun (name,value,label,id) -> [makeRadio name value id; makeLabel id label])
             |> Seq.toList
-        generalStrictNonFileElement tag
+        generalGeneratedElement [] tag
+        |> extractString
 
     let internal makeOption selected (value,text) = 
         let on = 
@@ -219,38 +265,48 @@ module Formlet =
         Tag("option", ["value",value] @ on, [Text text])
     let internal makeSelect name attr options = 
         Tag("select", ["name",name] @ attr, options)
-    let internal selectTag selected choices attr name =
+    let internal selectTag selected choices attr name boundValue =
         [choices |> Seq.map (makeOption selected) |> Seq.toList |> makeSelect name attr]
 
     let select selected (choices: (string*string) seq): string Formlet = 
-        generalStrictNonFileElement (selectTag [selected] choices [])
+        generalGeneratedElement [] (selectTag [selected] choices [])
+        |> extractString
 
     let selectMulti selected (choices: (string*string) seq): string list Formlet = 
-        generalNonFileElementMulti (selectTag selected choices ["multiple","multiple"])
+        generalGeneratedElement [] (selectTag selected choices ["multiple","multiple"]) 
+        |> extractStrings
 
     let generalTextarea elemBuilder value (rows: int option) (cols: int option) : string Formlet = 
         let attributes = 
             let rows = match rows with Some r -> ["rows",r.ToString()] | _ -> []
             let cols = match cols with Some r -> ["cols",r.ToString()] | _ -> []
             rows @ cols
-        let tag name = 
-            [Tag("textarea", ["name",name; "value",value] @ attributes, [])]
-        elemBuilder tag
+        let tag name boundValue = 
+            let valueAttr =
+                match boundValue with
+                | [v] -> 
+                    match v with
+                    | Value v -> ["value", v]
+                    | _ -> failwith "file not expected"
+                | _ -> []
+            [Tag("textarea", ["name",name] @ valueAttr @ attributes, [])]
+        elemBuilder value tag
+        |> extractString
 
-    let textarea value = generalTextarea generalStrictNonFileElement value
+    let textarea value = generalTextarea generalGeneratedElement [Value value]
 
-    let assignedTextarea name = generalTextarea (generalStrictNonFileAssignedElement name)
+    let assignedTextarea name value = generalTextarea (generalAssignedElement name) [Value value]
 
     let file : HttpPostedFileBase option Formlet = 
-        let tag name = 
+        let tag name boundValue = 
             [Tag("input", ["type", "file"; "name", name], [])]
         let fileOnly =
             function
             | Some (File f) -> Some f
             | None -> None
             | _ -> failwith "File expected, got value instead"
-        let r = generalOptionalElement tag
-        lift fileOnly r
+        let r = generalGeneratedElement [] tag
+        lift (Seq.nth 0 >> Some >> fileOnly) r
             
     let form hmethod haction attributes (v: 'a Formlet) : 'a Formlet = 
         tag "form" (["method",hmethod; "action",haction] @ attributes) v
@@ -278,3 +334,6 @@ module Formlet =
 
     /// Builds a 7-tuple
     let t7 a b c d e f g = a,b,c,d,e,f,g
+
+    /// Builds a 8-tuple
+    let t8 a b c d e f g h = a,b,c,d,e,f,g,h

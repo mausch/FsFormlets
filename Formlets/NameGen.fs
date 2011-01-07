@@ -15,6 +15,4 @@ module NameGen =
     let lift2 f x y = puree f <*> x <*> y
     let nextName : string NameGen = 
         fun gen -> "input_" + gen.ToString(), gen+1
-    let fixedName name : string NameGen =
-        fun gen -> name, gen
     let run (c: 'a NameGen) = fst (c 0)

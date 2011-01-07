@@ -51,7 +51,7 @@ let dateFormlet =
             <* br <* submit "Send" 
 *)
 
-                yields (fun month day -> month,day) <*>
+                yields t2 <*>
                 text "Month: " *> inputInt <*>
                 text "Day: " *> inputInt
                 <* br <* submit "Send" 
@@ -65,7 +65,7 @@ let dateFormlet =
 
 let fullFormlet =
     tag "div" [] (
-        yields (fun d pass ok number opt t many file -> d,pass,ok,number,opt,t,many,file)
+        yields t8
         <*> dateFormlet
         <*> password
         <*> checkbox false
@@ -77,7 +77,7 @@ let fullFormlet =
     )
 
 let manualNameFormlet =
-    yields id <*> assignedInput "somename" "" []
+    assignedInput "somename" "" []
 
 [<Fact>]
 let manualFormletRenderTest() =
@@ -134,7 +134,7 @@ let processWithInvalidInt() =
               ]
     let env = EnvDict.fromValueSeq env
     let err,value = proc env
-    let xdoc = XmlWriter.render [Tag("div", [], xml @ err)]
+    let xdoc = XmlWriter.render [Tag("div", [], err)]
     printfn "Error form:\n%s" (xdoc.ToString())
     Assert.True(value.IsNone)
 
@@ -147,7 +147,7 @@ let processWithInvalidInts() =
               ]
     let env = EnvDict.fromValueSeq env
     let err,value = proc env
-    let xdoc = XmlWriter.render [Tag("div", [], xml @ err)]
+    let xdoc = XmlWriter.render [Tag("div", [], err)]
     printfn "Error form:\n%s" (xdoc.ToString())
     Assert.True(value.IsNone)
 
@@ -160,7 +160,7 @@ let processWithInvalidDate() =
               ]
     let env = EnvDict.fromValueSeq env
     let err,value = proc env
-    let xdoc = XmlWriter.render [Tag("div", [], xml @ err)]
+    let xdoc = XmlWriter.render [Tag("div", [], err)]
     printfn "Error form:\n%s" (xdoc.ToString())
     Assert.True(value.IsNone)
     
@@ -168,7 +168,7 @@ let processWithInvalidDate() =
 let processWithMissingField() =
     let xml, proc = run dateFormlet
     let env = ["input_0", "22"] |> EnvDict.fromValueSeq
-    assertThrows(fun() -> proc env |> ignore)
+    assertThrows<ArgumentException>(fun() -> proc env |> ignore)
 
 [<Fact>]
 let ``NameValueCollection to seq does not ignore duplicate keys``() =
