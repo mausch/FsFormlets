@@ -6,7 +6,7 @@ TODO:
 * extend to use with querystring
 * default values for form elements
 * inline error messages
-* change return type to Success | Fail | Invalid
+* change return type to Success | Fail | Invalid instead of Some | None (Error applicative)
 * radio and select: accept any type as value, not just strings, map them dynamically to string and back
 *)
 
