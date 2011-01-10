@@ -152,6 +152,29 @@ module Formlet =
         let v value = System.Text.RegularExpressions.Regex(rx).IsMatch(value)
         err v errorMsg
 
+    // helper functions
+
+    /// Builds a pair (2-tuple)
+    let t2 a b = a,b
+
+    /// Builds a triple (3-tuple)
+    let t3 a b c = a,b,c
+
+    /// Builds a 4-tuple
+    let t4 a b c d = a,b,c,d
+
+    /// Builds a 5-tuple
+    let t5 a b c d e = a,b,c,d,e
+
+    /// Builds a 6-tuple
+    let t6 a b c d e f = a,b,c,d,e,f
+
+    /// Builds a 7-tuple
+    let t7 a b c d e f g = a,b,c,d,e,f,g
+
+    /// Builds a 8-tuple
+    let t8 a b c d e f g h = a,b,c,d,e,f,g,h
+
     // Generic HTML functions
 
     let generalElement nameGen defaultValue (tag: string -> InputValue list -> xml_item list): InputValue list Formlet =
@@ -318,25 +341,26 @@ module Formlet =
 
     let br = tag "br" [] nop
 
-    // helper functions
+    let iframe src attr = xml [Tag("iframe", (attr @ ["src",src]), [])]
+    let noscript x = tag "noscript" [] x
+    let script src = tag "script" ["type","text/javascript"; "src",src] nop
 
-    /// Builds a pair (2-tuple)
-    let t2 a b = a,b
+    let reCaptcha publicKey privateKey requestIP = 
+        let validate (challenge, response) =
+            let nv = NameValueCollection.fromSeq ["privatekey",privateKey; "remoteip",requestIP; "challenge",challenge; "response",response]
+            use http = new System.Net.WebClient()
+            let bytes = http.UploadValues("http://www.google.com/recaptcha/api/verify", nv)
+            let ok = (System.Text.Encoding.UTF8.GetString bytes).Split('\n').[0] = "true"
+            ok
+        
+        yields id
+        <*> script (sprintf "http://www.google.com/recaptcha/api/challenge?k=%s" publicKey)
+        *> noscript (
+            yields t2
+            <*> iframe (sprintf "http://www.google.com/recaptcha/api/noscript?k=%s" publicKey) ["height","300"; "width","500"; "frameborder","0"] 
+            *> assignedTextarea "recaptcha_challenge_field" "" (Some 3) (Some 40)
+            <*> assignedHidden "recaptcha_response_field" "manual_challenge"
+        )
+        |> satisfies (err validate (fun (_,_) -> "Invalid captcha"))
+        |> lift ignore
 
-    /// Builds a triple (3-tuple)
-    let t3 a b c = a,b,c
-
-    /// Builds a 4-tuple
-    let t4 a b c d = a,b,c,d
-
-    /// Builds a 5-tuple
-    let t5 a b c d e = a,b,c,d,e
-
-    /// Builds a 6-tuple
-    let t6 a b c d e f = a,b,c,d,e,f
-
-    /// Builds a 7-tuple
-    let t7 a b c d e f g = a,b,c,d,e,f,g
-
-    /// Builds a 8-tuple
-    let t8 a b c d e f g h = a,b,c,d,e,f,g,h
