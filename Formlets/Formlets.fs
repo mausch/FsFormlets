@@ -348,15 +348,18 @@ module Formlet =
     type ReCaptchaSettings = {
         PublicKey: string
         PrivateKey: string
+        MockedResult: bool option
     }
 
     let reCaptcha (settings: ReCaptchaSettings) requestIP = 
         let validate (challenge, response) =
-            let nv = NameValueCollection.fromSeq ["privatekey",settings.PrivateKey; "remoteip",requestIP; "challenge",challenge; "response",response]
-            use http = new System.Net.WebClient()
-            let bytes = http.UploadValues("http://www.google.com/recaptcha/api/verify", nv)
-            let ok = (System.Text.Encoding.UTF8.GetString bytes).Split('\n').[0] = "true"
-            ok
+            match settings.MockedResult with
+            | Some v -> v
+            | _ ->
+                let nv = NameValueCollection.fromSeq ["privatekey",settings.PrivateKey; "remoteip",requestIP; "challenge",challenge; "response",response]
+                use http = new System.Net.WebClient()
+                let bytes = http.UploadValues("http://www.google.com/recaptcha/api/verify", nv)
+                (System.Text.Encoding.UTF8.GetString bytes).Split('\n').[0] = "true"
         
         yields id
         <*> script (sprintf "http://www.google.com/recaptcha/api/challenge?k=%s" settings.PublicKey)
