@@ -30,12 +30,12 @@ type 'a Environ = EnvDict -> 'a
 
 /// Applicative functor that handles value lookup from submitted form
 module Environ = 
-    let puree v : 'a Environ = fun (env: EnvDict) -> v
-    let ap (f: ('a -> 'b) Environ) (a: 'a Environ) : 'b Environ = 
+    let inline puree v : 'a Environ = fun (env: EnvDict) -> v
+    let inline ap (f: ('a -> 'b) Environ) (a: 'a Environ) : 'b Environ = 
         fun (env: EnvDict) -> f env (a env)
-    let (<*>) f x = ap f x
-    let lift f x : 'b Environ = puree f <*> x
-    let lift2 f x y : 'c Environ = puree f <*> x <*> y
+    let inline (<*>) f x = ap f x
+    let inline lift f x : 'b Environ = puree f <*> x
+    let inline lift2 f x y : 'c Environ = puree f <*> x <*> y
 
     let lookup (n: string) : InputValue list Environ = 
         fun (env: EnvDict) ->

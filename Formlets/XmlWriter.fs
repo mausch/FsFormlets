@@ -9,7 +9,7 @@ type 'a XmlWriter = xml_item list * 'a
 
 /// Applicative functor that manipulates HTML as XML
 module XmlWriter =
-    let puree v : 'a XmlWriter = [],v
+    let inline puree v : 'a XmlWriter = [],v
     //let ap (x: xml_item list,f) (y,a) = x @ y, f a
     let ap (f: ('a -> 'b) XmlWriter) (x: 'a XmlWriter) : 'b XmlWriter =
         let ff = fst f
@@ -17,15 +17,15 @@ module XmlWriter =
         let fx = fst x
         let sx = snd x
         ff @ fx, sf sx
-    let (<*>) f x = ap f x
-    let lift f x = puree f <*> x
-    let lift2 f x y = puree f <*> x <*> y
-    let plug (k: xml_item list -> xml_item list) (v: 'a XmlWriter): 'a XmlWriter = 
+    let inline (<*>) f x = ap f x
+    let inline lift f x = puree f <*> x
+    let inline lift2 f x y = puree f <*> x <*> y
+    let inline plug (k: xml_item list -> xml_item list) (v: 'a XmlWriter): 'a XmlWriter = 
         k (fst v), snd v
-    let xml (e: xml_item list) : unit XmlWriter = 
+    let inline xml (e: xml_item list) : unit XmlWriter = 
         plug (fun _ -> e) (puree ())
-    let text s = xml [Text s]
-    let tag name attributes (v: 'a XmlWriter) : 'a XmlWriter = 
+    let inline text s = xml [Text s]
+    let inline tag name attributes (v: 'a XmlWriter) : 'a XmlWriter = 
         plug (fun x -> [Tag (name, attributes, x)]) v
     open System.Xml.Linq
     let render xml =
