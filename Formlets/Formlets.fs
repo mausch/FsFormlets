@@ -345,19 +345,24 @@ module Formlet =
     let noscript x = tag "noscript" [] x
     let script src = tag "script" ["type","text/javascript"; "src",src] nop
 
-    let reCaptcha publicKey privateKey requestIP = 
+    type ReCaptchaSettings = {
+        PublicKey: string
+        PrivateKey: string
+    }
+
+    let reCaptcha (settings: ReCaptchaSettings) requestIP = 
         let validate (challenge, response) =
-            let nv = NameValueCollection.fromSeq ["privatekey",privateKey; "remoteip",requestIP; "challenge",challenge; "response",response]
+            let nv = NameValueCollection.fromSeq ["privatekey",settings.PrivateKey; "remoteip",requestIP; "challenge",challenge; "response",response]
             use http = new System.Net.WebClient()
             let bytes = http.UploadValues("http://www.google.com/recaptcha/api/verify", nv)
             let ok = (System.Text.Encoding.UTF8.GetString bytes).Split('\n').[0] = "true"
             ok
         
         yields id
-        <*> script (sprintf "http://www.google.com/recaptcha/api/challenge?k=%s" publicKey)
+        <*> script (sprintf "http://www.google.com/recaptcha/api/challenge?k=%s" settings.PublicKey)
         *> noscript (
             yields t2
-            <*> iframe (sprintf "http://www.google.com/recaptcha/api/noscript?k=%s" publicKey) ["height","300"; "width","500"; "frameborder","0"] 
+            <*> iframe (sprintf "http://www.google.com/recaptcha/api/noscript?k=%s" settings.PublicKey) ["height","300"; "width","500"; "frameborder","0"] 
             *> assignedTextarea "recaptcha_challenge_field" "" (Some 3) (Some 40)
             <*> assignedHidden "recaptcha_response_field" "manual_challenge"
         )
