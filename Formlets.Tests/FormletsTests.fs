@@ -89,16 +89,14 @@ let radioRender() =
 
 [<Fact>]
 let radioRun() =
-    let proc = run radioFormlet |> snd
     let env = EnvDict.fromValueSeq ["input_0", "2"]
-    let r = proc env |> snd |> Option.get
+    let r = run radioFormlet env |> snd |> Option.get
     Assert.Equal("2", r)
 
 [<Fact>]
 let radioRefill() =
-    let proc = run radioFormlet |> snd
     let env = EnvDict.fromValueSeq ["input_0", "2"]
-    let r = proc env |> fst
+    let r = run radioFormlet env |> fst
     printfn "%A" r
     let input1 = r.[0]
     let input2 = r.[2]
@@ -112,9 +110,8 @@ let radioRefill() =
 [<Fact>]
 let checkboxRefill() =
     let formlet = checkbox false
-    let proc = run formlet |> snd
     let env = EnvDict.fromValueSeq ["input_0", "on"]
-    let r = proc env |> fst
+    let r = run formlet env |> fst
     printfn "%A" r
     match r.[0] with
     | Tag(_,attr,_) -> Assert.True(List.exists (fun (k,_) -> k = "checked") attr)
@@ -122,9 +119,8 @@ let checkboxRefill() =
 
 [<Fact>]
 let inputRefill() =
-    let proc = run input |> snd
     let env = EnvDict.fromValueSeq ["input_0", "pepe"]
-    let r = proc env |> fst
+    let r = run input env |> fst
     printfn "%A" r
     match r.[0] with
     | Tag(_,attr,_) -> Assert.True(List.exists (fun (k,v) -> k = "value" && v = "pepe") attr)
@@ -138,10 +134,9 @@ let manualFormletRenderTest() =
 
 [<Fact>]
 let manualFormletProcessTest() =
-    let _, proc = run manualNameFormlet
     let env = ["somename", "somevalue"]
     let env = EnvDict.fromValueSeq env
-    let r = proc env |> snd |> Option.get
+    let r = run manualNameFormlet env |> snd |> Option.get
     Assert.Equal("somevalue", r)
 
 [<Fact>]
@@ -150,8 +145,7 @@ let renderTest() =
 
 [<Fact>]
 let processTest() =
-    let _, proc = run fullFormlet
-    let env = [
+    let env = EnvDict.fromValueSeq [
                 "input_0", "12"
                 "input_1", "22"
                 "input_2", ""
@@ -161,12 +155,11 @@ let processTest() =
                 "input_7", "a"
                 "input_7", "b"
               ]
-    let env = EnvDict.fromValueSeq env
     let filemock = { new HttpPostedFileBase() with
                         member x.ContentLength = 2
                         member x.ContentType = "" }
     let env = env |> EnvDict.addFromFileSeq ["input_8", filemock]
-    let dt,pass,chk,n,opt,t,many,f = proc env |> snd |> Option.get
+    let dt,pass,chk,n,opt,t,many,f = run fullFormlet env |> snd |> Option.get
     Assert.Equal(DateTime(2010, 12, 22), dt)
     Assert.Equal("", pass)
     Assert.False chk
@@ -178,48 +171,44 @@ let processTest() =
 
 [<Fact>]
 let processWithInvalidInt() =
-    let xml, proc = run dateFormlet
     let env = [
                 "input_0", "aa"
                 "input_1", "22"
               ]
     let env = EnvDict.fromValueSeq env
-    let err,value = proc env
+    let err,value = run dateFormlet env
     let xdoc = XmlWriter.render [Tag("div", [], err)]
     printfn "Error form:\n%s" (xdoc.ToString())
     Assert.True(value.IsNone)
 
 [<Fact>]
 let processWithInvalidInts() =
-    let xml, proc = run dateFormlet
     let env = [
                 "input_0", "aa"
                 "input_1", "bb"
               ]
     let env = EnvDict.fromValueSeq env
-    let err,value = proc env
+    let err,value = run dateFormlet env
     let xdoc = XmlWriter.render [Tag("div", [], err)]
     printfn "Error form:\n%s" (xdoc.ToString())
     Assert.True(value.IsNone)
 
 [<Fact>]
 let processWithInvalidDate() =
-    let xml, proc = run dateFormlet
     let env = [
                 "input_0", "22"
                 "input_1", "22"
               ]
     let env = EnvDict.fromValueSeq env
-    let err,value = proc env
+    let err,value = run dateFormlet env
     let xdoc = XmlWriter.render [Tag("div", [], err)]
     printfn "Error form:\n%s" (xdoc.ToString())
     Assert.True(value.IsNone)
     
 [<Fact>]
 let processWithMissingField() =
-    let xml, proc = run dateFormlet
     let env = ["input_0", "22"] |> EnvDict.fromValueSeq
-    assertThrows<ArgumentException>(fun() -> proc env |> ignore)
+    assertThrows<ArgumentException>(fun() -> run dateFormlet env |> ignore)
 
 [<Fact>]
 let ``NameValueCollection to seq does not ignore duplicate keys``() =

@@ -94,16 +94,18 @@ module Formlet =
         let g = NameGen.lift (XmlWriter.tag name attributes)
         g f
 
-    let run (v: 'a Formlet) : (xml_item list) * (EnvDict -> (xml_item list * 'a option))  = 
-        NameGen.run v
+    let run (v: 'a Formlet) : EnvDict -> (xml_item list * 'a option)  = 
+        NameGen.run v |> snd
+
+    let renderToNodes (v: _ Formlet): xml_item list = 
+        NameGen.run v |> fst
     
     /// Renders a formlet to XDocument
-    let renderToXml v = 
-        let xml = (run >> fst) v
-        XmlWriter.render xml
+    let renderToXml (v: _ Formlet) = 
+        v |> renderToNodes |> XmlWriter.render
 
     /// Renders a formlet to string
-    let render v = 
+    let render (v: _ Formlet) = 
         let x = renderToXml v
         x.ToString()
 
