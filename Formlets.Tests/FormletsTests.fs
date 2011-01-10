@@ -79,6 +79,57 @@ let fullFormlet =
 let manualNameFormlet =
     assignedInput "somename" "" []
 
+let radioFormlet = 
+    tag "div" [] (radio "1" ["1","uno"; "2","dos"])
+
+[<Fact>]
+let radioRender() =
+    let html = render radioFormlet
+    printfn "%s" html
+
+[<Fact>]
+let radioRun() =
+    let proc = run radioFormlet |> snd
+    let env = EnvDict.fromValueSeq ["input_0", "2"]
+    let r = proc env |> snd |> Option.get
+    Assert.Equal("2", r)
+
+[<Fact>]
+let radioRefill() =
+    let proc = run radioFormlet |> snd
+    let env = EnvDict.fromValueSeq ["input_0", "2"]
+    let r = proc env |> fst
+    printfn "%A" r
+    let input1 = r.[0]
+    let input2 = r.[2]
+    match input1 with
+    | Tag(_,attr,_) -> Assert.False(List.exists (fun (k,_) -> k = "checked") attr)
+    | _ -> failwith "err"
+    match input2 with
+    | Tag(_,attr,_) -> Assert.True(List.exists (fun (k,_) -> k = "checked") attr)
+    | _ -> failwith "err"
+
+[<Fact>]
+let checkboxRefill() =
+    let formlet = checkbox false
+    let proc = run formlet |> snd
+    let env = EnvDict.fromValueSeq ["input_0", "on"]
+    let r = proc env |> fst
+    printfn "%A" r
+    match r.[0] with
+    | Tag(_,attr,_) -> Assert.True(List.exists (fun (k,_) -> k = "checked") attr)
+    | _ -> failwith "err"
+
+[<Fact>]
+let inputRefill() =
+    let proc = run input |> snd
+    let env = EnvDict.fromValueSeq ["input_0", "pepe"]
+    let r = proc env |> fst
+    printfn "%A" r
+    match r.[0] with
+    | Tag(_,attr,_) -> Assert.True(List.exists (fun (k,v) -> k = "value" && v = "pepe") attr)
+    | _ -> failwith "err"
+
 [<Fact>]
 let manualFormletRenderTest() =
     let html = render manualNameFormlet

@@ -245,16 +245,17 @@ module Formlet =
     let radio selected (choices: (string*string) seq): string Formlet =
         let makeLabel id text = 
             Tag("label", ["for", id], [Text text])
-        let makeRadio name value id = 
-            let on = if value = selected then ["checked","checked"] else []
+        let makeRadio name value id selected = 
+            let on = if selected then ["checked","checked"] else []
             Tag("input", ["type","radio"; "name",name; "id",id; "value",value] @ on, [])
         let tag name boundValue = 
+            let selectedValue = extractOptionString boundValue |> Option.get
             choices 
             |> Seq.zip {1..Int32.MaxValue} 
-            |> Seq.map (fun (i,(value,label)) -> name,value,label,name + "_" + i.ToString())
-            |> Seq.collect (fun (name,value,label,id) -> [makeRadio name value id; makeLabel id label])
+            |> Seq.map (fun (i,(value,label)) -> name, value, label, name + "_" + i.ToString(), selectedValue = value)
+            |> Seq.collect (fun (name,value,label,id,selected) -> [makeRadio name value id selected; makeLabel id label])
             |> Seq.toList
-        generalGeneratedElement [] tag
+        generalGeneratedElement [Value selected] tag
         |> extractString
 
     let internal makeOption selected (value,text) = 
