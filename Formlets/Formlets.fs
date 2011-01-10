@@ -166,16 +166,17 @@ module Formlet =
     let generalGeneratedElement x = generalElement NameGen.nextName x
     let generalAssignedElement name = generalElement (NameGen.puree name)
 
+    let extractOptionString =
+        function
+        | [] -> None
+        | [x] -> 
+            match x with
+            | Value v -> Some v
+            | _ -> failwith "Unexpected file"
+        | _ -> failwith "Unexpected multiple values"
+
     let extractOptional (f: InputValue list Formlet) : string option Formlet =
-        let extract =
-            function
-            | [] -> None
-            | [x] -> 
-                match x with
-                | Value v -> Some v
-                | _ -> failwith "Unexpected file"
-            | _ -> failwith "Unexpected multiple values"
-        lift extract f
+        lift extractOptionString f
 
     let extractString (f: InputValue list Formlet) : string Formlet =
         extractOptional f |> lift Option.get
@@ -195,11 +196,11 @@ module Formlet =
             | _ -> failwith "file not expected"
         | _ -> []
 
-    let optionalInput attributes: string option Formlet =
+    let optionalInput defaultValue attributes: string option Formlet =
         let tag name (boundValue: InputValue list) = 
             let valueAttr = getValueAttr boundValue
             [Tag("input", ["name", name] @ valueAttr @ attributes, [])]
-        generalGeneratedElement [] tag |> extractOptional
+        generalGeneratedElement [Value defaultValue] tag |> extractOptional
 
     // Concrete HTML functions
 
@@ -229,8 +230,17 @@ module Formlet =
             function
             | None -> false
             | Some _ -> true
-        let on = if on then ["checked","checked"] else []
-        lift transform (optionalInput (["type","checkbox"] @ on))
+        let tag name (boundValue: InputValue list) = 
+            let value = extractOptionString boundValue
+            let valueAttr = 
+                match value with
+                | Some x -> ["checked","checked"]
+                | _ -> []
+            [Tag("input", ["name",name; "type","checkbox"] @ valueAttr, [])]
+        let on = if on then [Value ""] else []
+        generalGeneratedElement on tag 
+        |> extractOptional
+        |> lift transform
 
     let radio selected (choices: (string*string) seq): string Formlet =
         let makeLabel id text = 
