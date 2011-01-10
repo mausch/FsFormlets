@@ -361,8 +361,7 @@ module Formlet =
                 let bytes = http.UploadValues("http://www.google.com/recaptcha/api/verify", nv)
                 (System.Text.Encoding.UTF8.GetString bytes).Split('\n').[0] = "true"
         
-        yields id
-        <*> script (sprintf "http://www.google.com/recaptcha/api/challenge?k=%s" settings.PublicKey)
+        script (sprintf "http://www.google.com/recaptcha/api/challenge?k=%s" settings.PublicKey)
         *> noscript (
             yields t2
             <*> iframe (sprintf "http://www.google.com/recaptcha/api/noscript?k=%s" settings.PublicKey) ["height","300"; "width","500"; "frameborder","0"] 
