@@ -85,7 +85,8 @@ module Formlet =
 
     let inline yields x = puree x // friendly alias
 
-    let private XmlEnv_refine v = XmlWriter.lift eao_pure v
+    let private XmlEnv_refine (v: 'a XmlWriter) : 'a Error XmlWriter Environ XmlWriter = 
+        XmlWriter.lift eao_pure v
     let private refineAndLift f x = NameGen.puree (XmlEnv_refine (f x))
     let xml x : unit Formlet = refineAndLift XmlWriter.xml x
     let nop = puree ()
