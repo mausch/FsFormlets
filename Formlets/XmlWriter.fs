@@ -4,6 +4,12 @@
 type xml_item = 
     | Text of string 
     | Tag of string * (string*string) list * xml_item list // tagname, attributes, children
+    with
+        static member getChildren =
+            function
+            | Tag(_,_,c) -> c
+            | _ -> failwith "Expected tag, got text"
+    
 
 type 'a XmlWriter = xml_item list * 'a
 
