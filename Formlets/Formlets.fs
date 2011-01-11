@@ -14,7 +14,11 @@ open System
 open System.Collections.Specialized
 open System.Web
 
+/// Validator type.
+/// Fst determines if value is valid
+/// Snd builds an error message
 type 'a Validator = ('a -> bool) * ('a -> xml_item list -> xml_item list)
+
 type 'a ValidationResult =
     | Pass of 'a
     | Fail of 'a
@@ -85,14 +89,25 @@ module Formlet =
 
     let inline yields x = puree x // friendly alias
 
+    /// Lifts a xml tree to formlet
     let xml x : unit Formlet = 
         let v = XmlWriter.xml x
         let xml1 = XmlWriter.lift Error.puree v |> Environ.puree
         let xml2 = XmlWriter.lift (fun _ -> xml1) v
         NameGen.puree xml2
 
+    /// No-operation formlet
     let nop = puree ()
+
+    /// Lifts text to formlet
     let text s : unit Formlet = xml [Text s]
+
+    /// <summary>
+    /// Lifts a HTML tag to formlet
+    /// </summary>
+    /// <param name="name">Tag name</param>
+    /// <param name="attributes">Element attributes</param>
+    /// <param name="f">Inner formlet</param>
     let tag name attributes (f: 'a Formlet) : 'a Formlet = 
         let xtag x = XmlWriter.tag name attributes x
         let xml1 x = XmlWriter.lift id (xtag x)
@@ -100,9 +115,12 @@ module Formlet =
         let xml3 x = XmlWriter.lift xml2 (xtag x)
         NameGen.lift xml3 f
 
+    /// Runs a formlet.
+    /// Returns a populated form with error messages and the result value
     let run (v: 'a Formlet) : EnvDict -> (xml_item list * 'a option)  = 
         NameGen.run v |> snd
 
+    /// Renders a formlet to a xml tree
     let renderToNodes (v: _ Formlet): xml_item list = 
         NameGen.run v |> fst
     
@@ -144,7 +162,11 @@ module Formlet =
     let satisfies (validator: 'a Validator) (f: 'a Formlet) : 'a Formlet =
         nae_lift (check validator) f
 
+    /// <summary>
     /// Constructs a validator
+    /// </summary>
+    /// <param name="isValid">Determines if value is valid</param>
+    /// <param name="errorMsg">Builds the error message</param>
     let err (isValid: 'a -> bool) (errorMsg: 'a -> string) : 'a Validator = 
         let addError value xml = 
             [
@@ -153,7 +175,11 @@ module Formlet =
             ]
         isValid, addError
 
+    /// <summary>
     /// Constructs a validator from a regular expression
+    /// </summary>
+    /// <param name="rx">Regular expression to match</param>
+    /// <param name="errorMsg">Builds the error message</param>
     let errx (rx: string) (errorMsg: string -> string) : string Validator =
         let v value = System.Text.RegularExpressions.Regex(rx).IsMatch(value)
         err v errorMsg
@@ -235,27 +261,54 @@ module Formlet =
 
     // Concrete HTML functions
 
+    /// <summary>
+    /// Creates a &lt;input type=&quot;text&quot;&gt; formlet
+    /// </summary>
+    /// <param name="value">Default value</param>
+    /// <param name="attributes">Additional attributes</param>
     let input value attributes : string Formlet = 
         let tag name boundValue = 
             let valueAttr = getValueAttr boundValue
             [Tag("input", ["name", name] @ valueAttr @ attributes, [])]
         generalGeneratedElement [Value value] tag |> extractString
 
+    /// <summary>
+    /// Creates a &lt;input type=&quot;text&quot;&gt; formlet with a manually assigned element name
+    /// </summary>
+    /// <param name="name">Form element name</param>
+    /// <param name="value">Default value</param>
+    /// <param name="attributes">Additional attributes</param>
     let assignedInput name value attributes : string Formlet =
         let tag name boundValue = 
             let valueAttr = getValueAttr boundValue
             [Tag("input", ["name", name] @ valueAttr @ attributes, [])]
         generalAssignedElement name [Value value] tag |> extractString
 
+    /// <summary>
+    /// Creates a &lt;input type=&quot;password&quot;&gt; formlet 
+    /// </summary>
     let password : string Formlet = 
         input "" ["type","password"]
 
+    /// <summary>
+    /// Creates a &lt;input type=&quot;hidden&quot;&gt; formlet 
+    /// </summary>
+    /// <param name="value">Default value</param>
     let hidden value: string Formlet = 
         input value ["type","hidden"]
 
+    /// <summary>
+    /// Creates a &lt;input type=&quot;hidden&quot;&gt; formlet with a manually assigned element name
+    /// </summary>
+    /// <param name="name">Form element name</param>
+    /// <param name="value">Default value</param>
     let assignedHidden name value : string Formlet =
         assignedInput name value ["type","hidden"]
 
+    /// <summary>
+    /// Creates a &lt;input type=&quot;checkbox&quot;&gt; formlet
+    /// </summary>
+    /// <param name="on">Initial check value</param>
     let checkbox on : bool Formlet =
         let transform = 
             function
@@ -273,6 +326,11 @@ module Formlet =
         |> extractOptional
         |> lift transform
 
+    /// <summary>
+    /// Creates a &lt;input type=&quot;radio&quot;&gt; formlet
+    /// </summary>
+    /// <param name="selected">Initial selected value</param>
+    /// <param name="choices">Select options</param>
     let radio selected (choices: (string*string) seq): string Formlet =
         let makeLabel id text = 
             Tag("label", ["for", id], [Text text])
@@ -300,15 +358,32 @@ module Formlet =
     let internal selectTag selected choices attr name boundValue =
         [choices |> Seq.map (makeOption selected) |> Seq.toList |> makeSelect name attr]
 
+    /// <summary>
+    /// Creates a &lt;select&gt; formlet
+    /// </summary>
+    /// <param name="selected">Initial selected value</param>
+    /// <param name="choices">Select options</param>
     let select selected (choices: (string*string) seq): string Formlet = 
         generalGeneratedElement [] (selectTag [selected] choices [])
         |> extractString
 
+    /// <summary>
+    /// Creates a &lt;select multiple&gt; formlet
+    /// </summary>
+    /// <param name="selected">Initial selected values</param>
+    /// <param name="choices">Select options</param>
     let selectMulti selected (choices: (string*string) seq): string list Formlet = 
         generalGeneratedElement [] (selectTag selected choices ["multiple","multiple"]) 
         |> extractStrings
-
-    let generalTextarea elemBuilder value (rows: int option) (cols: int option) : string Formlet = 
+    
+    /// <summary>
+    /// Creates a &lt;textarea&gt; formlet
+    /// </summary>
+    /// <param name="elemBuilder">Form element builder</param>
+    /// <param name="value">Default value</param>
+    /// <param name="rows">textarea rows</param>
+    /// <param name="cols">textarea cols</param>
+    let internal generalTextarea elemBuilder value (rows: int option) (cols: int option) : string Formlet = 
         let attributes = 
             let rows = match rows with Some r -> ["rows",r.ToString()] | _ -> []
             let cols = match cols with Some r -> ["cols",r.ToString()] | _ -> []
@@ -325,10 +400,22 @@ module Formlet =
         elemBuilder value tag
         |> extractString
 
+    /// <summary>
+    /// Creates a &lt;textarea&gt; formlet
+    /// </summary>
+    /// <param name="value">Default value</param>
     let textarea value = generalTextarea generalGeneratedElement [Value value]
 
+    /// <summary>
+    /// Creates a &lt;textarea&gt; formlet with a manually assigned name
+    /// </summary>
+    /// <param name="name">Form element name</param>
+    /// <param name="value">Default value</param>
     let assignedTextarea name value = generalTextarea (generalAssignedElement name) [Value value]
 
+    /// <summary>
+    /// Creates an &lt;input type=&quot;file&quot;&gt; formlet
+    /// </summary>
     let file : HttpPostedFileBase option Formlet = 
         let tag name boundValue = 
             [Tag("input", ["type", "file"; "name", name], [])]
@@ -339,24 +426,69 @@ module Formlet =
             | _ -> failwith "File expected, got value instead"
         let r = generalGeneratedElement [] tag
         lift (Seq.nth 0 >> Some >> fileOnly) r
-            
+
+    /// <summary>
+    /// Creates a &lt;form&gt; tag
+    /// </summary>
+    /// <param name="hmethod">Form method attribute</param>
+    /// <param name="haction">Form action attribute</param>
+    /// <param name="attributes">Additional attributes</param>
+    /// <param name="v">Formlet</param>
     let form hmethod haction attributes (v: 'a Formlet) : 'a Formlet = 
         tag "form" (["method",hmethod; "action",haction] @ attributes) v
 
+    /// <summary>
+    /// Creates an &lt;input type=&quot;submit&quot;&gt; tag
+    /// </summary>
+    /// <param name="n">Submit value</param>
     let submit n = tag "input" ["type","submit"; "value",n] nop
 
+    /// <summary>
+    /// Creates a &lt;br/&gt; tag
+    /// </summary>
     let br = tag "br" [] nop
 
+    /// <summary>
+    /// Creates an &lt;iframe&gt; tag
+    /// </summary>
+    /// <param name="src">Iframe src</param>
+    /// <param name="attr">Additional attributes</param>
     let iframe src attr = xml [Tag("iframe", (attr @ ["src",src]), [])]
+
+    /// <summary>
+    /// Creates an &lt;noscript&gt; tag
+    /// </summary>
+    /// <param name="x">Content</param>
     let noscript x = tag "noscript" [] x
+
+    /// <summary>
+    /// Creates an &lt;script&gt; tag
+    /// </summary>
+    /// <param name="src">Script src</param>
     let script src = tag "script" ["type","text/javascript"; "src",src] nop
 
+    /// <summary>
+    /// reCaptcha settings
+    /// </summary>
     type ReCaptchaSettings = {
+        /// reCaptcha public key
         PublicKey: string
+        /// reCaptcha private key
         PrivateKey: string
+
+        /// <summary>
+        /// Mocked result for testing. 
+        /// If <c>Some x</c>, the response will not be validated against the reCaptcha service and will return <c>x</c> instead
+        /// </summary>
         MockedResult: bool option
     }
 
+    /// <summary>
+    /// Creates a reCaptcha formlet
+    /// </summary>
+    /// <param name="settings">reCaptcha settings</param>
+    /// <param name="requestIP">request IP, used for validation only</param>
+    /// <seealso href="http://www.google.com/recaptcha">reCaptcha</seealso>
     let reCaptcha (settings: ReCaptchaSettings) requestIP = 
         let validate (challenge, response) =
             match settings.MockedResult with
@@ -376,4 +508,3 @@ module Formlet =
         )
         |> satisfies (err validate (fun (_,_) -> "Invalid captcha"))
         |> lift ignore
-
