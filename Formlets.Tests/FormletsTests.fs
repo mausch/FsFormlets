@@ -97,7 +97,11 @@ let radioRun() =
 let radioRefill() =
     let env = EnvDict.fromValueSeq ["input_0", "2"]
     let nth a b = List.nth b a
-    let r = run radioFormlet env |> fst |> nth 0 |> xml_item.getChildren
+    let getChildren =
+        function
+        | Tag(_,_,c) -> c
+        | _ -> failwith "Expected tag, got text"
+    let r = run radioFormlet env |> fst |> nth 0 |> getChildren
     printfn "%A" r
     let input1 = r.[0]
     let input2 = r.[2]
