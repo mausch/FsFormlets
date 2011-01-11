@@ -314,14 +314,14 @@ module Formlet =
             let cols = match cols with Some r -> ["cols",r.ToString()] | _ -> []
             rows @ cols
         let tag name boundValue = 
-            let valueAttr =
+            let content =
                 match boundValue with
                 | [v] -> 
                     match v with
-                    | Value v -> ["value", v]
+                    | Value v -> v
                     | _ -> failwith "file not expected"
-                | _ -> []
-            [Tag("textarea", ["name",name] @ valueAttr @ attributes, [])]
+                | _ -> ""
+            [Tag("textarea", ["name",name] @ attributes, [Text content])]
         elemBuilder value tag
         |> extractString
 

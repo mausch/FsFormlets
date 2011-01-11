@@ -128,6 +128,19 @@ let inputRefill() =
     | _ -> failwith "err"
 
 [<Fact>]
+let textareaRefill() =
+    let env = EnvDict.fromValueSeq ["input_0", "pepe"]
+    let formlet = textarea "" None None
+    let r = run formlet env |> fst
+    printfn "%A" r
+    match r.[0] with
+    | Tag(_,_,content) -> 
+        match content with
+        | [Text s] -> Assert.Equal("pepe", s)
+        | x -> failwithf "Unexpected content %A" x
+    | _ -> failwith "err"
+
+[<Fact>]
 let manualFormletRenderTest() =
     let html = render manualNameFormlet
     printfn "%s" html
