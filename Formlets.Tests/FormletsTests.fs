@@ -154,8 +154,14 @@ let manualFormletRenderTest() =
 let manualFormletProcessTest() =
     let env = ["somename", "somevalue"]
     let env = EnvDict.fromValueSeq env
-    let r = run manualNameFormlet env |> snd |> Option.get
+    let r = run manualNameFormlet env
+    let err = fst r
+    let r = r |> snd |> Option.get
     Assert.Equal("somevalue", r)
+    match err with
+    | [Tag(_,attr,_)] ->
+        Assert.Equal(["name","somename"; "value","somevalue"], attr)
+    | x -> failwithf "Unexpected content %A" x
 
 [<Fact>]
 let renderTest() =
