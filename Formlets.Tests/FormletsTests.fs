@@ -8,7 +8,6 @@ open System.Globalization
 open System.Web
 open System.Xml.Linq
 open Formlets
-open Formlets.Formlet
 
 let assertThrows<'e when 'e :> exn> f = 
     Assert.Throws<'e>(Assert.ThrowsDelegate(f)) |> ignore

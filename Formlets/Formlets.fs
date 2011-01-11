@@ -31,6 +31,7 @@ type private 'a EAO = 'a AO Environ
 type private 'a AEAO = 'a EAO XmlWriter
 type 'a Formlet = 'a Error XmlWriter Environ XmlWriter NameGen
 
+[<AutoOpen>]
 module Formlet =
 
     // AE = Compose (XmlWriter) (Environment)
