@@ -43,6 +43,7 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Helpers.fs" />
     <Compile Include="NameValueCollection.fs" />
     <Compile Include="XmlWriter.fs" />
     <Compile Include="NameGen.fs" />
