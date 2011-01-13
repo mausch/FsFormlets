@@ -12,14 +12,9 @@ open Formlets
 let assertThrows<'e when 'e :> exn> f = 
     Assert.Throws<'e>(Assert.ThrowsDelegate(f)) |> ignore
 
-let isInt = Int32.TryParse >> fst
-
-let intValidator : string Validator =
-    err isInt (sprintf "%s is not a valid number")
-
 let input = input "" [] // no additional attributes
 
-let inputInt = lift int (input |> satisfies intValidator)
+let inputInt = lift int (input |> Validate.isInt)
 //let inputInt = yields (fun i -> int i) <*> (input |> satisfies intValidator) // equivalent to above
 
 let dateFormlet =
