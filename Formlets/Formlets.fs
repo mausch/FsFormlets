@@ -9,6 +9,7 @@ TODO:
 *)
 
 open System
+open System.Collections.Generic
 open System.Collections.Specialized
 open System.Web
 
@@ -506,4 +507,20 @@ module Formlet =
             <*> assignedHidden "recaptcha_response_field" "manual_challenge"
         )
         |> satisfies (err validate (fun (_,_) -> "Invalid captcha"))
+        |> lift ignore
+
+    let antiCSRF (session: IDictionary<string,obj>) : unit Formlet = 
+        let tokenKey = "antiCSRF_token"
+        use rng = new System.Security.Cryptography.RNGCryptoServiceProvider()
+        let tokenValue =
+            match session.TryGetValue tokenKey with
+            | true, v -> unbox v
+            | _ ->
+                let buffer : byte[] = Array.zeroCreate 10
+                rng.GetBytes(buffer)
+                session.Add(tokenKey, buffer)
+                buffer
+        let tokenValueBase64 = Convert.ToBase64String tokenValue
+        hidden tokenValueBase64
+        |> satisfies (err ((=) tokenValueBase64) (fun _ -> "Invalid CSRF token"))
         |> lift ignore
