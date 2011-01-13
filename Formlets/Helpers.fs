@@ -62,8 +62,12 @@ module Helpers =
     /// Builds a 8-tuple
     let t8 a b c d e f g h = a,b,c,d,e,f,g,h
 
-    let addClass clazz attr = 
-        match Seq.tryFindWithIndex (fun (k,_) -> k = "class") attr with
-        | Some (i,(k,v)) -> List.replaceAt (k,v + " " + clazz) i attr
-        | _ -> ("class",clazz)::attr
+    let appendToSameKey key sep value attr =
+        match Seq.tryFindWithIndex (fun (k,_) -> k = key) attr with
+        | Some (i,(k,v)) -> List.replaceAt (k,v + sep + value) i attr
+        | _ -> (key,value)::attr
 
+    let addClass = appendToSameKey "class" " "
+
+    let addStyle = appendToSameKey "style" ";"
+        
