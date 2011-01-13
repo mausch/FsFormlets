@@ -24,8 +24,8 @@ let inputInt = lift int (input |> satisfies intValidator)
 
 let dateFormlet =
     let baseFormlet = 
-        tag "div" ["style","padding:8px"] (
-            tag "span" ["style", "border: 2px solid; padding: 4px"] (
+        div ["style","padding:8px"] (
+            span ["style", "border: 2px solid; padding: 4px"] (
 (*            puree (fun month day -> DateTime(2010, month, day)) <*>
             text "Month: " *> inputInt <*>
             text "Day: " *> inputInt
@@ -63,7 +63,7 @@ let dateFormlet =
     lift (fun (month,day) -> DateTime(2010, month, day)) validatingFormlet
 
 let fullFormlet =
-    tag "div" [] (
+    span [] (
         yields t8
         <*> dateFormlet
         <*> password
@@ -79,7 +79,7 @@ let manualNameFormlet =
     assignedInput "somename" "" []
 
 let radioFormlet = 
-    tag "div" [] (radio "1" ["1","uno"; "2","dos"])
+    div [] (radio "1" ["1","uno"; "2","dos"])
 
 [<Fact>]
 let radioRender() =

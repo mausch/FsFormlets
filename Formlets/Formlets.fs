@@ -426,6 +426,16 @@ module Formlet =
     let br = tag "br" [] nop
 
     /// <summary>
+    /// Creates a &lt;div/&gt; tag
+    /// </summary>
+    let div attr = tag "div" attr
+
+    /// <summary>
+    /// Creates a &lt;span/&gt; tag
+    /// </summary>
+    let span attr = tag "span" attr
+
+    /// <summary>
     /// Creates an &lt;iframe&gt; tag
     /// </summary>
     /// <param name="src">Iframe src</param>
