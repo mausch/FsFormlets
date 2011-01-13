@@ -44,7 +44,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Helpers.fs" />
-    <Compile Include="NameValueCollection.fs" />
     <Compile Include="XmlWriter.fs" />
     <Compile Include="NameGen.fs" />
     <Compile Include="Environ.fs" />

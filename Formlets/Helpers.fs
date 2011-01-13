@@ -1,5 +1,44 @@
 ﻿namespace Formlets
 
+module NameValueCollection =
+    open System.Collections.Specialized
+
+    let concat a b = 
+        let x = NameValueCollection()
+        x.Add a
+        x.Add b
+        x
+
+    let add (x: NameValueCollection) (a,b) = x.Add(a,b)
+
+    let toSeq (a: NameValueCollection) =
+        a.AllKeys
+        |> Seq.collect (fun k -> a.GetValues k |> Seq.map (fun v -> k,v))
+
+    let toList a = toSeq a |> Seq.toList
+
+    let fromSeq l =
+        let x = NameValueCollection()
+        Seq.iter (add x) l
+        x
+
+module Seq =
+    let index a = Seq.zip (Seq.initInfinite id) a
+    let tryFindWithIndex pred l =
+        l |> index |> Seq.tryFind (fun (_,v) -> pred v)
+
+module List =
+    let skip i = Seq.skip i >> Seq.toList
+    let take i = Seq.take i >> Seq.toList
+    let sub startIndex count = Seq.skip startIndex >> Seq.take count >> Seq.toList
+    // Replaces an item in a list. Probably horribly inefficient
+    let replaceAt item i l =
+        match i with
+        | x when x < 0 -> failwith "Out of bounds"
+        | x when x >= List.length l -> failwith "Out of bounds"
+        | 0 -> item::List.tail l
+        | x -> (take x l) @ (item::(skip (x+1) l))
+
 [<AutoOpen>]
 module Helpers = 
     /// Builds a pair (2-tuple)
@@ -23,4 +62,8 @@ module Helpers =
     /// Builds a 8-tuple
     let t8 a b c d e f g h = a,b,c,d,e,f,g,h
 
+    let addClass clazz attr = 
+        match Seq.tryFindWithIndex (fun (k,_) -> k = "class") attr with
+        | Some (i,(k,v)) -> List.replaceAt (k,v + " " + clazz) i attr
+        | _ -> ("class",clazz)::attr
 
