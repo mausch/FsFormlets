@@ -70,4 +70,17 @@ module Helpers =
     let addClass = appendToSameKey "class" " "
 
     let addStyle = appendToSameKey "style" ";"
-        
+
+    let addOrOverwrite kv attr = 
+        let key,value = kv
+        match Seq.tryFindWithIndex (fun (k,_) -> k = key) attr with
+        | Some (i,(k,v)) -> List.replaceAt (k,value) i attr
+        | _ -> (key,value)::attr
+
+    let mergeAttr a1 a2 =
+        let folder r a =
+            match a with
+            | "class",v -> addClass v r
+            | "style",v -> addStyle v r
+            | _ -> addOrOverwrite a r
+        Seq.fold folder a2 a1

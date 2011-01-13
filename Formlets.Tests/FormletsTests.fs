@@ -280,3 +280,43 @@ let ``addStyle with existing style``() =
     let after = before |> addStyle "border: 1px"
     Assert.Equal(["something","value"; "style","color:red;border: 1px"], after)
     
+[<Fact>]
+let ``mergeAttr with no dups``() =
+    let a1 = ["something","value"]
+    let a2 = ["style","color:red"]
+    let r = mergeAttr a1 a2
+    printfn "%A" r
+    Assert.Equal(2, r.Length)
+    Assert.True(r |> List.exists ((=) ("something","value")))
+    Assert.True(r |> List.exists ((=) ("style","color:red")))
+     
+[<Fact>]
+let ``mergeAttr with dups``() =
+    let a1 = ["something","value"; "else","1"]
+    let a2 = ["something","red"]
+    let r = a1 |> mergeAttr a2
+    printfn "%A" r
+    Assert.Equal(2, r.Length)
+    Assert.True(r |> List.exists ((=) ("something","red")))
+    Assert.True(r |> List.exists ((=) ("else","1")))
+     
+[<Fact>]
+let ``mergeAttr with dup class``() =
+    let a1 = ["something","value"; "class","1"]
+    let a2 = ["something","red"; "class","bla"]
+    let r = a1 |> mergeAttr a2
+    printfn "%A" r
+    Assert.Equal(2, r.Length)
+    Assert.True(r |> List.exists ((=) ("something","red")))
+    Assert.True(r |> List.exists ((=) ("class","1 bla")))
+     
+[<Fact>]
+let ``mergeAttr with dup style``() =
+    let a1 = ["something","value"; "style","1"]
+    let a2 = ["something","red"; "style","bla"]
+    let r = a1 |> mergeAttr a2
+    printfn "%A" r
+    Assert.Equal(2, r.Length)
+    Assert.True(r |> List.exists ((=) ("something","red")))
+    Assert.True(r |> List.exists ((=) ("style","1;bla")))
+     
