@@ -255,3 +255,28 @@ let ``textarea encoded``() =
     let html = render formlet
     printfn "%s" html
     Assert.Contains("&lt;script&gt;", html)
+
+[<Fact>]
+let ``addClass with no previous class``() =
+    let before = ["something","value"]
+    let after = before |> addClass "aclass"
+    Assert.Equal(["class","aclass"; "something","value"], after)
+
+[<Fact>]
+let ``addClass with existing class``() =
+    let before = ["something","value"; "class","class1"]
+    let after = before |> addClass "aclass"
+    Assert.Equal(["something","value"; "class","class1 aclass"], after)
+    
+[<Fact>]
+let ``addStyle with no previous style``() =
+    let before = ["something","value"]
+    let after = before |> addStyle "border: 1px"
+    Assert.Equal(["style","border: 1px"; "something","value"], after)
+    
+[<Fact>]
+let ``addStyle with existing style``() =
+    let before = ["something","value"; "style","color:red"]
+    let after = before |> addStyle "border: 1px"
+    Assert.Equal(["something","value"; "style","color:red;border: 1px"], after)
+    
