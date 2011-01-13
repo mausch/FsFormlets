@@ -456,16 +456,28 @@ module Formlet =
     let iframe src attr = tag "iframe" (attr @ ["src",src]) nop
 
     /// <summary>
-    /// Creates an &lt;noscript&gt; tag
+    /// Creates a &lt;noscript&gt; tag
     /// </summary>
     /// <param name="x">Content</param>
     let noscript x = tag "noscript" [] x
 
     /// <summary>
-    /// Creates an &lt;script&gt; tag
+    /// Creates a &lt;script&gt; tag
     /// </summary>
     /// <param name="src">Script src</param>
     let script src = tag "script" ["type","text/javascript"; "src",src] nop
+
+    /// <summary>
+    /// Creates a &lt;fieldset&gt; tag
+    /// </summary>
+    /// <param name="attr">Attributes</param>
+    let fieldset attr = tag "fieldset" attr
+
+    /// <summary>
+    /// Creates a &lt;legend&gt; tag
+    /// </summary>
+    /// <param name="attr">Attributes</param>
+    let legend attr = tag "legend" attr
 
     /// <summary>
     /// reCaptcha settings
