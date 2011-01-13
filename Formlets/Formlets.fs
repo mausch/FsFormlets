@@ -453,7 +453,7 @@ module Formlet =
     /// </summary>
     /// <param name="src">Iframe src</param>
     /// <param name="attr">Additional attributes</param>
-    let iframe src attr = xml [Tag("iframe", (attr @ ["src",src]), [])]
+    let iframe src attr = tag "iframe" (attr @ ["src",src]) nop
 
     /// <summary>
     /// Creates an &lt;noscript&gt; tag
