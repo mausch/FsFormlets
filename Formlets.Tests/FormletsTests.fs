@@ -241,3 +241,17 @@ let ``NameValueCollection to seq does not ignore duplicate keys``() =
     let values = NameValueCollection.toSeq e
     let values = values |> Seq.filter (fun (k,_) -> k = "1") |> Seq.toList
     Assert.Equal(2, values.Length)
+
+[<Fact>]
+let ``input encoded``() =
+    let formlet = Formlet.input "<script>" []
+    let html = render formlet
+    printfn "%s" html
+    Assert.Contains("&lt;script&gt;", html)
+
+[<Fact>]
+let ``textarea encoded``() =
+    let formlet = textarea "<script>" None None
+    let html = render formlet
+    printfn "%s" html
+    Assert.Contains("&lt;script&gt;", html)
