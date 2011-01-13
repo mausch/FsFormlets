@@ -9,4 +9,6 @@ module Validate =
         let e = err isOK msg
         satisfies e
 
-
+    let notEmpty =
+        let isOK = String.IsNullOrWhiteSpace >> not
+        satisfies (err isOK (fun _ -> "Mandatory field"))
