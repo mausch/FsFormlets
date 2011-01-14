@@ -510,6 +510,7 @@ module Formlet =
         |> lift ignore
 
     let antiCSRF (session: IDictionary<string,obj>) : unit Formlet = 
+        let eq a b = obj.Equals(a,b)
         let tokenKey = "antiCSRF_token"
         use rng = new System.Security.Cryptography.RNGCryptoServiceProvider()
         let tokenValue =
@@ -518,9 +519,9 @@ module Formlet =
             | _ ->
                 let buffer : byte[] = Array.zeroCreate 10
                 rng.GetBytes(buffer)
-                session.Add(tokenKey, buffer)
-                buffer
-        let tokenValueBase64 = Convert.ToBase64String tokenValue
-        hidden tokenValueBase64
-        |> satisfies (err ((=) tokenValueBase64) (fun _ -> "Invalid CSRF token"))
+                let t = Convert.ToBase64String buffer
+                session.Add(tokenKey, t)
+                t
+        hidden tokenValue
+        |> satisfies (err (eq session.[tokenKey]) (fun _ -> "Invalid CSRF token"))
         |> lift ignore
