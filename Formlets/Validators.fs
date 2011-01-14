@@ -12,6 +12,13 @@ module Validators =
             g (r + if d < 10 then d else d - 9) (1 - c) (i - 1)
         (g 0 0 s.Length) % 10 = 0
 
+    open System.Text.RegularExpressions
+    let private rx = // from http://haacked.com/archive/2007/08/21/i-knew-how-to-validate-an-email-address-until-i.aspx
+        Regex(@"^(?!\.)(""([^""\r\\]|\\[""\r\\])*""|" 
+            + @"([-a-z0-9!#$%&'*+/=?^_`{|}~]|(?<!\.)\.)*)(?<!\.)" 
+            + @"@[a-z0-9][\w\.-]*[a-z0-9]\.[a-z][a-z\.]*[a-z]$", RegexOptions.IgnoreCase ||| RegexOptions.Compiled)
+    let email (s: string) = rx.IsMatch s
+
 module Validate =
     let isInt =
         let isOK = Int32.TryParse >> fst
@@ -29,3 +36,6 @@ module Validate =
     let inRange min max =
         let isOK n = n >= min && n <= max
         satisfies (err isOK (fun _ -> sprintf "Field must be between %d and %d" min max))
+
+    let isEmail =
+        satisfies (err Validators.email (fun _ -> "Invalid email"))
