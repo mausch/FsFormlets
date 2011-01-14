@@ -421,6 +421,12 @@ module Formlet =
     let submit n = tag "input" ["type","submit"; "value",n] nop
 
     /// <summary>
+    /// Creates an &lt;input type=&quot;image&quot;&gt; tag
+    /// </summary>
+    /// <param name="src">Image src</param>
+    let image src = tag "input" ["type","submit"; "src",src] nop
+
+    /// <summary>
     /// Creates a &lt;br/&gt; tag
     /// </summary>
     let br = tag "br" [] nop
