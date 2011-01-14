@@ -12,7 +12,6 @@ module Validators =
             g (r + if d < 10 then d else d - 9) (1 - c) (i - 1)
         (g 0 0 s.Length) % 10 = 0
 
-
 module Validate =
     let isInt =
         let isOK = Int32.TryParse >> fst
@@ -26,3 +25,7 @@ module Validate =
 
     let creditCard =
         satisfies (err Validators.luhn (fun _ -> "Invalid credit card number"))
+
+    let inRange min max =
+        let isOK n = n >= min && n <= max
+        satisfies (err isOK (fun _ -> sprintf "Field must be between %d and %d" min max))
