@@ -65,7 +65,7 @@ let fullFormlet =
         <*> checkbox false
         <*> radio "1" ["1","uno"; "2","dos"]
         <*> select "a" ["a","uno"; "b","dos"]
-        <*> textarea "" None None
+        <*> textarea "" []
         <*> selectMulti ["a";"b"] ["a","uno"; "b","dos"]
         <*> file
     )
@@ -128,7 +128,7 @@ let inputRefill() =
 [<Fact>]
 let textareaRefill() =
     let env = EnvDict.fromValueSeq ["input_0", "pepe"]
-    let formlet = textarea "" None None
+    let formlet = textarea "" []
     let r = run formlet env |> fst
     printfn "%A" r
     match r.[0] with
@@ -246,7 +246,7 @@ let ``input encoded``() =
 
 [<Fact>]
 let ``textarea encoded``() =
-    let formlet = textarea "<script>" None None
+    let formlet = textarea "<script>" []
     let html = render formlet
     printfn "%s" html
     Assert.Contains("&lt;script&gt;", html)

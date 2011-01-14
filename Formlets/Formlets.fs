@@ -358,13 +358,8 @@ module Formlet =
     /// </summary>
     /// <param name="elemBuilder">Form element builder</param>
     /// <param name="value">Default value</param>
-    /// <param name="rows">textarea rows</param>
-    /// <param name="cols">textarea cols</param>
-    let internal generalTextarea elemBuilder value (rows: int option) (cols: int option) : string Formlet = 
-        let attributes = 
-            let rows = match rows with Some r -> ["rows",r.ToString()] | _ -> []
-            let cols = match cols with Some r -> ["cols",r.ToString()] | _ -> []
-            rows @ cols
+    /// <param name="attr">Element attributes</param>
+    let internal generalTextarea elemBuilder value attr : string Formlet = 
         let tag name boundValue = 
             let content =
                 match boundValue with
@@ -373,7 +368,7 @@ module Formlet =
                     | Value v -> v
                     | _ -> failwith "file not expected"
                 | _ -> ""
-            [Tag("textarea", ["name",name] @ attributes, [Text content])]
+            [Tag("textarea", ["name",name] @ attr, [Text content])]
         elemBuilder value tag
         |> extractString
 
@@ -508,7 +503,7 @@ module Formlet =
         *> noscript (
             yields t2
             <*> iframe (sprintf "http://www.google.com/recaptcha/api/noscript?k=%s" settings.PublicKey) ["height","300"; "width","500"; "frameborder","0"] 
-            *> assignedTextarea "recaptcha_challenge_field" "" (Some 3) (Some 40)
+            *> assignedTextarea "recaptcha_challenge_field" "" ["rows","3"; "cols","40"]
             <*> assignedHidden "recaptcha_response_field" "manual_challenge"
         )
         |> satisfies (err validate (fun (_,_) -> "Invalid captcha"))
