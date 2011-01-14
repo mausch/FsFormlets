@@ -27,15 +27,17 @@ module XmlWriter =
     let inline text s = xml [Text s]
     let inline tag name attributes (v: 'a XmlWriter) : 'a XmlWriter = 
         plug (fun x -> [Tag (name, attributes, x)]) v
+    let emptyElems = ["area";"base";"basefont";"br";"col";"frame";"hr";"img";"input";"isindex";"link";"meta";"param"]
     open System.Xml.Linq
     let render xml =
         let (!!) x = XName.op_Implicit x
         let xattr (name, value: string) = XAttribute(!!name, value)
         let xelem name (attributes: obj list) (children: obj list) = 
+            let isEmpty = List.exists ((=) name) emptyElems
             let children = 
-                match children with
-                | [] -> [box (XText "")]
-                | x -> x
+                match children,isEmpty with
+                | [],false -> [box (XText "")]
+                | _ -> children
             XElement(!!name, attributes @ children)
         let rec render' = 
             function

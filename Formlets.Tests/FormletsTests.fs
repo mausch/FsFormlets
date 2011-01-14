@@ -142,7 +142,7 @@ let textareaRefill() =
 let manualFormletRenderTest() =
     let html = render manualNameFormlet
     printfn "%s" html
-    Assert.Equal("<input name=\"somename\" value=\"\"></input>", html)
+    Assert.Equal("<input name=\"somename\" value=\"\" />", html)
 
 [<Fact>]
 let manualFormletProcessTest() =
