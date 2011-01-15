@@ -40,9 +40,12 @@ module XmlWriter =
                 | _ -> children
             XElement(!!name, attributes @ children)
         let rec renderForest x =
+            let render' =
+                function
+                | Text t -> box (XText t)
+                | Tag (name, attr, children) -> 
+                    let attr = List.map (xattr >> box) attr
+                    let children = renderForest children
+                    box (xelem name attr children)
             List.map render' x
-        and render' =
-            function
-            | Text t -> box (XText t)
-            | Tag (name, attr, children) -> box (xelem name (attr |> List.map (xattr >> box)) (renderForest children))
         XDocument (renderForest xml)
