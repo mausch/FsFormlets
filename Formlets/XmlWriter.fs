@@ -32,20 +32,20 @@ module XmlWriter =
     let render xml =
         let (!!) x = XName.op_Implicit x
         let xattr (name, value: string) = XAttribute(!!name, value)
-        let xelem name (attributes: obj list) (children: obj list) = 
+        let xelem name (attributes: XObject list) (children: XNode list) = 
             let isEmpty = List.exists ((=) name) emptyElems
             let children = 
                 match children,isEmpty with
-                | [],false -> [box (XText "")]
-                | _ -> children
+                | [],false -> [(XText "") :> XObject]
+                | _ -> List.map (fun x -> upcast x) children
             XElement(!!name, attributes @ children)
         let rec renderForest x =
             let render' =
                 function
-                | Text t -> box (XText t)
+                | Text t -> XText t :> XNode
                 | Tag (name, attr, children) -> 
-                    let attr = List.map (xattr >> box) attr
+                    let attr = List.map (fun a -> xattr a :> XObject) attr
                     let children = renderForest children
-                    box (xelem name attr children)
+                    upcast (xelem name attr children)
             List.map render' x
         XDocument (renderForest xml)
