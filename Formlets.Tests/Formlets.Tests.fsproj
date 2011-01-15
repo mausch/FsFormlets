@@ -57,7 +57,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Formlets\Formlets.fsproj">
       <Name>Formlets</Name>
-      <Project>{d5a17cef-e6a6-459d-961f-588a1a1dcd49}</Project>
+      <Project>{d628a18c-7c64-48cd-bc52-add7a88a8770}</Project>
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
