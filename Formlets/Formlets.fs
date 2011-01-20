@@ -33,6 +33,7 @@ type private 'a AEAO = 'a EAO XmlWriter
 type 'a Formlet = 'a Error XmlWriter Environ XmlWriter NameGen
 
 [<AutoOpen>]
+[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Formlet =
 
     // AE = Compose (XmlWriter) (Environment)
