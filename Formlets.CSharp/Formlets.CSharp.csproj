@@ -44,6 +44,7 @@
     <Compile Include="Formlet.cs" />
     <Compile Include="FormletResult.cs" />
     <Compile Include="FormletT.cs" />
+    <Compile Include="FSharpOptionExtensions.cs" />
     <Compile Include="FuncFSharpFunc.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
