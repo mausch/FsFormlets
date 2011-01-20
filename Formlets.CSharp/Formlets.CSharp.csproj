@@ -42,6 +42,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Formlet.cs" />
+    <Compile Include="FormletT.cs" />
+    <Compile Include="FuncFSharpFunc.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

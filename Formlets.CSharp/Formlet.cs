@@ -5,41 +5,6 @@ using Microsoft.FSharp.Collections;
 using Microsoft.FSharp.Core;
 
 namespace Formlets.CSharp {
-    public class Formlet<T> {
-        private readonly FSharpFunc<int, Tuple<Tuple<FSharpList<xml_item>, FSharpFunc<FSharpList<Tuple<string, InputValue>>, Tuple<FSharpList<xml_item>, FSharpOption<T>>>>, int>> f;
-
-        public Formlet(FSharpFunc<int, Tuple<Tuple<FSharpList<xml_item>, FSharpFunc<FSharpList<Tuple<string, InputValue>>, Tuple<FSharpList<xml_item>, FSharpOption<T>>>>, int>> f) {
-            this.f = f;
-        }
-
-        public static implicit operator FSharpFunc<int, Tuple<Tuple<FSharpList<xml_item>, FSharpFunc<FSharpList<Tuple<string, InputValue>>, Tuple<FSharpList<xml_item>, FSharpOption<T>>>>, int>>(Formlet<T> f) {
-            return f.f;
-        }
-
-        public Formlet<B> Apply<B>(Formlet<Func<T, B>> a) {
-            var ff = Formlet.FormletFSharpFunc(a);
-            var r = new Formlet<B>(FormletModule.ap(ff.f, this.f));
-            return r;
-        }
-
-    }
-
-    public class FuncFSharpFunc<A, B> : FSharpFunc<A, B> {
-        private readonly Func<A, B> f;
-
-        public FuncFSharpFunc(Func<A, B> f) {
-            this.f = f;
-        }
-
-        public override B Invoke(A func) {
-            return f(func);
-        }
-
-        public static FSharpFunc<A, B> FromFunc(Func<A, B> f) {
-            return new FuncFSharpFunc<A, B>(f);
-        }
-    }
-
     public static class Formlet {
         public static FSharpList<Tuple<K, V>> DictToTupleList<K, V>(IEnumerable<KeyValuePair<K, V>> dict) {
             var tuples = dict.Select(kv => Tuple.Create(kv.Key, kv.Value));
