@@ -22,11 +22,14 @@ namespace Formlets.CSharp {
             return r;
         }
 
-        public void Run(IEnumerable<KeyValuePair<string, string>> env) {
+        public FormletResult<T> Run(IEnumerable<KeyValuePair<string, string>> env) {
             var ff = FormletModule.run(f);
             var tuples = env.Select(kv => Tuple.Create(kv.Key, InputValue.NewValue(kv.Value)));
             var list = SeqModule.ToList(tuples);
             var r = ff.Invoke(list);
+            var xdoc = XmlWriter.render(r.Item1);
+            var value = r.Item2;
+            return new FormletResult<T>(xdoc, value);
         }
 
     }
