@@ -32,5 +32,9 @@ namespace Formlets.CSharp {
             return new FormletResult<T>(xdoc, value);
         }
 
+        public string Render() {
+            return FormletModule.render(f);
+        }
+
     }
 }

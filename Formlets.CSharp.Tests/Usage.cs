@@ -14,5 +14,13 @@ namespace Formlets.CSharp.Tests {
             Console.WriteLine(result.ErrorForm);
             Assert.Equal("<input name=\"input_0\" value=\"something\" />", result.ErrorForm.ToString());
         }
+
+        [Fact]
+        public void Render() {
+            var input = Formlet.Input("a value", new Dictionary<string, string> {{"size","10"}});
+            var html = input.Render();
+            Console.WriteLine(html);
+            Assert.Equal("<input name=\"input_0\" value=\"a value\" size=\"10\" />", html);
+        }
     }
 }
