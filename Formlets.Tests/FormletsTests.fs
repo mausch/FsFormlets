@@ -101,12 +101,12 @@ let radioRefill() =
     let input2 = r.[2]
     match input1 with
     | Tag e -> 
-        let attr = e.Attributes() |> Seq.map (fun a -> a.Name.LocalName,a.Value)
+        let attr = getAttr e
         Assert.False(Seq.exists (fun (k,_) -> k = "checked") attr)
     | _ -> failwith "err"
     match input2 with
     | Tag e -> 
-        let attr = e.Attributes() |> Seq.map (fun a -> a.Name.LocalName,a.Value)
+        let attr = getAttr e
         Assert.True(Seq.exists (fun (k,_) -> k = "checked") attr)
     | _ -> failwith "err"
 
@@ -118,7 +118,7 @@ let checkboxRefill() =
     printfn "%A" r
     match r.[0] with
     | Tag e -> 
-        let attr = e.Attributes() |> Seq.map (fun a -> a.Name.LocalName,a.Value)
+        let attr = getAttr e
         Assert.True(Seq.exists (fun (k,_) -> k = "checked") attr)
     | _ -> failwith "err"
 
@@ -129,7 +129,7 @@ let inputRefill() =
     printfn "%A" r
     match r.[0] with
     | Tag e -> 
-        let attr = e.Attributes() |> Seq.map (fun a -> a.Name.LocalName,a.Value)
+        let attr = getAttr e
         Assert.True(Seq.exists (fun (k,v) -> k = "value" && v = "pepe") attr)
     | _ -> failwith "err"
 
@@ -164,7 +164,7 @@ let manualFormletProcessTest() =
     Assert.Equal("somevalue", r)
     match err with
     | [Tag e] ->
-        let attr = e.Attributes() |> Seq.map (fun a -> a.Name.LocalName,a.Value) |> Seq.toList
+        let attr = getAttr e
         Assert.Equal(["name","somename"; "value","somevalue"], attr)
     | _ -> failwithf "Unexpected content %A" err
 

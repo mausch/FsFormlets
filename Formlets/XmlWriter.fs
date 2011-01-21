@@ -14,6 +14,10 @@ module XmlHelpers =
         match n with
         | :? XText as t -> Some t
         | _ -> None
+    let getAttr (e: XElement) =
+        e.Attributes() 
+        |> Seq.map (fun a -> a.Name.LocalName,a.Value)
+        |> Seq.toList
 
 /// Applicative functor that manipulates HTML as XML
 module XmlWriter =
