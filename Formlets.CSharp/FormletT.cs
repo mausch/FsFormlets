@@ -41,6 +41,5 @@ namespace Formlets.CSharp {
         public string Render() {
             return FormletModule.render(f);
         }
-
     }
 }
