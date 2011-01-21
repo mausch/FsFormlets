@@ -90,12 +90,20 @@ module Formlet =
 
     let inline yields x = puree x // friendly alias
 
-    /// Lifts a xml tree to formlet
-    let xml x : unit Formlet = 
-        let v = XmlWriter.xml x
+    let private liftXml v =
         let xml1 = XmlWriter.lift Error.puree v |> Environ.puree
         let xml2 = XmlWriter.lift (fun _ -> xml1) v
         NameGen.puree xml2
+
+    /// Lifts a xml tree to formlet
+    let xml x : unit Formlet = 
+        let v = XmlWriter.xml x
+        liftXml v
+
+    open System.Xml.Linq
+    let xelem (e: XElement) : unit Formlet =
+        let v = XmlWriter.xelem e
+        liftXml v
 
     /// No-operation formlet
     let nop = puree ()

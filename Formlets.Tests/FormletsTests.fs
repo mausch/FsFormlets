@@ -314,4 +314,23 @@ let ``mergeAttr with dup style``() =
     Assert.Equal(2, r.Length)
     Assert.True(r |> List.exists ((=) ("something","red")))
     Assert.True(r |> List.exists ((=) ("style","1;bla")))
+
+open System.Xml.Linq
+
+// DSL for XML literals, from http://fssnip.net/U
+
+let (!) s = XName.Get(s)
+let (@=) xn value = XAttribute(xn, value)
+let (@?=) xn value = match value with Some s -> XAttribute(xn, s) | None -> null
+type XName with 
+    member xn.Item 
+        with get([<ParamArray>] objs: obj[]) = 
+            if objs = null then null else XElement(xn, objs)
      
+[<Fact>]
+let ``from XElement``() =
+    let div = !"div"
+    let x = div.[div.["hello", div.[null]], div.["world"]]
+    let formlet = xelem x
+    Assert.Equal(x.ToString(), render formlet)
+

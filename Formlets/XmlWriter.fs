@@ -1,6 +1,5 @@
 ﻿namespace Formlets
 
-
 type xml_item = 
     | Text of string 
     | Tag of string * (string*string) list * xml_item list // tagname, attributes, children    
@@ -28,7 +27,24 @@ module XmlWriter =
     let inline tag name attributes (v: 'a XmlWriter) : 'a XmlWriter = 
         plug (fun x -> [Tag (name, attributes, x)]) v
     let emptyElems = ["area";"base";"basefont";"br";"col";"frame";"hr";"img";"input";"isindex";"link";"meta";"param"]
+
     open System.Xml.Linq
+    let xelem (e: XNode) : unit XmlWriter =
+        let rec xelem' (e: XNode) =
+            let attr (x: XAttribute) = x.Name.LocalName, x.Value
+            let elem (e: XElement) =
+                let a = e.Attributes() |> Seq.map attr |> Seq.toList
+                let name = e.Name.LocalName
+                let children = e.Nodes() |> Seq.collect xelem' |> Seq.toList
+                Tag(name,a,children)
+            match e with
+            | :? XComment -> []
+            | :? XText as t -> [Text t.Value]
+            | :? XElement as e -> [elem e]
+            | :? XDocument as d -> [elem d.Document.Root]
+            | _ -> failwithf "Unknown element %A" e
+        xml (xelem' e)
+
     let render xml =
         let (!!) x = XName.op_Implicit x
         let xattr (name, value: string) = XAttribute(!!name, value)
