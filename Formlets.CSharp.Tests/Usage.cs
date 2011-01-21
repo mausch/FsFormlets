@@ -30,7 +30,21 @@ namespace Formlets.CSharp.Tests {
             var result = inputInt.Run(new Dictionary<string, string> { {"input_0", "15" } });
             Assert.True(result.Value.IsSome());
             Assert.Equal(15, result.Value.Value);
+        }
 
+        [Fact]
+        public void PureApply() {
+            var input = Formlet.Input("a value", new Dictionary<string, string> { { "size", "10" } });
+            var inputInt = input.Lift(int.Parse);
+            var aa = Formlet.Yield<Func<string,Func<int,Tuple<string,int>>>>(a => b => Tuple.Create(a,b));
+            var kkk = Formlet.Apply(aa, input);
+            var formlet = Formlet.Apply(kkk, inputInt);
+            var result = formlet.Run(new Dictionary<string, string> {
+                { "input_0", "bla" },
+                { "input_1", "20" },
+            });
+            Assert.Equal("bla", result.Value.Value.Item1);
+            Assert.Equal(20, result.Value.Value.Item2);
         }
     }
 }

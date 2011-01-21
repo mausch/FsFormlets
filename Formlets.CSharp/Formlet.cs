@@ -24,5 +24,10 @@ namespace Formlets.CSharp {
         public static Formlet<B> Apply<A, B>(Formlet<Func<A, B>> a, Formlet<A> b) {
             return b.Apply(a);
         }
+
+        public static Formlet<T> Yield<T>(T value) {
+            var r =  FormletModule.puree(value);
+            return new Formlet<T>(r);
+        }
     }
 }
