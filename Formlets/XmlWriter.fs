@@ -65,9 +65,7 @@ module XmlWriter =
                     upcast (xelem name attr children)
             List.map render' x
         let nodes = renderForest xml
-        let root = 
-            match nodes with
-            | [x] -> x
-            | [] -> null
-            | x::xs -> upcast (xelem "div" [] (x::xs))
-        XDocument root
+        match nodes with
+        | [x] -> x
+        | [] -> null
+        | x::xs -> upcast (xelem "div" [] (x::xs))

@@ -133,7 +133,7 @@ module Formlet =
     let renderToNodes (v: _ Formlet): xml_item list = 
         NameGen.run v |> fst
     
-    /// Renders a formlet to XDocument
+    /// Renders a formlet to XNode
     let renderToXml (v: _ Formlet) = 
         v |> renderToNodes |> XmlWriter.render
 
