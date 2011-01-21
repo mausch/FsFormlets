@@ -4,6 +4,17 @@ open System.Xml.Linq
 
 type 'a XmlWriter = XNode list * 'a
 
+[<AutoOpen>]
+module XmlHelpers =
+    let (|Tag|_|) (n: XNode) = 
+        match n with
+        | :? XElement as e -> Some e
+        | _ -> None
+    let (|Text|_|) (n: XNode) =
+        match n with
+        | :? XText as t -> Some t
+        | _ -> None
+
 /// Applicative functor that manipulates HTML as XML
 module XmlWriter =
     let emptyElems = ["area";"base";"basefont";"br";"col";"frame";"hr";"img";"input";"isindex";"link";"meta";"param"]

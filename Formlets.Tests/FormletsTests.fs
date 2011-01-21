@@ -93,19 +93,19 @@ let radioRefill() =
     let nth a b = List.nth b a
     let getChildren (n: XNode) =
         match n with
-        | :? XElement as e -> e.Nodes() |> Seq.toArray
+        | Tag e -> e.Nodes() |> Seq.toArray
         | _ -> failwith "Expected tag, got text"
     let r = run radioFormlet env |> fst |> nth 0 |> getChildren
     printfn "%A" r
     let input1 = r.[0]
     let input2 = r.[2]
     match input1 with
-    | :? XElement as e -> 
+    | Tag e -> 
         let attr = e.Attributes() |> Seq.map (fun a -> a.Name.LocalName,a.Value)
         Assert.False(Seq.exists (fun (k,_) -> k = "checked") attr)
     | _ -> failwith "err"
     match input2 with
-    | :? XElement as e -> 
+    | Tag e -> 
         let attr = e.Attributes() |> Seq.map (fun a -> a.Name.LocalName,a.Value)
         Assert.True(Seq.exists (fun (k,_) -> k = "checked") attr)
     | _ -> failwith "err"
@@ -117,7 +117,7 @@ let checkboxRefill() =
     let r = run formlet env |> fst
     printfn "%A" r
     match r.[0] with
-    | :? XElement as e -> 
+    | Tag e -> 
         let attr = e.Attributes() |> Seq.map (fun a -> a.Name.LocalName,a.Value)
         Assert.True(Seq.exists (fun (k,_) -> k = "checked") attr)
     | _ -> failwith "err"
@@ -128,7 +128,7 @@ let inputRefill() =
     let r = run input env |> fst
     printfn "%A" r
     match r.[0] with
-    | :? XElement as e -> 
+    | Tag e -> 
         let attr = e.Attributes() |> Seq.map (fun a -> a.Name.LocalName,a.Value)
         Assert.True(Seq.exists (fun (k,v) -> k = "value" && v = "pepe") attr)
     | _ -> failwith "err"
@@ -140,13 +140,11 @@ let textareaRefill() =
     let r = run formlet env |> fst
     printfn "%A" r
     match r.[0] with
-    | :? XElement as e -> 
+    | Tag e -> 
         let content = e.Nodes() |> Seq.toList
         match content with
-        | [t] ->
-            match t with
-            | :? XText as t -> Assert.Equal("pepe", t.Value)
-            | _ -> failwithf "Unexpected content %A" t
+        | [Text t] ->
+            Assert.Equal("pepe", t.Value)
         | _ -> failwithf "Unexpected content %A" content
     | _ -> failwith "err"
 
@@ -165,12 +163,9 @@ let manualFormletProcessTest() =
     let r = r |> snd |> Option.get
     Assert.Equal("somevalue", r)
     match err with
-    | [e] ->
-        match e with
-        | :? XElement as e ->
-            let attr = e.Attributes() |> Seq.map (fun a -> a.Name.LocalName,a.Value) |> Seq.toList
-            Assert.Equal(["name","somename"; "value","somevalue"], attr)
-        | _ -> failwithf "Unexpected content %A" e
+    | [Tag e] ->
+        let attr = e.Attributes() |> Seq.map (fun a -> a.Name.LocalName,a.Value) |> Seq.toList
+        Assert.Equal(["name","somename"; "value","somevalue"], attr)
     | _ -> failwithf "Unexpected content %A" err
 
 [<Fact>]
