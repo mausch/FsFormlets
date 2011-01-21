@@ -29,13 +29,22 @@ namespace Formlets.CSharp {
         }
 
         public FormletResult<T> Run(IEnumerable<KeyValuePair<string, string>> env) {
-            var ff = FormletModule.run(f);
             var tuples = env.Select(kv => Tuple.Create(kv.Key, InputValue.NewValue(kv.Value)));
             var list = SeqModule.ToList(tuples);
+            return Run(list);
+        }
+
+        private FormletResult<T> Run(FSharpList<Tuple<string,InputValue>> list) {
+            var ff = FormletModule.run(f);
             var r = ff.Invoke(list);
             var xdoc = XmlWriter.render(r.Item1);
             var value = r.Item2;
             return new FormletResult<T>(xdoc, value);
+        }
+
+        public FormletResult<T> Run(System.Collections.Specialized.NameValueCollection nv) {
+            var list = EnvDictModule.fromNV(nv);
+            return Run(list);
         }
 
         public string Render() {
