@@ -48,4 +48,10 @@ module XmlWriter =
                     let children = renderForest children
                     upcast (xelem name attr children)
             List.map render' x
-        XDocument (renderForest xml)
+        let nodes = renderForest xml
+        let root = 
+            match nodes with
+            | [x] -> x
+            | [] -> null
+            | x::xs -> upcast (xelem "div" [] (x::xs))
+        XDocument root
