@@ -11,12 +11,13 @@ TODO:
 open System
 open System.Collections.Generic
 open System.Collections.Specialized
+open System.Xml.Linq
 open System.Web
 
 /// Validator type.
 /// Fst determines if value is valid
 /// Snd builds an error message
-type 'a Validator = ('a -> bool) * ('a -> xml_item list -> xml_item list)
+type 'a Validator = ('a -> bool) * ('a -> XNode list -> XNode list)
 
 type 'a ValidationResult =
     | Pass of 'a
@@ -100,7 +101,6 @@ module Formlet =
         let v = XmlWriter.xml x
         liftXml v
 
-    open System.Xml.Linq
     let xnode (e: XNode) : unit Formlet =
         let v = XmlWriter.xnode e
         liftXml v
@@ -109,7 +109,7 @@ module Formlet =
     let nop = puree ()
 
     /// Lifts text to formlet
-    let text s : unit Formlet = xml [Text s]
+    let text (s: string) : unit Formlet = xml [XText s]
 
     /// <summary>
     /// Lifts a HTML tag to formlet
@@ -126,16 +126,16 @@ module Formlet =
 
     /// Runs a formlet.
     /// Returns a populated form with error messages and the result value
-    let run (v: 'a Formlet) : EnvDict -> (xml_item list * 'a option)  = 
+    let run (v: 'a Formlet) : EnvDict -> (XNode list * 'a option)  = 
         NameGen.run v |> snd
 
     /// Renders a formlet to a xml tree
-    let renderToNodes (v: _ Formlet): xml_item list = 
+    let renderToNodes (v: _ Formlet): XNode list = 
         NameGen.run v |> fst
     
     /// Renders a formlet to XNode
     let renderToXml (v: _ Formlet) = 
-        v |> renderToNodes |> XmlWriter.render
+        renderToNodes v |> XmlWriter.wrap
 
     /// Renders a formlet to string
     let render (v: _ Formlet) = 
@@ -178,10 +178,12 @@ module Formlet =
     /// <param name="errorMsg">Builds the error message</param>
     let err (isValid: 'a -> bool) (errorMsg: 'a -> string) : 'a Validator = 
         let addError value xml = 
-            [
-                Tag("span", ["class","errorinput"], xml)
-                Tag("span", ["class","error"], [Text(errorMsg value)])
-            ]
+            let elems = 
+                [
+                    XmlWriter.xelem "span" ["class","errorinput"] xml
+                    XmlWriter.xelem "span" ["class","error"] [XText(errorMsg value)]
+                ]
+            List.map (fun e -> e :> XNode) elems
         isValid, addError
 
     /// <summary>
@@ -195,7 +197,7 @@ module Formlet =
 
     // Generic HTML functions
 
-    let generalElement nameGen defaultValue (tag: string -> InputValue list -> xml_item list): InputValue list Formlet =
+    let generalElement nameGen defaultValue (tag: string -> InputValue list -> XNode list): InputValue list Formlet =
         let t name = 
             let xml = tag name
             let eao = 
@@ -242,7 +244,7 @@ module Formlet =
     let optionalInput defaultValue attributes: string option Formlet =
         let tag name (boundValue: InputValue list) = 
             let valueAttr = getValueAttr boundValue
-            [Tag("input", ["name", name] @ valueAttr @ attributes, [])]
+            [XmlWriter.xelem "input" (["name", name] @ valueAttr @ attributes) []]
         generalGeneratedElement [Value defaultValue] tag |> extractOptional
 
     // Concrete HTML functions
@@ -255,7 +257,7 @@ module Formlet =
     let input value attributes : string Formlet = 
         let tag name boundValue = 
             let valueAttr = getValueAttr boundValue
-            [Tag("input", ["name", name] @ valueAttr @ attributes, [])]
+            [XmlWriter.xelem "input" (["name", name] @ valueAttr @ attributes) []]
         generalGeneratedElement [Value value] tag |> extractString
 
     /// <summary>
@@ -267,7 +269,7 @@ module Formlet =
     let assignedInput name value attributes : string Formlet =
         let tag name boundValue = 
             let valueAttr = getValueAttr boundValue
-            [Tag("input", ["name", name] @ valueAttr @ attributes, [])]
+            [XmlWriter.xelem "input" (["name", name] @ valueAttr @ attributes) []]
         generalAssignedElement name [Value value] tag |> extractString
 
     /// <summary>
@@ -306,7 +308,7 @@ module Formlet =
                 match value with
                 | Some x -> ["checked","checked"]
                 | _ -> []
-            [Tag("input", ["name",name; "type","checkbox"] @ valueAttr, [])]
+            [XmlWriter.xelem "input" (["name",name; "type","checkbox"] @ valueAttr) []]
         let on = if on then [Value ""] else []
         generalGeneratedElement on tag 
         |> extractOptional
@@ -318,11 +320,11 @@ module Formlet =
     /// <param name="selected">Initial selected value</param>
     /// <param name="choices">Select options</param>
     let radio selected (choices: (string*string) seq): string Formlet =
-        let makeLabel id text = 
-            Tag("label", ["for", id], [Text text])
+        let makeLabel id (text: string) = 
+            XmlWriter.xelem "label" ["for", id] [XText text]
         let makeRadio name value id selected = 
             let on = if selected then ["checked","checked"] else []
-            Tag("input", ["type","radio"; "name",name; "id",id; "value",value] @ on, [])
+            XmlWriter.xelem "input" (["type","radio"; "name",name; "id",id; "value",value] @ on) []
         let tag name boundValue = 
             let selectedValue = extractOptionString boundValue |> Option.get
             choices 
@@ -333,14 +335,14 @@ module Formlet =
         generalGeneratedElement [Value selected] tag
         |> extractString
 
-    let internal makeOption selected (value,text) = 
+    let internal makeOption selected (value,text:string) = 
         let on = 
             if Seq.exists ((=) value) selected
                 then ["selected","selected"] 
                 else []
-        Tag("option", ["value",value] @ on, [Text text])
+        XmlWriter.xelem "option" (["value",value] @ on) [XText text]
     let internal makeSelect name attr options = 
-        Tag("select", ["name",name] @ attr, options)
+        XmlWriter.xelem "select" (["name",name] @ attr) options
     let internal selectTag selected choices attr name boundValue =
         [choices |> Seq.map (makeOption selected) |> Seq.toList |> makeSelect name attr]
 
@@ -377,7 +379,7 @@ module Formlet =
                     | Value v -> v
                     | _ -> failwith "file not expected"
                 | _ -> ""
-            [Tag("textarea", ["name",name] @ attr, [Text content])]
+            [XmlWriter.xelem "textarea" (["name",name] @ attr) [XText content]]
         elemBuilder value tag
         |> extractString
 
@@ -399,7 +401,7 @@ module Formlet =
     /// </summary>
     let file : HttpPostedFileBase option Formlet = 
         let tag name boundValue = 
-            [Tag("input", ["type", "file"; "name", name], [])]
+            [XmlWriter.xelem "input" ["type", "file"; "name", name] []]
         let fileOnly =
             function
             | Some (File f) -> Some f

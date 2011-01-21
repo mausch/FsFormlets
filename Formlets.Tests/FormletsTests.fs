@@ -91,19 +91,23 @@ let radioRun() =
 let radioRefill() =
     let env = EnvDict.fromValueSeq ["input_0", "2"]
     let nth a b = List.nth b a
-    let getChildren =
-        function
-        | Tag(_,_,c) -> c
+    let getChildren (n: XNode) =
+        match n with
+        | :? XElement as e -> e.Nodes() |> Seq.toArray
         | _ -> failwith "Expected tag, got text"
     let r = run radioFormlet env |> fst |> nth 0 |> getChildren
     printfn "%A" r
     let input1 = r.[0]
     let input2 = r.[2]
     match input1 with
-    | Tag(_,attr,_) -> Assert.False(List.exists (fun (k,_) -> k = "checked") attr)
+    | :? XElement as e -> 
+        let attr = e.Attributes() |> Seq.map (fun a -> a.Name.LocalName,a.Value)
+        Assert.False(Seq.exists (fun (k,_) -> k = "checked") attr)
     | _ -> failwith "err"
     match input2 with
-    | Tag(_,attr,_) -> Assert.True(List.exists (fun (k,_) -> k = "checked") attr)
+    | :? XElement as e -> 
+        let attr = e.Attributes() |> Seq.map (fun a -> a.Name.LocalName,a.Value)
+        Assert.True(Seq.exists (fun (k,_) -> k = "checked") attr)
     | _ -> failwith "err"
 
 [<Fact>]
@@ -113,7 +117,9 @@ let checkboxRefill() =
     let r = run formlet env |> fst
     printfn "%A" r
     match r.[0] with
-    | Tag(_,attr,_) -> Assert.True(List.exists (fun (k,_) -> k = "checked") attr)
+    | :? XElement as e -> 
+        let attr = e.Attributes() |> Seq.map (fun a -> a.Name.LocalName,a.Value)
+        Assert.True(Seq.exists (fun (k,_) -> k = "checked") attr)
     | _ -> failwith "err"
 
 [<Fact>]
@@ -122,7 +128,9 @@ let inputRefill() =
     let r = run input env |> fst
     printfn "%A" r
     match r.[0] with
-    | Tag(_,attr,_) -> Assert.True(List.exists (fun (k,v) -> k = "value" && v = "pepe") attr)
+    | :? XElement as e -> 
+        let attr = e.Attributes() |> Seq.map (fun a -> a.Name.LocalName,a.Value)
+        Assert.True(Seq.exists (fun (k,v) -> k = "value" && v = "pepe") attr)
     | _ -> failwith "err"
 
 [<Fact>]
@@ -132,10 +140,14 @@ let textareaRefill() =
     let r = run formlet env |> fst
     printfn "%A" r
     match r.[0] with
-    | Tag(_,_,content) -> 
+    | :? XElement as e -> 
+        let content = e.Nodes() |> Seq.toList
         match content with
-        | [Text s] -> Assert.Equal("pepe", s)
-        | x -> failwithf "Unexpected content %A" x
+        | [t] ->
+            match t with
+            | :? XText as t -> Assert.Equal("pepe", t.Value)
+            | _ -> failwithf "Unexpected content %A" t
+        | _ -> failwithf "Unexpected content %A" content
     | _ -> failwith "err"
 
 [<Fact>]
@@ -153,9 +165,13 @@ let manualFormletProcessTest() =
     let r = r |> snd |> Option.get
     Assert.Equal("somevalue", r)
     match err with
-    | [Tag(_,attr,_)] ->
-        Assert.Equal(["name","somename"; "value","somevalue"], attr)
-    | x -> failwithf "Unexpected content %A" x
+    | [e] ->
+        match e with
+        | :? XElement as e ->
+            let attr = e.Attributes() |> Seq.map (fun a -> a.Name.LocalName,a.Value) |> Seq.toList
+            Assert.Equal(["name","somename"; "value","somevalue"], attr)
+        | _ -> failwithf "Unexpected content %A" e
+    | _ -> failwithf "Unexpected content %A" err
 
 [<Fact>]
 let renderTest() =
@@ -195,7 +211,7 @@ let processWithInvalidInt() =
               ]
     let env = EnvDict.fromValueSeq env
     let err,value = run dateFormlet env
-    let xdoc = XmlWriter.render [Tag("div", [], err)]
+    let xdoc = XmlWriter.wrap err
     printfn "Error form:\n%s" (xdoc.ToString())
     Assert.True(value.IsNone)
 
@@ -207,7 +223,7 @@ let processWithInvalidInts() =
               ]
     let env = EnvDict.fromValueSeq env
     let err,value = run dateFormlet env
-    let xdoc = XmlWriter.render [Tag("div", [], err)]
+    let xdoc = XmlWriter.wrap err
     printfn "Error form:\n%s" (xdoc.ToString())
     Assert.True(value.IsNone)
 
@@ -219,7 +235,7 @@ let processWithInvalidDate() =
               ]
     let env = EnvDict.fromValueSeq env
     let err,value = run dateFormlet env
-    let xdoc = XmlWriter.render [Tag("div", [], err)]
+    let xdoc = XmlWriter.wrap err
     printfn "Error form:\n%s" (xdoc.ToString())
     Assert.True(value.IsNone)
     
@@ -315,6 +331,7 @@ let ``mergeAttr with dup style``() =
     Assert.True(r |> List.exists ((=) ("something","red")))
     Assert.True(r |> List.exists ((=) ("style","1;bla")))
 
+open System.Xml
 open System.Xml.Linq
 
 // DSL for XML literals, from http://fssnip.net/U
@@ -334,3 +351,10 @@ let ``from XElement``() =
     let formlet = xnode x
     Assert.Equal(x.ToString(), render formlet)
 
+type 'a FormletNode(s, formlet: 'a Formlet) =
+    inherit XElement(XName.op_Implicit s)
+
+[<Fact>]
+let ``special xnode``() =
+    
+    ()
