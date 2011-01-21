@@ -36,7 +36,7 @@ namespace Formlets.CSharp.Tests {
         public void PureApply() {
             var input = Formlet.Input("a value", new Dictionary<string, string> {{"size", "10"}});
             var inputInt = input.Lift(int.Parse);
-            var formlet = Formlet.Yield<Func<string, Func<int, Tuple<string, int>>>>(a => b => Tuple.Create(a, b))
+            var formlet = Formlet.Yield(L.F((string a) => L.F((int b) => Tuple.Create(a,b))))
                 .Apply(input)
                 .Apply(inputInt);
             var result = formlet.Run(new Dictionary<string, string> {
