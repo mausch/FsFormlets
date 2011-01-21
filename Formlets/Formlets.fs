@@ -128,14 +128,10 @@ module Formlet =
     /// Returns a populated form with error messages and the result value
     let run (v: 'a Formlet) : EnvDict -> (XNode list * 'a option)  = 
         NameGen.run v |> snd
-
-    /// Renders a formlet to a xml tree
-    let renderToNodes (v: _ Formlet): XNode list = 
-        NameGen.run v |> fst
     
     /// Renders a formlet to XNode
     let renderToXml (v: _ Formlet) = 
-        renderToNodes v |> XmlWriter.wrap
+        NameGen.run v |> fst |> XmlWriter.wrap
 
     /// Renders a formlet to string
     let render (v: _ Formlet) = 
