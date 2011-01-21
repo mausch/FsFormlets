@@ -11,6 +11,18 @@ namespace Formlets.CSharp {
             return SeqModule.ToList(tuples);
         }
 
+        public static Formlet<string> Input() {
+            return Input("", new Dictionary<string, string>());
+        }
+
+        public static Formlet<string> Input(string defaultValue) {
+            return Input(defaultValue, new Dictionary<string, string>());
+        }
+
+        public static Formlet<string> Input(IEnumerable<KeyValuePair<string, string>> attributes) {
+            return Input("", attributes);
+        }
+
         public static Formlet<string> Input(string defaultValue, IEnumerable<KeyValuePair<string, string>> attributes) {
             return new Formlet<string>(FormletModule.input(defaultValue, DictToTupleList(attributes)));
         }

@@ -35,7 +35,7 @@ namespace Formlets.CSharp.Tests {
         [Fact]
         public void PureApply() {
             var input = Formlet.Input("a value", new Dictionary<string, string> {{"size", "10"}});
-            var inputInt = input.Lift(int.Parse);
+            var inputInt = Formlet.Input().Lift(int.Parse);
             var formlet = Formlet.Yield(L.F((string a) => L.F((int b) => Tuple.Create(a,b))))
                 .Apply(input)
                 .ApplyIgnore(Formlet.Text("Hello world!"))
@@ -43,7 +43,7 @@ namespace Formlets.CSharp.Tests {
             var html = formlet.Render();
             Assert.Contains("<input name=\"input_0\" value=\"a value\" size=\"10\" />", html);
             Assert.Contains("Hello world!", html);
-            Assert.Contains("<input name=\"input_1\" value=\"a value\" size=\"10\" />", html);
+            Assert.Contains("<input name=\"input_1\" value=\"\" />", html);
             var result = formlet.Run(new Dictionary<string, string> {
                 {"input_0", "bla"},
                 {"input_1", "20"},
