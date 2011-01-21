@@ -12,8 +12,10 @@ namespace Formlets.CSharp {
         public override B Invoke(A func) {
             return f(func);
         }
+    }
 
-        public static FSharpFunc<A, B> FromFunc(Func<A, B> f) {
+    public static class FuncFSharpFunc {
+        public static FSharpFunc<A, B> FromFunc<A,B>(Func<A, B> f) {
             return new FuncFSharpFunc<A, B>(f);
         }
     }

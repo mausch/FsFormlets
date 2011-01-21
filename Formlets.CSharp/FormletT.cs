@@ -17,9 +17,15 @@ namespace Formlets.CSharp {
         }
 
         public Formlet<B> Apply<B>(Formlet<Func<T, B>> a) {
-            var ff = Formlet.FormletFSharpFunc<T, B>(a);
-            var r = new Formlet<B>(FormletModule.ap(ff.f, this.f));
-            return r;
+            var ff = Formlet.FormletFSharpFunc(a);
+            var r = FormletModule.ap(ff.f, f);
+            return new Formlet<B>(r);
+        }
+
+        public Formlet<B> Lift<B>(Func<T, B> a) {
+            var ff = FuncFSharpFunc.FromFunc(a);
+            var r = FormletModule.lift(ff, f);
+            return new Formlet<B>(r);
         }
 
         public FormletResult<T> Run(IEnumerable<KeyValuePair<string, string>> env) {
