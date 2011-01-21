@@ -18,5 +18,9 @@ namespace Formlets.CSharp {
         public static FSharpFunc<A, B> FromFunc<A,B>(Func<A, B> f) {
             return new FuncFSharpFunc<A, B>(f);
         }
+
+        public static FSharpFunc<A, FSharpFunc<B,C>> FromFunc<A,B,C>(Func<A,B,C> f) {
+            return FromFunc((A a) => FromFunc(L.F((B b) => f(a, b))));
+        }
     }
 }

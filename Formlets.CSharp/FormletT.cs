@@ -22,6 +22,11 @@ namespace Formlets.CSharp {
             return new Formlet<B>(r);
         }
 
+        public Formlet<T> ApplyIgnore<C>(Formlet<C> a) {
+            var r = FormletModule.apl(f, a.f);
+            return new Formlet<T>(r);
+        }
+
         public Formlet<B> Lift<B>(Func<T, B> a) {
             var ff = FuncFSharpFunc.FromFunc(a);
             var r = FormletModule.lift(ff, f);
