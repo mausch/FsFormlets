@@ -7,7 +7,7 @@ namespace Formlets.CSharp.Tests {
     public class Usage {
         [Fact]
         public void Run() {
-            var input = Formlet.Input("", Enumerable.Empty<KeyValuePair<string, string>>());
+            var input = Formlet.Input();
             var result = input.Run(new Dictionary<string, string> {{"input_0", "something"}});
             Assert.True(result.Value.IsSome());
             Assert.Equal("something", result.Value.Value);
@@ -25,7 +25,7 @@ namespace Formlets.CSharp.Tests {
 
         [Fact]
         public void Lift() {
-            var input = Formlet.Input("a value", new Dictionary<string, string> {{"size", "10"}});
+            var input = Formlet.Input();
             var inputInt = input.Lift(int.Parse);
             var result = inputInt.Run(new Dictionary<string, string> {{"input_0", "15"}});
             Assert.True(result.Value.IsSome());
