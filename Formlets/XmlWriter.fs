@@ -29,7 +29,7 @@ module XmlWriter =
     let emptyElems = ["area";"base";"basefont";"br";"col";"frame";"hr";"img";"input";"isindex";"link";"meta";"param"]
 
     open System.Xml.Linq
-    let xelem (e: XNode) : unit XmlWriter =
+    let xnode (e: XNode) : unit XmlWriter =
         let rec xelem' (e: XNode) =
             let attr (x: XAttribute) = x.Name.LocalName, x.Value
             let elem (e: XElement) =

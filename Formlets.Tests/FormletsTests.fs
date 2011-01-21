@@ -331,6 +331,6 @@ type XName with
 let ``from XElement``() =
     let div = !"div"
     let x = div.[div.["hello", div.[null]], div.["world"]]
-    let formlet = xelem x
+    let formlet = xnode x
     Assert.Equal(x.ToString(), render formlet)
 

@@ -101,8 +101,8 @@ module Formlet =
         liftXml v
 
     open System.Xml.Linq
-    let xelem (e: XElement) : unit Formlet =
-        let v = XmlWriter.xelem e
+    let xnode (e: XNode) : unit Formlet =
+        let v = XmlWriter.xnode e
         liftXml v
 
     /// No-operation formlet
