@@ -98,18 +98,16 @@ module Formlet =
 
     /// Lifts a xml tree to formlet
     let xml x : unit Formlet = 
-        let v = XmlWriter.xml x
-        liftXml v
+        XmlWriter.xml x |> liftXml
 
     let xnode (e: XNode) : unit Formlet =
-        let v = XmlWriter.xnode e
-        liftXml v
+        XmlWriter.xnode e |> liftXml 
 
     /// No-operation formlet
     let nop = puree ()
 
     /// Lifts text to formlet
-    let text (s: string) : unit Formlet = xml [XText s]
+    let inline text (s: string) : unit Formlet = xml [XText s]
 
     /// <summary>
     /// Lifts a HTML tag to formlet
@@ -126,15 +124,15 @@ module Formlet =
 
     /// Runs a formlet.
     /// Returns a populated form with error messages and the result value
-    let run (v: 'a Formlet) : EnvDict -> (XNode list * 'a option)  = 
+    let inline run (v: 'a Formlet) : EnvDict -> (XNode list * 'a option)  = 
         NameGen.run v |> snd
     
     /// Renders a formlet to XNode
-    let renderToXml (v: _ Formlet) = 
+    let inline renderToXml (v: _ Formlet) = 
         NameGen.run v |> fst |> XmlWriter.wrap
 
     /// Renders a formlet to string
-    let render (v: _ Formlet) = 
+    let inline render (v: _ Formlet) = 
         let x = renderToXml v
         x.ToString()
 
