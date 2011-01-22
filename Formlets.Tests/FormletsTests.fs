@@ -346,10 +346,3 @@ let ``from XElement``() =
     let formlet = xnode x
     Assert.Equal(x.ToString(), render formlet)
 
-type 'a FormletNode(s, formlet: 'a Formlet) =
-    inherit XElement(XName.op_Implicit s)
-
-[<Fact>]
-let ``special xnode``() =
-    
-    ()
