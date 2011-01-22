@@ -338,6 +338,7 @@ module Formlet =
     let internal makeSelect name attr options = 
         XmlWriter.xelem "select" (["name",name] @ attr) options
     let internal selectTag selected choices attr name boundValue =
+        // TODO use boundValue
         [choices |> Seq.map (makeOption selected) |> Seq.toList |> makeSelect name attr]
 
     /// <summary>
@@ -346,7 +347,8 @@ module Formlet =
     /// <param name="selected">Initial selected value</param>
     /// <param name="choices">Select options</param>
     let select selected (choices: (string*string) seq): string Formlet = 
-        generalGeneratedElement [] (selectTag [selected] choices [])
+        let tag = selectTag [selected] choices []
+        generalGeneratedElement [] tag
         |> extractString
 
     /// <summary>
@@ -355,7 +357,8 @@ module Formlet =
     /// <param name="selected">Initial selected values</param>
     /// <param name="choices">Select options</param>
     let selectMulti selected (choices: (string*string) seq): string list Formlet = 
-        generalGeneratedElement [] (selectTag selected choices ["multiple","multiple"]) 
+        let tag = selectTag selected choices ["multiple","multiple"]
+        generalGeneratedElement [] tag
         |> extractStrings
     
     /// <summary>
