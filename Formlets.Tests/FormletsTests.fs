@@ -346,3 +346,22 @@ let ``from XElement``() =
     let formlet = xnode x
     Assert.Equal(x.ToString(), render formlet)
 
+[<Fact>]
+let ``radio with int values``() = 
+    let formlet = radioA 5 [2,"dos"; 5,"cinco"]
+    let html = render formlet
+    printfn "%s" html
+    let env = EnvDict.fromValueSeq ["input_0","2"]
+    let v = run formlet env |> snd |> Option.get
+    Assert.Equal(2,v)
+
+[<Fact>]
+let ``radio with record values``() =
+    let r1 = { PublicKey = "123123"; PrivateKey = "456456"; MockedResult = None }
+    let r2 = { PublicKey = "abc"; PrivateKey = "def"; MockedResult = Some false }
+    let formlet = radioA r1 [r1,"dos"; r2,"cinco"]
+    let html = render formlet
+    printfn "%s" html
+    let env = EnvDict.fromValueSeq ["input_0",(hash r2).ToString()]
+    let v = run formlet env |> snd |> Option.get
+    Assert.Equal(r2,v)

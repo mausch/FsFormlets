@@ -329,6 +329,16 @@ module Formlet =
         generalGeneratedElement [Value selected] tag
         |> extractString
 
+    let radioA (selected: 'a) (choices: ('a * string) seq) : 'a Formlet =
+        let itemMap = choices |> Seq.map (fun (k,v) -> (hash k).ToString(),k,v) |> Seq.toList
+        let selectedHash = (hash selected).ToString()
+        let mappedChoices = itemMap |> Seq.map (fun (h,_,t) -> h,t)
+        let mapHashToValue v = 
+            let _,value,_ = List.find (fun (h,_,_) -> h = v) itemMap
+            value
+        radio selectedHash mappedChoices
+        |> lift mapHashToValue
+
     let internal makeOption selected (value,text:string) = 
         let on = 
             if Seq.exists ((=) value) selected
