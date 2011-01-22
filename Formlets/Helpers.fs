@@ -1,5 +1,6 @@
 ﻿namespace Formlets
 
+[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module NameValueCollection =
     open System.Collections.Specialized
 
