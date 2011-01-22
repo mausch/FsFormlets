@@ -46,8 +46,7 @@ module XmlWriter =
     let inline lift2 f x y = puree f <*> x <*> y
     let inline plug (k: XNode list -> XNode list) (v: 'a XmlWriter): 'a XmlWriter = 
         k (fst v), snd v
-    let inline xml (e: XNode list) : unit XmlWriter = 
-        plug (fun _ -> e) (puree ())
+    let inline xml (e: XNode list) : unit XmlWriter = e,()
     let inline text (s: string) = xml [XText s]
     let inline tag name attributes (v: 'a XmlWriter) : 'a XmlWriter = 
         plug (fun x -> [xelem name attributes x]) v

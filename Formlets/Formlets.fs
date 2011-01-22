@@ -322,7 +322,7 @@ module Formlet =
         let tag name boundValue = 
             let selectedValue = extractOptionString boundValue |> Option.get
             choices 
-            |> Seq.zip {1..Int32.MaxValue} 
+            |> Seq.index
             |> Seq.map (fun (i,(value,label)) -> name, value, label, name + "_" + i.ToString(), selectedValue = value)
             |> Seq.collect (fun (name,value,label,id,selected) -> [makeRadio name value id selected; makeLabel id label])
             |> Seq.toList
