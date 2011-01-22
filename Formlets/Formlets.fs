@@ -418,9 +418,9 @@ module Formlet =
     /// <summary>
     /// Creates an &lt;input type=&quot;file&quot;&gt; formlet
     /// </summary>
-    let file : HttpPostedFileBase option Formlet = 
+    let file attr : HttpPostedFileBase option Formlet = 
         let tag name boundValue = 
-            [XmlWriter.xelem "input" ["type", "file"; "name", name] []]
+            [XmlWriter.xelem "input" (["type", "file"; "name", name] @ attr) []]
         let fileOnly =
             function
             | Some (File f) -> Some f

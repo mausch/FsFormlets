@@ -67,7 +67,7 @@ let fullFormlet =
         <*> select "a" ["a","uno"; "b","dos"]
         <*> textarea "" []
         <*> selectMulti ["a";"b"] ["a","uno"; "b","dos"]
-        <*> file
+        <*> file []
     )
 
 let manualNameFormlet =
