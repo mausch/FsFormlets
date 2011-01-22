@@ -329,14 +329,17 @@ module Formlet =
         generalGeneratedElement [Value selected] tag
         |> extractString
 
-    let radioA (selected: 'a) (choices: ('a * string) seq) : 'a Formlet =
+    let buildHashMap (choices: ('a * string) seq) =
         let itemMap = choices |> Seq.map (fun (k,v) -> (hash k).ToString(),k,v) |> Seq.toList
-        let selectedHash = (hash selected).ToString()
         let mappedChoices = itemMap |> Seq.map (fun (h,_,t) -> h,t)
         let mapHashToValue v = 
             let _,value,_ = List.find (fun (h,_,_) -> h = v) itemMap
             value
-        radio selectedHash mappedChoices
+        mappedChoices, mapHashToValue
+
+    let radioA (selected: 'a) (choices: ('a * string) seq) : 'a Formlet =
+        let mappedChoices, mapHashToValue = buildHashMap choices
+        radio (hashs selected) mappedChoices
         |> lift mapHashToValue
 
     let internal makeOption selected (value,text:string) = 
@@ -361,6 +364,11 @@ module Formlet =
         generalGeneratedElement [] tag
         |> extractString
 
+    let selectA (selected: 'a) (choices: ('a * string) seq) =
+        let mappedChoices, mapHashToValue = buildHashMap choices
+        select (hashs selected) mappedChoices
+        |> lift mapHashToValue
+
     /// <summary>
     /// Creates a &lt;select multiple&gt; formlet
     /// </summary>
@@ -370,6 +378,11 @@ module Formlet =
         let tag = selectTag selected choices ["multiple","multiple"]
         generalGeneratedElement [] tag
         |> extractStrings
+
+    let selectMultiA (selected: 'a seq) (choices: ('a * string) seq) : 'a list Formlet =
+        let mappedChoices, mapHashToValue = buildHashMap choices
+        selectMulti (Seq.map hashs selected) mappedChoices
+        |> lift (List.map mapHashToValue)
     
     /// <summary>
     /// Creates a &lt;textarea&gt; formlet

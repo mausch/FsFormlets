@@ -41,6 +41,8 @@ module List =
 
 [<AutoOpen>]
 module Helpers = 
+    let inline hashs a = (hash a).ToString()
+
     /// Builds a pair (2-tuple)
     let t2 a b = a,b
 
