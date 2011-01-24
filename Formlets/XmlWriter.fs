@@ -72,11 +72,11 @@ module XmlHelpers =
 
 /// Applicative functor that manipulates HTML as XML
 module XmlWriter =
-    let emptyElems = ["area";"base";"basefont";"br";"col";"frame";"hr";"img";"input";"isindex";"link";"meta";"param"]
+    let emptyElems = set ["area";"base";"basefont";"br";"col";"frame";"hr";"img";"input";"isindex";"link";"meta";"param"]
     let inline (!!) x = XName.op_Implicit x
     let inline xattr (name, value: string) = XAttribute(!!name, value)
     let xelem name (attributes: (string*string) list) (children: XNode list) = 
-        let isEmpty = List.exists ((=) name) emptyElems
+        let isEmpty = emptyElems |> Set.contains name
         let children = 
             match children,isEmpty with
             | [],false -> [(XText "") :> XObject]
