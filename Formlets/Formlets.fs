@@ -90,17 +90,17 @@ module Formlet =
 
     let inline yields x = puree x // friendly alias
 
-    let private liftXml v =
+    let private liftXml (v: 'a XmlWriter) : 'a Formlet =
         let xml1 = XmlWriter.lift Error.puree v |> Environ.puree
         let xml2 = XmlWriter.lift (fun _ -> xml1) v
         NameGen.puree xml2
 
-    /// Lifts a xml tree to formlet
-    let xml x : unit Formlet = 
+    /// Lifts a xml forest to formlet
+    let inline xml x : unit Formlet = 
         XmlWriter.xml x |> liftXml
 
-    let xnode (e: XNode) : unit Formlet =
-        XmlWriter.xnode e |> liftXml 
+    /// Lifts a xml tree to formlet
+    let inline xnode (e: XNode) : unit Formlet = xml [e]
 
     /// No-operation formlet
     let nop = puree ()
@@ -109,7 +109,7 @@ module Formlet =
     let inline text (s: string) : unit Formlet = xml [XText s]
 
     /// <summary>
-    /// Lifts a HTML tag to formlet
+    /// Lifts a HTML tag to wrap a formlet
     /// </summary>
     /// <param name="name">Tag name</param>
     /// <param name="attributes">Element attributes</param>
