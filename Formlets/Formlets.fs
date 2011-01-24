@@ -96,7 +96,7 @@ module Formlet =
         NameGen.puree xml2
 
     /// Lifts a xml forest to formlet
-    let inline xml x : unit Formlet = 
+    let xml x : unit Formlet = 
         XmlWriter.xml x |> liftXml
 
     /// Lifts a xml tree to formlet
