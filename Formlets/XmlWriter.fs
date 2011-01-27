@@ -93,8 +93,8 @@ module XmlWriter =
         let sx = snd x
         ff @ fx, sf sx
     let inline (<*>) f x = ap f x
-    let inline lift f x = puree f <*> x
-    let inline lift2 f x y = puree f <*> x <*> y
+    let inline map f x = puree f <*> x
+    let inline map2 f x y = puree f <*> x <*> y
     let inline plug (k: XNode list -> XNode list) (v: 'a XmlWriter): 'a XmlWriter = 
         k (fst v), snd v
     let inline xml (e: XNode list) : unit XmlWriter = e,()

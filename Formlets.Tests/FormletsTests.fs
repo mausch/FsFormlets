@@ -14,7 +14,7 @@ let assertThrows<'e when 'e :> exn> f =
 
 let input = input "" [] // no additional attributes
 
-let inputInt = input |> Validate.isInt |> lift int
+let inputInt = input |> Validate.isInt |> map int
 
 let dateFormlet =
     let baseFormlet = 
@@ -30,7 +30,7 @@ let dateFormlet =
         DateTime.TryParseExact(sprintf "%d%d%d" 2010 month day, "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None) |> fst
     let dateValidator = err isDate (fun (month,day) -> sprintf "%d/%d is not a valid date" month day)
     let validatingFormlet = baseFormlet |> satisfies dateValidator
-    lift (fun (month,day) -> DateTime(2010, month, day)) validatingFormlet
+    map (fun (month,day) -> DateTime(2010, month, day)) validatingFormlet
 
 let fullFormlet =
     span [] (

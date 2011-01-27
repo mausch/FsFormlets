@@ -12,6 +12,6 @@ module Error =
         | Some f, Some a -> Some (f a)
         | _ -> None
     let inline (<*>) f x = ap f x
-    let inline lift f x = puree f <*> x
-    let inline lift2 f x y = puree f <*> x <*> y
+    let inline map f x = puree f <*> x
+    let inline map2 f x y = puree f <*> x <*> y
     let failure : 'a Error = None

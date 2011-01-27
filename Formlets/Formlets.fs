@@ -39,87 +39,87 @@ module Formlet =
     // AE = Compose (XmlWriter) (Environment)
     let private ae_pure x : 'a AE = XmlWriter.puree (Environ.puree x)
     let private ae_ap (f: ('a -> 'b) AE) (x: 'a AE) : 'b AE =
-        (XmlWriter.lift2 Environ.ap) f x
+        (XmlWriter.map2 Environ.ap) f x
 
     // NAE = Compose (NameGen) (AE)
     let private nae_pure x : 'a NAE = NameGen.puree (ae_pure x)
     let private nae_ap (f: ('a -> 'b) NAE) (x: 'a NAE) : 'b NAE =
-        (NameGen.lift2 ae_ap) f x
-    let private nae_lift (f: 'a -> 'b) (x: 'a NAE) : 'b NAE = 
+        (NameGen.map2 ae_ap) f x
+    let private nae_map (f: 'a -> 'b) (x: 'a NAE) : 'b NAE = 
         nae_ap (nae_pure f) x
 
     // AO = Compose (XmlWriter) (Error)
     let private ao_pure x : 'a AO = XmlWriter.puree (Error.puree x)
     let private ao_ap (f: ('a -> 'b) AO) (x: 'a AO) : 'b AO = 
-        (XmlWriter.lift2 Error.ap) f x
+        (XmlWriter.map2 Error.ap) f x
 
     // EAO = Compose (Environ) (AO)
     let private eao_pure x : 'a EAO = Environ.puree (ao_pure x)
     let private eao_ap (f: ('a -> 'b) EAO) (x: 'a EAO) : 'b EAO =
-        (Environ.lift2 ao_ap) f x
+        (Environ.map2 ao_ap) f x
 
     // AEAO = Compose (XmlWriter) (EAO)
     let private aeao_pure x: 'a AEAO = XmlWriter.puree (eao_pure x)
     let private aeao_ap (f: ('a -> 'b) AEAO) (x: 'a AEAO) : 'b AEAO =
-        (XmlWriter.lift2 eao_ap) f x
+        (XmlWriter.map2 eao_ap) f x
 
     // Compose (NameGen) (AEAO)
     let puree x : 'a Formlet = NameGen.puree (aeao_pure x)
     let ap (f: ('a -> 'b) Formlet) (x: 'a Formlet) : 'b Formlet = 
-        (NameGen.lift2 aeao_ap) f x
+        (NameGen.map2 aeao_ap) f x
 
     let inline (<*>) f x = ap f x
-    let inline lift f a = puree f <*> a
+    let inline map f a = puree f <*> a
 
-    /// Convenience 'lift' with flipped parameters
-    let inline (|>>) x f = lift f x
-    let inline lift2 f a b = puree f <*> a <*> b
-    let inline lift3 f a b c = puree f <*> a <*> b <*> c
-    let inline lift4 f a b c d = puree f <*> a <*> b <*> c <*> d
+    /// Convenience 'map' with flipped parameters
+    let inline (|>>) x f = map f x
+    let inline map2 f a b = puree f <*> a <*> b
+    let inline map3 f a b c = puree f <*> a <*> b <*> c
+    let inline map4 f a b c d = puree f <*> a <*> b <*> c <*> d
 
     /// Sequence actions, discarding the value of the first argument.
-    let inline apr x y = lift2 (fun _ z -> z) x y
+    let inline apr x y = map2 (fun _ z -> z) x y
     /// Sequence actions, discarding the value of the first argument.
     let inline ( *>) x y = apr x y
     /// Sequence actions, discarding the value of the second argument.
-    let inline apl x y = lift2 (fun z _ -> z) x y
+    let inline apl x y = map2 (fun z _ -> z) x y
     /// Sequence actions, discarding the value of the second argument.
     let inline (<*) x y = apl x y
-    let inline pair a b = lift2 (fun x y -> x,y) a b
+    let inline pair a b = map2 (fun x y -> x,y) a b
     let inline ( **) a b = pair a b
 
     let inline yields x = puree x // friendly alias
 
-    let private liftXml (v: 'a XmlWriter) : 'a Formlet =
-        let xml1 = XmlWriter.lift Error.puree v |> Environ.puree
-        let xml2 = XmlWriter.lift (fun _ -> xml1) v
+    let private mapXml (v: 'a XmlWriter) : 'a Formlet =
+        let xml1 = XmlWriter.map Error.puree v |> Environ.puree
+        let xml2 = XmlWriter.map (fun _ -> xml1) v
         NameGen.puree xml2
 
-    /// Lifts a xml forest to formlet
+    /// maps a xml forest to formlet
     let xml x : unit Formlet = 
-        XmlWriter.xml x |> liftXml
+        XmlWriter.xml x |> mapXml
 
-    /// Lifts a xml tree to formlet
+    /// maps a xml tree to formlet
     let inline xnode (e: XNode) : unit Formlet = xml [e]
 
     /// No-operation formlet
     let nop = puree ()
 
-    /// Lifts text to formlet
+    /// maps text to formlet
     let inline text (s: string) : unit Formlet = xml [XText s]
 
     /// <summary>
-    /// Lifts a HTML tag to wrap a formlet
+    /// maps a HTML tag to wrap a formlet
     /// </summary>
     /// <param name="name">Tag name</param>
     /// <param name="attributes">Element attributes</param>
     /// <param name="f">Inner formlet</param>
     let tag name attributes (f: 'a Formlet) : 'a Formlet = 
         let xtag x = XmlWriter.tag name attributes x
-        let xml1 x = XmlWriter.lift id (xtag x)
-        let xml2 x = Environ.lift xml1 x
-        let xml3 x = XmlWriter.lift xml2 (xtag x)
-        NameGen.lift xml3 f
+        let xml1 x = XmlWriter.map id (xtag x)
+        let xml2 x = Environ.map xml1 x
+        let xml3 x = XmlWriter.map xml2 (xtag x)
+        NameGen.map xml3 f
 
     /// Runs a formlet.
     /// Returns a populated form with error messages and the result value
@@ -145,16 +145,16 @@ module Formlet =
                     if p v
                         then Pass v
                         else Fail v
-                let liftedCheck = Error.lift (check' pred)
-                match liftedCheck o with
+                let mapedCheck = Error.map (check' pred)
+                match mapedCheck o with
                 | Some v -> v
                 | _ -> Dead
-            XmlWriter.lift errorToValidationResult a
+            XmlWriter.map errorToValidationResult a
         let validationResultToError: 'b ValidationResult -> 'b Error = 
             function 
             | Pass v -> Error.puree v 
             | _ -> Error.failure
-        let w = XmlWriter.lift validationResultToError result
+        let w = XmlWriter.map validationResultToError result
         let errorMsg = snd validator
         match result with
         | x, Fail v -> XmlWriter.plug (errorMsg v) w
@@ -162,7 +162,7 @@ module Formlet =
 
     /// Applies a validator to a formlet
     let satisfies (validator: 'a Validator) (f: 'a Formlet) : 'a Formlet =
-        nae_lift (check validator) f
+        nae_map (check validator) f
 
     /// <summary>
     /// Constructs a validator
@@ -199,7 +199,7 @@ module Formlet =
                     let xml = xml value
                     xml,Some value
             XmlWriter.plug (fun _ -> xml defaultValue) (XmlWriter.puree eao)
-        NameGen.lift t nameGen
+        NameGen.map t nameGen
             
     let generalGeneratedElement x = generalElement NameGen.nextName x
     let generalAssignedElement name = generalElement (NameGen.puree name)
@@ -214,17 +214,17 @@ module Formlet =
         | _ -> failwith "Unexpected multiple values"
 
     let extractOptional (f: InputValue list Formlet) : string option Formlet =
-        lift extractOptionString f
+        map extractOptionString f
 
     let extractString (f: InputValue list Formlet) : string Formlet =
-        extractOptional f |> lift Option.get
+        extractOptional f |> map Option.get
 
     let extractStrings (f: InputValue list Formlet) : string list Formlet =
         let extractOne =
             function
             | Value v -> v
             | _ -> failwith "Unexpected file"
-        lift (List.map extractOne) f
+        map (List.map extractOne) f
 
     let getValueAttr =
         function
@@ -305,7 +305,7 @@ module Formlet =
         let on = if on then [Value ""] else []
         generalGeneratedElement on tag 
         |> extractOptional
-        |> lift transform
+        |> map transform
 
     /// <summary>
     /// Creates a &lt;input type=&quot;radio&quot;&gt; formlet
@@ -339,7 +339,7 @@ module Formlet =
     let radioA (selected: 'a) (choices: ('a * string) seq) : 'a Formlet =
         let mappedChoices, mapHashToValue = buildHashMap choices
         radio (hashs selected) mappedChoices
-        |> lift mapHashToValue
+        |> map mapHashToValue
 
     let internal makeOption selected (value,text:string) = 
         let on = 
@@ -366,7 +366,7 @@ module Formlet =
     let selectA (selected: 'a) (choices: ('a * string) seq) =
         let mappedChoices, mapHashToValue = buildHashMap choices
         select (hashs selected) mappedChoices
-        |> lift mapHashToValue
+        |> map mapHashToValue
 
     /// <summary>
     /// Creates a &lt;select multiple&gt; formlet
@@ -381,7 +381,7 @@ module Formlet =
     let selectMultiA (selected: 'a seq) (choices: ('a * string) seq) : 'a list Formlet =
         let mappedChoices, mapHashToValue = buildHashMap choices
         selectMulti (Seq.map hashs selected) mappedChoices
-        |> lift (List.map mapHashToValue)
+        |> map (List.map mapHashToValue)
     
     /// <summary>
     /// Creates a &lt;textarea&gt; formlet
@@ -427,7 +427,7 @@ module Formlet =
             | None -> None
             | _ -> failwith "File expected, got value instead"
         let r = generalGeneratedElement [] tag
-        lift (Seq.nth 0 >> Some >> fileOnly) r
+        map (Seq.nth 0 >> Some >> fileOnly) r
 
     /// <summary>
     /// Creates a &lt;form&gt; tag
@@ -537,7 +537,7 @@ module Formlet =
             <*> assignedHidden "recaptcha_response_field" "manual_challenge"
         )
         |> satisfies (err validate (fun (_,_) -> "Invalid captcha"))
-        |> lift ignore
+        |> map ignore
 
     let antiCSRF (session: IDictionary<string,obj>) : unit Formlet = 
         let eq a b = obj.Equals(a,b)
@@ -554,4 +554,4 @@ module Formlet =
                 t
         hidden tokenValue
         |> satisfies (err (eq session.[tokenKey]) (fun _ -> "Invalid CSRF token"))
-        |> lift ignore
+        |> map ignore
