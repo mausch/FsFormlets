@@ -14,37 +14,12 @@ let assertThrows<'e when 'e :> exn> f =
 
 let input = input "" [] // no additional attributes
 
-let inputInt = lift int (input |> Validate.isInt)
-//let inputInt = yields (fun i -> int i) <*> (input |> satisfies intValidator) // equivalent to above
+let inputInt = input |> Validate.isInt |> lift int
 
 let dateFormlet =
     let baseFormlet = 
         div ["style","padding:8px"] (
             span ["style", "border: 2px solid; padding: 4px"] (
-(*            puree (fun month day -> DateTime(2010, month, day)) <*>
-            text "Month: " *> inputInt <*>
-            text "Day: " *> inputInt
-*)
-
-            //lift2 (fun month day -> DateTime(2010, month, day)) inputInt inputInt
-(*
-            lift4 (fun _ month _ day -> DateTime(2010, month, day))
-                (text "Month: ")
-                inputInt
-                (text "Day: ")
-                inputInt
-*)
-(*
-                (text "Month: " *> inputInt) ** (text "Day: " *> inputInt)
-                |>> fun (month,day) -> DateTime(2010, month, day)
-*)
-(*
-            yields (fun month day -> DateTime(2010, month, day)) <*>
-            text "Month: " *> inputInt <*>
-            text "Day: " *> inputInt
-            <* br <* submit "Send" 
-*)
-
                 yields t2 <*>
                 text "Month: " *> inputInt <*>
                 text "Day: " *> inputInt
