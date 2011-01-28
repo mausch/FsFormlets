@@ -542,7 +542,7 @@ module Formlet =
     let antiCSRF (session: IDictionary<string,obj>) : unit Formlet = 
         let eq a b = obj.Equals(a,b)
         let tokenKey = "antiCSRF_token"
-        use rng = new System.Security.Cryptography.RNGCryptoServiceProvider()
+        let rng = new System.Security.Cryptography.RNGCryptoServiceProvider()
         let tokenValue =
             match session.TryGetValue tokenKey with
             | true, v -> unbox v

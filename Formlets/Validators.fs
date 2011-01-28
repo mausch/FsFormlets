@@ -27,7 +27,11 @@ module Validate =
         satisfies e
 
     let notEmpty =
-        let isOK = String.IsNullOrWhiteSpace >> not
+        let isNullOrWhiteSpace (s: string) =
+            if s = null
+                then true
+                else s |> Seq.exists Char.IsWhiteSpace
+        let isOK = isNullOrWhiteSpace >> not
         satisfies (err isOK (fun _ -> "Mandatory field"))
 
     let creditCard =
