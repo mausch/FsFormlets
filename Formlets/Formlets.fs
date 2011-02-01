@@ -469,6 +469,31 @@ module Formlet =
     let span attr = tag "span" attr
 
     /// <summary>
+    /// Creates a &lt;table/&gt; tag
+    /// </summary>
+    let table attr = tag "table" attr
+
+    /// <summary>
+    /// Creates a &lt;tr/&gt; tag
+    /// </summary>
+    let tr attr = tag "tr" attr
+
+    /// <summary>
+    /// Creates a &lt;td/&gt; tag
+    /// </summary>
+    let td attr = tag "td" attr
+
+    /// <summary>
+    /// Creates a &lt;tbody/&gt; tag
+    /// </summary>
+    let tbody attr = tag "tbody" attr
+
+    /// <summary>
+    /// Creates a &lt;thead/&gt; tag
+    /// </summary>
+    let thead attr = tag "thead" attr
+
+    /// <summary>
     /// Creates an &lt;iframe&gt; tag
     /// </summary>
     /// <param name="src">Iframe src</param>
