@@ -47,6 +47,7 @@
   <ItemGroup>
     <Compile Include="Helpers.fs" />
     <Compile Include="XmlWriter.fs" />
+    <Compile Include="ErrorList.fs" />
     <Compile Include="NameGen.fs" />
     <Compile Include="Environ.fs" />
     <Compile Include="Error.fs" />

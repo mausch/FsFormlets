@@ -23,50 +23,61 @@ type 'a ValidationResult =
     | Fail of 'a
     | Dead
 
-type private 'a EO = 'a Error Environ
-type private 'a AEO = 'a EO XmlWriter
+type private 'a LO = 'a Error ErrorList
+type private 'a ELO = 'a LO Environ
+type private 'a AELO = 'a ELO XmlWriter
 type private 'a AE = 'a Environ XmlWriter
 type private 'a AO = 'a Error XmlWriter
 type private 'a NAE = 'a AE NameGen
 type private 'a EAO = 'a AO Environ
-type private 'a AEAO = 'a EAO XmlWriter
-type 'a Formlet = 'a Error XmlWriter Environ XmlWriter NameGen
+type private 'a ALO = 'a LO XmlWriter
+type private 'a EALO = 'a ALO Environ
+type private 'a AEALO = 'a EALO XmlWriter
+type 'a Formlet = 'a Error ErrorList XmlWriter Environ XmlWriter NameGen
 
 [<AutoOpen>]
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Formlet =
 
-    // AE = Compose (XmlWriter) (Environment)
     let private ae_pure x : 'a AE = XmlWriter.puree (Environ.puree x)
     let private ae_ap (f: ('a -> 'b) AE) (x: 'a AE) : 'b AE =
         (XmlWriter.map2 Environ.ap) f x
 
-    // NAE = Compose (NameGen) (AE)
     let private nae_pure x : 'a NAE = NameGen.puree (ae_pure x)
     let private nae_ap (f: ('a -> 'b) NAE) (x: 'a NAE) : 'b NAE =
         (NameGen.map2 ae_ap) f x
     let private nae_map (f: 'a -> 'b) (x: 'a NAE) : 'b NAE = 
         nae_ap (nae_pure f) x
 
-    // AO = Compose (XmlWriter) (Error)
     let private ao_pure x : 'a AO = XmlWriter.puree (Error.puree x)
     let private ao_ap (f: ('a -> 'b) AO) (x: 'a AO) : 'b AO = 
         (XmlWriter.map2 Error.ap) f x
 
-    // EAO = Compose (Environ) (AO)
     let private eao_pure x : 'a EAO = Environ.puree (ao_pure x)
     let private eao_ap (f: ('a -> 'b) EAO) (x: 'a EAO) : 'b EAO =
         (Environ.map2 ao_ap) f x
 
-    // AEAO = Compose (XmlWriter) (EAO)
-    let private aeao_pure x: 'a AEAO = XmlWriter.puree (eao_pure x)
-    let private aeao_ap (f: ('a -> 'b) AEAO) (x: 'a AEAO) : 'b AEAO =
-        (XmlWriter.map2 eao_ap) f x
+    let private lo_pure x : 'a LO = ErrorList.puree (Error.puree x)
+    let private lo_ap (f: ('a -> 'b) LO) (x: 'a LO) : 'b LO =
+        (ErrorList.map2 Error.ap) f x
+    let private lo_map (f: 'a -> 'b) (x: 'a LO) : 'b LO =
+        lo_ap (lo_pure f) x
 
-    // Compose (NameGen) (AEAO)
-    let puree x : 'a Formlet = NameGen.puree (aeao_pure x)
+    let private alo_pure x : 'a ALO = XmlWriter.puree (lo_pure x)
+    let private alo_ap (f: ('a -> 'b) ALO) (x: 'a ALO) : 'b ALO =
+        (XmlWriter.map2 lo_ap) f x
+
+    let private ealo_pure x : 'a EALO = Environ.puree (alo_pure x)
+    let private ealo_ap (f: ('a -> 'b) EALO) (x: 'a EALO) : 'b EALO =
+        (Environ.map2 alo_ap) f x
+
+    let private aealo_pure x: 'a AEALO = XmlWriter.puree (ealo_pure x)
+    let private aealo_ap (f: ('a -> 'b) AEALO) (x: 'a AEALO) : 'b AEALO =
+        (XmlWriter.map2 ealo_ap) f x
+
+    let puree x : 'a Formlet = NameGen.puree (aealo_pure x)
     let ap (f: ('a -> 'b) Formlet) (x: 'a Formlet) : 'b Formlet = 
-        (NameGen.map2 aeao_ap) f x
+        (NameGen.map2 aealo_ap) f x
 
     let inline (<*>) f x = ap f x
     let inline map f a = puree f <*> a
@@ -91,7 +102,7 @@ module Formlet =
     let inline yields x = puree x // friendly alias
 
     let private mapXml (v: 'a XmlWriter) : 'a Formlet =
-        let xml1 = XmlWriter.map Error.puree v |> Environ.puree
+        let xml1 = XmlWriter.map (Error.puree >> ErrorList.puree) v |> Environ.puree
         let xml2 = XmlWriter.map (fun _ -> xml1) v
         NameGen.puree xml2
 
@@ -123,7 +134,7 @@ module Formlet =
 
     /// Runs a formlet.
     /// Returns a populated form with error messages and the result value
-    let inline run (v: 'a Formlet) : EnvDict -> (XNode list * 'a option)  = 
+    let inline run (v: 'a Formlet) : EnvDict -> (XNode list * (string list * 'a option))  = 
         NameGen.run v |> snd
     
     /// Renders a formlet to XNode
@@ -137,23 +148,23 @@ module Formlet =
 
     // Validation functions
 
-    let private check (validator: 'a Validator) (a: 'a AO) : 'a AO =
+    let private check (validator: 'a Validator) (a: 'a ALO) : 'a ALO =
         let result: 'a ValidationResult XmlWriter =
-            let errorToValidationResult o =
+            let errorToValidationResult (o: 'a LO) =
                 let pred,_,_ = validator
                 let check' p v =
                     if p v
                         then Pass v
                         else Fail v
-                let mapedCheck = Error.map (check' pred)
-                match mapedCheck o with
-                | Some v -> v
+                let mappedCheck = lo_map (check' pred)
+                match mappedCheck o with
+                | _,Some v -> v
                 | _ -> Dead
             XmlWriter.map errorToValidationResult a
-        let validationResultToError: 'b ValidationResult -> 'b Error = 
+        let validationResultToError: 'b ValidationResult -> 'b LO = 
             function 
-            | Pass v -> Error.puree v 
-            | _ -> Error.failure
+            | Pass v -> lo_pure v
+            | _ -> Error.failure |> ErrorList.puree
         let w = XmlWriter.map validationResultToError result
         let _,errorMsg,_ = validator
         match result with
@@ -193,12 +204,12 @@ module Formlet =
     let generalElement nameGen defaultValue (tag: string -> InputValue list -> XNode list): InputValue list Formlet =
         let t name = 
             let xml = tag name
-            let eao = 
+            let ealo = 
                 fun env -> 
                     let value = Environ.lookup name env
                     let xml = xml value
-                    xml,Some value
-            XmlWriter.plug (fun _ -> xml defaultValue) (XmlWriter.puree eao)
+                    xml,([],Some value)
+            XmlWriter.plug (fun _ -> xml defaultValue) (XmlWriter.puree ealo)
         NameGen.map t nameGen
             
     let generalGeneratedElement x = generalElement NameGen.nextName x

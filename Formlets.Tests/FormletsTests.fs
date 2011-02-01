@@ -59,7 +59,7 @@ let radioRender() =
 [<Fact>]
 let radioRun() =
     let env = EnvDict.fromValueSeq ["input_0", "2"]
-    let r = run radioFormlet env |> snd |> Option.get
+    let r = run radioFormlet env |> snd |> snd |> Option.get
     Assert.Equal("2", r)
 
 [<Fact>]
@@ -125,7 +125,7 @@ let manualFormletProcessTest() =
     let env = EnvDict.fromValueSeq env
     let r = run manualNameFormlet env
     let err = fst r
-    let r = r |> snd |> Option.get
+    let r = r |> snd |> snd |> Option.get
     Assert.Equal("somevalue", r)
     match err with
     | [TagA(_,attr,_)] -> Assert.Equal(["name","somename"; "value","somevalue"], attr)
@@ -151,7 +151,7 @@ let processTest() =
                         member x.ContentLength = 2
                         member x.ContentType = "" }
     let env = env |> EnvDict.addFromFileSeq ["input_8", filemock]
-    let dt,pass,chk,n,opt,t,many,f = run fullFormlet env |> snd |> Option.get
+    let dt,pass,chk,n,opt,t,many,f = run fullFormlet env |> snd |> snd |> Option.get
     Assert.Equal(DateTime(2010, 12, 22), dt)
     Assert.Equal("", pass)
     Assert.False chk
@@ -168,7 +168,7 @@ let processWithInvalidInt() =
                 "input_1", "22"
               ]
     let env = EnvDict.fromValueSeq env
-    let err,value = run dateFormlet env
+    let err,(_,value) = run dateFormlet env
     let xdoc = XmlWriter.wrap err
     printfn "Error form:\n%s" (xdoc.ToString())
     Assert.True(value.IsNone)
@@ -180,7 +180,7 @@ let processWithInvalidInts() =
                 "input_1", "bb"
               ]
     let env = EnvDict.fromValueSeq env
-    let err,value = run dateFormlet env
+    let err,(_,value) = run dateFormlet env
     let xdoc = XmlWriter.wrap err
     printfn "Error form:\n%s" (xdoc.ToString())
     Assert.True(value.IsNone)
@@ -192,7 +192,7 @@ let processWithInvalidDate() =
                 "input_1", "22"
               ]
     let env = EnvDict.fromValueSeq env
-    let err,value = run dateFormlet env
+    let err,(_,value) = run dateFormlet env
     let xdoc = XmlWriter.wrap err
     printfn "Error form:\n%s" (xdoc.ToString())
     Assert.True(value.IsNone)
@@ -315,7 +315,7 @@ let ``radio with int values``() =
     let html = render formlet
     printfn "%s" html
     let env = EnvDict.fromValueSeq ["input_0","2"]
-    let v = run formlet env |> snd |> Option.get
+    let v = run formlet env |> snd |> snd |> Option.get
     Assert.Equal(2,v)
 
 [<Fact>]
@@ -326,5 +326,5 @@ let ``radio with record values``() =
     let html = render formlet
     printfn "%s" html
     let env = EnvDict.fromValueSeq ["input_0",(hash r2).ToString()]
-    let v = run formlet env |> snd |> Option.get
+    let v = run formlet env |> snd |> snd |> Option.get
     Assert.Equal(r2,v)
