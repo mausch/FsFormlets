@@ -75,14 +75,10 @@ let radioRefill() =
     let input1 = r.[0]
     let input2 = r.[2]
     match input1 with
-    | Tag e -> 
-        let attr = getAttr e
-        Assert.False(Seq.exists (fun (k,_) -> k = "checked") attr)
+    | TagA(_,attr,_) -> Assert.False(Seq.exists (fun (k,_) -> k = "checked") attr)
     | _ -> failwith "err"
     match input2 with
-    | Tag e -> 
-        let attr = getAttr e
-        Assert.True(Seq.exists (fun (k,_) -> k = "checked") attr)
+    | TagA(_,attr,_) -> Assert.True(Seq.exists (fun (k,_) -> k = "checked") attr)
     | _ -> failwith "err"
 
 [<Fact>]
@@ -92,9 +88,7 @@ let checkboxRefill() =
     let r = run formlet env |> fst
     printfn "%A" r
     match r.[0] with
-    | Tag e -> 
-        let attr = getAttr e
-        Assert.True(Seq.exists (fun (k,_) -> k = "checked") attr)
+    | TagA(_,attr,_) -> Assert.True(Seq.exists (fun (k,_) -> k = "checked") attr)
     | _ -> failwith "err"
 
 [<Fact>]
@@ -103,9 +97,7 @@ let inputRefill() =
     let r = run input env |> fst
     printfn "%A" r
     match r.[0] with
-    | Tag e -> 
-        let attr = getAttr e
-        Assert.True(Seq.exists (fun (k,v) -> k = "value" && v = "pepe") attr)
+    | TagA(_,attr,_) -> Assert.True(Seq.exists (fun (k,v) -> k = "value" && v = "pepe") attr)
     | _ -> failwith "err"
 
 [<Fact>]
@@ -115,11 +107,9 @@ let textareaRefill() =
     let r = run formlet env |> fst
     printfn "%A" r
     match r.[0] with
-    | Tag e -> 
-        let content = e.Nodes() |> Seq.toList
+    | TagA(_,_,content) -> 
         match content with
-        | [Text t] ->
-            Assert.Equal("pepe", t.Value)
+        | [TextV t] -> Assert.Equal("pepe", t)
         | _ -> failwithf "Unexpected content %A" content
     | _ -> failwith "err"
 
@@ -138,9 +128,7 @@ let manualFormletProcessTest() =
     let r = r |> snd |> Option.get
     Assert.Equal("somevalue", r)
     match err with
-    | [Tag e] ->
-        let attr = getAttr e
-        Assert.Equal(["name","somename"; "value","somevalue"], attr)
+    | [TagA(_,attr,_)] -> Assert.Equal(["name","somename"; "value","somevalue"], attr)
     | _ -> failwithf "Unexpected content %A" err
 
 [<Fact>]
