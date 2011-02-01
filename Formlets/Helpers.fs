@@ -1,38 +1,103 @@
 ﻿namespace Formlets
 
+open System
+
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module NameValueCollection =
     open System.Collections.Specialized
 
+    /// <summary>
+    /// Returns a new <see cref="NameValueCollection"/> with the concatenation of two <see cref="NameValueCollection"/>s
+    /// </summary>
+    /// <param name="a"></param>
+    /// <param name="b"></param>
     let concat a b = 
         let x = NameValueCollection()
         x.Add a
         x.Add b
         x
 
+    /// <summary>
+    /// In-place add of a key-value pair to a <see cref="NameValueCollection"/>
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="a"></param>
+    /// <param name="b"></param>
     let inline add (x: NameValueCollection) (a,b) = x.Add(a,b)
 
+    /// <summary>
+    /// Returns a <see cref="NameValueCollection"/> as a sequence of key-value pairs.
+    /// Note that keys may be duplicated.
+    /// </summary>
+    /// <param name="a"></param>
     let toSeq (a: NameValueCollection) =
         a.AllKeys
         |> Seq.collect (fun k -> a.GetValues k |> Seq.map (fun v -> k,v))
 
+    /// <summary>
+    /// Returns a <see cref="NameValueCollection"/> as a list of key-value pairs.
+    /// Note that keys may be duplicated.
+    /// </summary>
+    /// <param name="a"></param>
     let inline toList a = toSeq a |> Seq.toList
 
+    /// <summary>
+    /// Creates a <see cref="NameValueCollection"/> from a list of key-value pairs
+    /// </summary>
+    /// <param name="l"></param>
     let fromSeq l =
         let x = NameValueCollection()
         Seq.iter (add x) l
         x
 
 module Seq =
+    /// <summary>
+    /// Adds an index to a sequence
+    /// </summary>
+    /// <param name="a"></param>
     let index a = Seq.zip (Seq.initInfinite id) a
+
+    /// <summary>
+    /// Returns the first element (with its index) for which the given function returns true.
+    /// Return None if no such element exists.
+    /// </summary>
+    /// <param name="pred">Predicate</param>
+    /// <param name="l">Sequence</param>
     let tryFindWithIndex pred l =
         l |> index |> Seq.tryFind (fun (_,v) -> pred v)
 
 module List =
+    /// <summary>
+    /// Returns a list that skips N elements of the underlying list and then yields the remaining elements of the list
+    /// </summary>
+    /// <param name="i">Elements to skip</param>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="InvalidOperationException"/>
     let skip i = Seq.skip i >> Seq.toList
+
+    /// <summary>
+    /// Returns the first N elements of the list
+    /// </summary>
+    /// <param name="i">Elements to take</param>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="ArgumentException"/>
+    /// <exception cref="InvalidOperationException"/>
     let take i = Seq.take i >> Seq.toList
+
+    /// <summary>
+    /// Builds a new list that contains the given subrange specified by starting index and length.
+    /// Quite inefficient.
+    /// </summary>
+    /// <param name="startIndex">The index of the first element of the sublist. </param>
+    /// <param name="count">The length of the sublist</param>
     let sub startIndex count = Seq.skip startIndex >> Seq.take count >> Seq.toList
-    // Replaces an item in a list. Probably horribly inefficient
+    
+    /// <summary>
+    /// Replaces an item in a list. Probably horribly inefficient
+    /// </summary>
+    /// <param name="item">New item</param>
+    /// <param name="i">Position in the list to replace</param>
+    /// <param name="l">List</param>
     let replaceAt item i l =
         match i with
         | x when x < 0 -> failwith "Out of bounds"
@@ -65,21 +130,41 @@ module Helpers =
     /// Builds a 8-tuple
     let inline t8 a b c d e f g h = a,b,c,d,e,f,g,h
 
+    /// <summary>
+    /// Appends a value to an existing key in a list of key-value pairs
+    /// </summary>
+    /// <param name="key">Key to match</param>
+    /// <param name="sep">Value separator</param>
+    /// <param name="value">Value to append</param>
+    /// <param name="attr">List of key-value pairs</param>
     let appendToSameKey key sep value attr =
         match Seq.tryFindWithIndex (fun (k,_) -> k = key) attr with
         | Some (i,(k,v)) -> List.replaceAt (k,v + sep + value) i attr
         | _ -> (key,value)::attr
 
+    /// Appends a class to a list of HTML attributes
     let addClass = appendToSameKey "class" " "
 
+    /// Appends a style to a list of HTML attributes
     let addStyle = appendToSameKey "style" ";"
 
+    /// <summary>
+    /// Adds a key-value pair to a list of key-value pairs.
+    /// If the key exists in the list, the value is overwritten.
+    /// </summary>
+    /// <param name="kv">Key-value pair</param>
+    /// <param name="attr">list of key-value pairs</param>
     let addOrOverwrite kv attr = 
         let key,value = kv
         match Seq.tryFindWithIndex (fun (k,_) -> k = key) attr with
         | Some (i,(k,v)) -> List.replaceAt (k,value) i attr
         | _ -> (key,value)::attr
 
+    /// <summary>
+    /// Merges two lists of HTML attributes.
+    /// </summary>
+    /// <param name="a1">Original list</param>
+    /// <param name="a2">List to merge</param>
     let mergeAttr a1 a2 =
         let folder r a =
             match a with
