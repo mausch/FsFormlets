@@ -66,7 +66,17 @@ module Seq =
     let tryFindWithIndex pred l =
         l |> index |> Seq.tryFind (fun (_,v) -> pred v)
 
+    // seq as applicative functor
+
+    let inline puree v = Seq.singleton v
+    let inline (<*>) (f: ('a -> 'b) seq) (a: 'a seq): 'b seq =
+        let inline bind x = Seq.collect x
+        bind (fun f' -> bind (fun a' -> puree (f' a')) a) f
+    let inline ap a b = a <*> b
+
 module List =
+    let inline singleton a = [a]
+
     /// <summary>
     /// Returns a list that skips N elements of the underlying list and then yields the remaining elements of the list
     /// </summary>
