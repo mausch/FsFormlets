@@ -443,13 +443,15 @@ module Formlet =
     /// Creates an &lt;input type=&quot;submit&quot;&gt; tag
     /// </summary>
     /// <param name="n">Submit value</param>
-    let submit n = tag "input" ["type","submit"; "value",n] nop
+    /// <param name="attr">Additional attributes</param>
+    let submit n attr = tag "input" (["type","submit"; "value",n] @ attr) nop
 
     /// <summary>
     /// Creates an &lt;input type=&quot;image&quot;&gt; tag
     /// </summary>
     /// <param name="src">Image src</param>
-    let image src = tag "input" ["type","submit"; "src",src] nop
+    /// <param name="attr">Additional attributes</param>
+    let image src attr = tag "input" (["type","submit"; "src",src] @ attr) nop
 
     /// <summary>
     /// Creates a &lt;br/&gt; tag

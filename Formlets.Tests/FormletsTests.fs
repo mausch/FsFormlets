@@ -23,7 +23,7 @@ let dateFormlet =
                 yields t2 <*>
                 text "Month: " *> inputInt <*>
                 text "Day: " *> inputInt
-                <* br <* submit "Send" 
+                <* br <* submit "Send" []
             )
         )
     let isDate (month,day) = 
