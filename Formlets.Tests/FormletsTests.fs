@@ -16,6 +16,10 @@ let input = input "" [] // no additional attributes
 
 let inputInt = input |> Validate.isInt |> map int
 
+let inline fst3 (a,_,_) = a
+let inline snd3 (_,b,_) = b
+let inline thd3 (_,_,c) = c
+
 let dateFormlet =
     let baseFormlet = 
         div ["style","padding:8px"] (
@@ -59,7 +63,7 @@ let radioRender() =
 [<Fact>]
 let radioRun() =
     let env = EnvDict.fromValueSeq ["input_0", "2"]
-    let r = run radioFormlet env |> snd |> snd |> Option.get
+    let r = run radioFormlet env |> thd3 |> Option.get
     Assert.Equal("2", r)
 
 [<Fact>]
@@ -70,7 +74,7 @@ let radioRefill() =
         match n with
         | Tag e -> e.Nodes() |> Seq.toArray
         | _ -> failwith "Expected tag, got text"
-    let r = run radioFormlet env |> fst |> nth 0 |> getChildren
+    let r = run radioFormlet env |> fst3 |> nth 0 |> getChildren
     printfn "%A" r
     let input1 = r.[0]
     let input2 = r.[2]
@@ -85,7 +89,7 @@ let radioRefill() =
 let checkboxRefill() =
     let formlet = checkbox false
     let env = EnvDict.fromValueSeq ["input_0", "on"]
-    let r = run formlet env |> fst
+    let r = run formlet env |> fst3
     printfn "%A" r
     match r.[0] with
     | TagA(_,attr,_) -> Assert.True(Seq.exists (fun (k,_) -> k = "checked") attr)
@@ -94,7 +98,7 @@ let checkboxRefill() =
 [<Fact>]
 let inputRefill() =
     let env = EnvDict.fromValueSeq ["input_0", "pepe"]
-    let r = run input env |> fst
+    let r = run input env |> fst3
     printfn "%A" r
     match r.[0] with
     | TagA(_,attr,_) -> Assert.True(Seq.exists (fun (k,v) -> k = "value" && v = "pepe") attr)
@@ -104,7 +108,7 @@ let inputRefill() =
 let textareaRefill() =
     let env = EnvDict.fromValueSeq ["input_0", "pepe"]
     let formlet = textarea "" []
-    let r = run formlet env |> fst
+    let r = run formlet env |> fst3
     printfn "%A" r
     match r.[0] with
     | TagA(_,_,content) -> 
@@ -124,8 +128,8 @@ let manualFormletProcessTest() =
     let env = ["somename", "somevalue"]
     let env = EnvDict.fromValueSeq env
     let r = run manualNameFormlet env
-    let err = fst r
-    let r = r |> snd |> snd |> Option.get
+    let err = fst3 r
+    let r = r |> thd3 |> Option.get
     Assert.Equal("somevalue", r)
     match err with
     | [TagA(_,attr,_)] -> Assert.Equal(["name","somename"; "value","somevalue"], attr)
@@ -151,7 +155,7 @@ let processTest() =
                         member x.ContentLength = 2
                         member x.ContentType = "" }
     let env = env |> EnvDict.addFromFileSeq ["input_8", filemock]
-    let dt,pass,chk,n,opt,t,many,f = run fullFormlet env |> snd |> snd |> Option.get
+    let dt,pass,chk,n,opt,t,many,f = run fullFormlet env |> thd3 |> Option.get
     Assert.Equal(DateTime(2010, 12, 22), dt)
     Assert.Equal("", pass)
     Assert.False chk
@@ -168,7 +172,7 @@ let processWithInvalidInt() =
                 "input_1", "22"
               ]
     let env = EnvDict.fromValueSeq env
-    let err,(_,value) = run dateFormlet env
+    let err,_,value = run dateFormlet env
     let xdoc = XmlWriter.wrap err
     printfn "Error form:\n%s" (xdoc.ToString())
     Assert.True(value.IsNone)
@@ -180,7 +184,7 @@ let processWithInvalidInts() =
                 "input_1", "bb"
               ]
     let env = EnvDict.fromValueSeq env
-    let err,(_,value) = run dateFormlet env
+    let err,_,value = run dateFormlet env
     let xdoc = XmlWriter.wrap err
     printfn "Error form:\n%s" (xdoc.ToString())
     Assert.True(value.IsNone)
@@ -192,7 +196,7 @@ let processWithInvalidDate() =
                 "input_1", "22"
               ]
     let env = EnvDict.fromValueSeq env
-    let err,(_,value) = run dateFormlet env
+    let err,_,value = run dateFormlet env
     let xdoc = XmlWriter.wrap err
     printfn "Error form:\n%s" (xdoc.ToString())
     Assert.True(value.IsNone)
@@ -315,7 +319,7 @@ let ``radio with int values``() =
     let html = render formlet
     printfn "%s" html
     let env = EnvDict.fromValueSeq ["input_0","2"]
-    let v = run formlet env |> snd |> snd |> Option.get
+    let v = run formlet env |> thd3 |> Option.get
     Assert.Equal(2,v)
 
 [<Fact>]
@@ -326,7 +330,7 @@ let ``radio with record values``() =
     let html = render formlet
     printfn "%s" html
     let env = EnvDict.fromValueSeq ["input_0",(hash r2).ToString()]
-    let v = run formlet env |> snd |> snd |> Option.get
+    let v = run formlet env |> thd3 |> Option.get
     Assert.Equal(r2,v)
 
 [<Fact>]
@@ -337,8 +341,8 @@ let ``validation without xml and with string``() =
         |> map int
     let env = EnvDict.fromValueSeq ["input_0","abc"]
     match run formlet env with
-    | _,(_,Some _) -> failwith "Formlet shouldn't have succeeded"
-    | errorForm,(errorMsg,None) -> 
+    | _,_,Some _ -> failwith "Formlet shouldn't have succeeded"
+    | errorForm,errorMsg,None -> 
         let errorForm = XmlWriter.wrap errorForm
         printfn "Error form: %s" (errorForm.ToString())
         printfn "%A" errorMsg
@@ -354,8 +358,8 @@ let ``validation without xml and with string with multiple formlets``() =
     let formlet = yields t2 <*> inputInt <*> inputInt
     let env = EnvDict.fromValueSeq ["input_0","abc"; "input_1","def"]
     match run formlet env with
-    | _,(_,Some _) -> failwith "Formlet shouldn't have succeeded"
-    | errorForm,(errorMsg,None) -> 
+    | _,_,Some _ -> failwith "Formlet shouldn't have succeeded"
+    | errorForm,errorMsg,None -> 
         let errorForm = XmlWriter.wrap errorForm
         printfn "Error form: %s" (errorForm.ToString())
         printfn "%A" errorMsg
