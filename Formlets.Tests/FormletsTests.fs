@@ -328,3 +328,17 @@ let ``radio with record values``() =
     let env = EnvDict.fromValueSeq ["input_0",(hash r2).ToString()]
     let v = run formlet env |> snd |> snd |> Option.get
     Assert.Equal(r2,v)
+
+[<Fact>]
+let ``validation without xml and with string``() =
+    let formlet = 
+        input 
+        |> satisfies ((Int32.TryParse >> fst), (fun _ b -> b), (fun v -> [sprintf "'%s' is not a valid number" v]))
+        |> map int
+    let env = EnvDict.fromValueSeq ["input_0","abc"]
+    match run formlet env with
+    | _,(_,Some _) -> failwith "Formlet shouldn't have succeeded"
+    | errorForm,(errorMsg,None) -> 
+        let errorForm = XmlWriter.wrap errorForm
+        printfn "Error form: %s" (errorForm.ToString())
+        printfn "%A" errorMsg

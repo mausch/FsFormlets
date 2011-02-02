@@ -16,7 +16,7 @@ open System.Web
 /// Validator type.
 /// Fst determines if value is valid
 /// Snd builds an error message
-type 'a Validator = ('a -> bool) * ('a -> XNode list -> XNode list) * ('a -> string seq)
+type 'a Validator = ('a -> bool) * ('a -> XNode list -> XNode list) * ('a -> string list)
 
 type 'a ValidationResult =
     | Pass of 'a
@@ -166,9 +166,13 @@ module Formlet =
             | Pass v -> lo_pure v
             | _ -> Error.failure |> ErrorList.puree
         let w = XmlWriter.map validationResultToError result
-        let _,errorMsg,_ = validator
+        let _,errorXml,errorMsg = validator
         match result with
-        | x, Fail v -> XmlWriter.plug (errorMsg v) w
+        | x, Fail v -> 
+            let w =
+                let append a = ErrorList.append (errorMsg v) a
+                XmlWriter.map append w
+            XmlWriter.plug (errorXml v) w
         | x -> w
 
     /// Applies a validator to a formlet
@@ -188,7 +192,7 @@ module Formlet =
                     XmlWriter.xelem "span" ["class","error"] [XText(errorMsg value)]
                 ]
             List.map (fun e -> e :> XNode) elems
-        isValid, addError, errorMsg >> Seq.singleton
+        isValid, addError, errorMsg >> List.singleton
 
     /// <summary>
     /// Constructs a validator from a regular expression
