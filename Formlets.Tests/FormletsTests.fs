@@ -342,3 +342,25 @@ let ``validation without xml and with string``() =
         let errorForm = XmlWriter.wrap errorForm
         printfn "Error form: %s" (errorForm.ToString())
         printfn "%A" errorMsg
+        Assert.Equal(1, errorMsg.Length)
+        Assert.Equal("'abc' is not a valid number", errorMsg.[0])
+
+[<Fact>]
+let ``validation without xml and with string with multiple formlets``() =
+    let inputInt = 
+        input 
+        |> satisfies ((Int32.TryParse >> fst), (fun _ b -> b), (fun v -> [sprintf "'%s' is not a valid number" v]))
+        |> map int
+    let formlet = yields t2 <*> inputInt <*> inputInt
+    let env = EnvDict.fromValueSeq ["input_0","abc"; "input_1","def"]
+    match run formlet env with
+    | _,(_,Some _) -> failwith "Formlet shouldn't have succeeded"
+    | errorForm,(errorMsg,None) -> 
+        let errorForm = XmlWriter.wrap errorForm
+        printfn "Error form: %s" (errorForm.ToString())
+        printfn "%A" errorMsg
+        Assert.Equal(2, errorMsg.Length)
+        Assert.Equal("'abc' is not a valid number", errorMsg.[0])
+        Assert.Equal("'def' is not a valid number", errorMsg.[1])
+
+    
