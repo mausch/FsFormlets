@@ -63,8 +63,9 @@ let radioRender() =
 [<Fact>]
 let radioRun() =
     let env = EnvDict.fromValueSeq ["input_0", "2"]
-    let r = run radioFormlet env |> thd3 |> Option.get
-    Assert.Equal("2", r)
+    match run radioFormlet env with
+    | Success r -> Assert.Equal("2", r)
+    | _ -> failwith "shouldn't have failed"
 
 [<Fact>]
 let radioRefill() =
@@ -127,13 +128,13 @@ let manualFormletRenderTest() =
 let manualFormletProcessTest() =
     let env = ["somename", "somevalue"]
     let env = EnvDict.fromValueSeq env
-    let r = run manualNameFormlet env
-    let err = fst3 r
-    let r = r |> thd3 |> Option.get
-    Assert.Equal("somevalue", r)
-    match err with
-    | [TagA(_,attr,_)] -> Assert.Equal(["name","somename"; "value","somevalue"], attr)
-    | _ -> failwithf "Unexpected content %A" err
+    match run manualNameFormlet env with
+    | err,_,Some r ->
+        Assert.Equal("somevalue", r)
+        match err with
+        | [TagA(_,attr,_)] -> Assert.Equal(["name","somename"; "value","somevalue"], attr)
+        | _ -> failwithf "Unexpected content %A" err
+    | _ -> failwith "Unexpected result"
 
 [<Fact>]
 let renderTest() =
@@ -155,15 +156,17 @@ let processTest() =
                         member x.ContentLength = 2
                         member x.ContentType = "" }
     let env = env |> EnvDict.addFromFileSeq ["input_8", filemock]
-    let dt,pass,chk,n,opt,t,many,f = run fullFormlet env |> thd3 |> Option.get
-    Assert.Equal(DateTime(2010, 12, 22), dt)
-    Assert.Equal("", pass)
-    Assert.False chk
-    Assert.Equal("1", n)
-    Assert.Equal("b", opt)
-    Assert.Equal("blah blah", t)
-    Assert.Equal(2, many.Length)
-    Assert.True(f.IsSome)
+    match run fullFormlet env with
+    | Success(dt,pass,chk,n,opt,t,many,f) ->
+        Assert.Equal(DateTime(2010, 12, 22), dt)
+        Assert.Equal("", pass)
+        Assert.False chk
+        Assert.Equal("1", n)
+        Assert.Equal("b", opt)
+        Assert.Equal("blah blah", t)
+        Assert.Equal(2, many.Length)
+        Assert.True(f.IsSome)
+    | _ -> failwith "Shouldn't have failed"
 
 [<Fact>]
 let processWithInvalidInt() =
@@ -319,8 +322,9 @@ let ``radio with int values``() =
     let html = render formlet
     printfn "%s" html
     let env = EnvDict.fromValueSeq ["input_0","2"]
-    let v = run formlet env |> thd3 |> Option.get
-    Assert.Equal(2,v)
+    match run formlet env with
+    | Success v -> Assert.Equal(2,v)
+    | _ -> failwith "Shouldn't have failed"
 
 [<Fact>]
 let ``radio with record values``() =
@@ -330,8 +334,9 @@ let ``radio with record values``() =
     let html = render formlet
     printfn "%s" html
     let env = EnvDict.fromValueSeq ["input_0",(hash r2).ToString()]
-    let v = run formlet env |> thd3 |> Option.get
-    Assert.Equal(r2,v)
+    match run formlet env with
+    | Success v -> Assert.Equal(r2,v)
+    | _ -> failwith "Shouldn't have failed"
 
 [<Fact>]
 let ``validation without xml and with string``() =
@@ -367,4 +372,3 @@ let ``validation without xml and with string with multiple formlets``() =
         Assert.Equal("'abc' is not a valid number", errorMsg.[0])
         Assert.Equal("'def' is not a valid number", errorMsg.[1])
 
-    
