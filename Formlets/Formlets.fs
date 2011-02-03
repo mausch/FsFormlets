@@ -136,6 +136,11 @@ module Formlet =
     /// Returns a populated form with error messages and the result value
     let inline run (v: 'a Formlet) : EnvDict -> (XNode list * string list * 'a option) = 
         (NameGen.run v |> snd) >> (fun (a,(b,c)) -> a,b,c)
+
+    let (|Success|Failure|) a =
+        match a with
+        | _,_,Some v -> Success v
+        | errorForm,errorMsgs,None -> Failure(errorForm, errorMsgs)
     
     /// Renders a formlet to XNode
     let inline renderToXml (v: _ Formlet) = 

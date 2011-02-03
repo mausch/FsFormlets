@@ -341,8 +341,8 @@ let ``validation without xml and with string``() =
         |> map int
     let env = EnvDict.fromValueSeq ["input_0","abc"]
     match run formlet env with
-    | _,_,Some _ -> failwith "Formlet shouldn't have succeeded"
-    | errorForm,errorMsg,None -> 
+    | Success _ -> failwith "Formlet shouldn't have succeeded"
+    | Failure(errorForm,errorMsg) -> 
         let errorForm = XmlWriter.wrap errorForm
         printfn "Error form: %s" (errorForm.ToString())
         printfn "%A" errorMsg
@@ -358,8 +358,8 @@ let ``validation without xml and with string with multiple formlets``() =
     let formlet = yields t2 <*> inputInt <*> inputInt
     let env = EnvDict.fromValueSeq ["input_0","abc"; "input_1","def"]
     match run formlet env with
-    | _,_,Some _ -> failwith "Formlet shouldn't have succeeded"
-    | errorForm,errorMsg,None -> 
+    | Success _ -> failwith "Formlet shouldn't have succeeded"
+    | Failure(errorForm,errorMsg) -> 
         let errorForm = XmlWriter.wrap errorForm
         printfn "Error form: %s" (errorForm.ToString())
         printfn "%A" errorMsg
