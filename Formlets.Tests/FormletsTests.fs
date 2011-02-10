@@ -372,3 +372,9 @@ let ``validation without xml and with string with multiple formlets``() =
         Assert.Equal("'abc' is not a valid number", errorMsg.[0])
         Assert.Equal("'def' is not a valid number", errorMsg.[1])
 
+[<Fact>]
+let ``parse raw xml ``() =
+    let formlet = rawXml "something <a href='someurl'>a link</a>"
+    let html = render formlet
+    printfn "%s" html
+    Assert.Equal("<div>something <a href=\"someurl\">a link</a></div>", html)

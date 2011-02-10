@@ -110,6 +110,10 @@ module Formlet =
     let xml x : unit Formlet = 
         XmlWriter.xml x |> mapXml
 
+    /// Parses a raw xml forest to formlet
+    let rawXml x : unit Formlet =
+        XmlWriter.rawXml x |> mapXml
+
     /// maps a xml tree to formlet
     let inline xnode (e: XNode) : unit Formlet = xml [e]
 
