@@ -62,14 +62,14 @@ let radioRender() =
 
 [<Fact>]
 let radioRun() =
-    let env = EnvDict.fromValueSeq ["input_0", "2"]
+    let env = EnvDict.fromValueSeq ["f0", "2"]
     match run radioFormlet env with
     | Success r -> Assert.Equal("2", r)
     | _ -> failwith "shouldn't have failed"
 
 [<Fact>]
 let radioRefill() =
-    let env = EnvDict.fromValueSeq ["input_0", "2"]
+    let env = EnvDict.fromValueSeq ["f0", "2"]
     let nth a b = List.nth b a
     let getChildren (n: XNode) =
         match n with
@@ -89,7 +89,7 @@ let radioRefill() =
 [<Fact>]
 let checkboxRefill() =
     let formlet = checkbox false
-    let env = EnvDict.fromValueSeq ["input_0", "on"]
+    let env = EnvDict.fromValueSeq ["f0", "on"]
     let r = run formlet env |> fst3
     printfn "%A" r
     match r.[0] with
@@ -98,7 +98,7 @@ let checkboxRefill() =
 
 [<Fact>]
 let inputRefill() =
-    let env = EnvDict.fromValueSeq ["input_0", "pepe"]
+    let env = EnvDict.fromValueSeq ["f0", "pepe"]
     let r = run input env |> fst3
     printfn "%A" r
     match r.[0] with
@@ -107,7 +107,7 @@ let inputRefill() =
 
 [<Fact>]
 let textareaRefill() =
-    let env = EnvDict.fromValueSeq ["input_0", "pepe"]
+    let env = EnvDict.fromValueSeq ["f0", "pepe"]
     let formlet = textarea "" []
     let r = run formlet env |> fst3
     printfn "%A" r
@@ -143,19 +143,19 @@ let renderTest() =
 [<Fact>]
 let processTest() =
     let env = EnvDict.fromValueSeq [
-                "input_0", "12"
-                "input_1", "22"
-                "input_2", ""
-                "input_4", "1"
-                "input_5", "b"
-                "input_6", "blah blah"
-                "input_7", "a"
-                "input_7", "b"
+                "f0", "12"
+                "f1", "22"
+                "f2", ""
+                "f4", "1"
+                "f5", "b"
+                "f6", "blah blah"
+                "f7", "a"
+                "f7", "b"
               ]
     let filemock = { new HttpPostedFileBase() with
                         member x.ContentLength = 2
                         member x.ContentType = "" }
-    let env = env |> EnvDict.addFromFileSeq ["input_8", filemock]
+    let env = env |> EnvDict.addFromFileSeq ["f8", filemock]
     match run fullFormlet env with
     | Success(dt,pass,chk,n,opt,t,many,f) ->
         Assert.Equal(DateTime(2010, 12, 22), dt)
@@ -171,8 +171,8 @@ let processTest() =
 [<Fact>]
 let processWithInvalidInt() =
     let env = [
-                "input_0", "aa"
-                "input_1", "22"
+                "f0", "aa"
+                "f1", "22"
               ]
     let env = EnvDict.fromValueSeq env
     let err,_,value = run dateFormlet env
@@ -183,8 +183,8 @@ let processWithInvalidInt() =
 [<Fact>]
 let processWithInvalidInts() =
     let env = [
-                "input_0", "aa"
-                "input_1", "bb"
+                "f0", "aa"
+                "f1", "bb"
               ]
     let env = EnvDict.fromValueSeq env
     let err,_,value = run dateFormlet env
@@ -195,8 +195,8 @@ let processWithInvalidInts() =
 [<Fact>]
 let processWithInvalidDate() =
     let env = [
-                "input_0", "22"
-                "input_1", "22"
+                "f0", "22"
+                "f1", "22"
               ]
     let env = EnvDict.fromValueSeq env
     let err,_,value = run dateFormlet env
@@ -206,7 +206,7 @@ let processWithInvalidDate() =
     
 [<Fact>]
 let processWithMissingField() =
-    let env = ["input_0", "22"] |> EnvDict.fromValueSeq
+    let env = ["f0", "22"] |> EnvDict.fromValueSeq
     assertThrows<ArgumentException>(fun() -> run dateFormlet env |> ignore)
 
 [<Fact>]
@@ -321,7 +321,7 @@ let ``radio with int values``() =
     let formlet = radioA 5 [2,"dos"; 5,"cinco"]
     let html = render formlet
     printfn "%s" html
-    let env = EnvDict.fromValueSeq ["input_0","2"]
+    let env = EnvDict.fromValueSeq ["f0","2"]
     match run formlet env with
     | Success v -> Assert.Equal(2,v)
     | _ -> failwith "Shouldn't have failed"
@@ -333,7 +333,7 @@ let ``radio with record values``() =
     let formlet = radioA r1 [r1,"dos"; r2,"cinco"]
     let html = render formlet
     printfn "%s" html
-    let env = EnvDict.fromValueSeq ["input_0",(hash r2).ToString()]
+    let env = EnvDict.fromValueSeq ["f0",(hash r2).ToString()]
     match run formlet env with
     | Success v -> Assert.Equal(r2,v)
     | _ -> failwith "Shouldn't have failed"
@@ -344,7 +344,7 @@ let ``validation without xml and with string``() =
         input 
         |> satisfies ((Int32.TryParse >> fst), (fun _ b -> b), (fun v -> [sprintf "'%s' is not a valid number" v]))
         |> map int
-    let env = EnvDict.fromValueSeq ["input_0","abc"]
+    let env = EnvDict.fromValueSeq ["f0","abc"]
     match run formlet env with
     | Success _ -> failwith "Formlet shouldn't have succeeded"
     | Failure(errorForm,errorMsg) -> 
@@ -361,7 +361,7 @@ let ``validation without xml and with string with multiple formlets``() =
         |> satisfies ((Int32.TryParse >> fst), (fun _ b -> b), (fun v -> [sprintf "'%s' is not a valid number" v]))
         |> map int
     let formlet = yields t2 <*> inputInt <*> inputInt
-    let env = EnvDict.fromValueSeq ["input_0","abc"; "input_1","def"]
+    let env = EnvDict.fromValueSeq ["f0","abc"; "f1","def"]
     match run formlet env with
     | Success _ -> failwith "Formlet shouldn't have succeeded"
     | Failure(errorForm,errorMsg) -> 

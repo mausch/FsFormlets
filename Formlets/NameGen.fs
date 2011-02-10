@@ -14,5 +14,5 @@ module NameGen =
     let inline map f x = puree f <*> x
     let inline map2 f x y = puree f <*> x <*> y
     let nextName : string NameGen = 
-        fun gen -> "input_" + gen.ToString(), gen+1
+        fun gen -> "f" + gen.ToString(), gen+1
     let inline run (c: 'a NameGen) = fst (c 0)
