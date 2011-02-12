@@ -378,3 +378,33 @@ let ``parse raw xml ``() =
     let html = render formlet
     printfn "%s" html
     Assert.Equal("<div>something <a href=\"someurl\">a link</a></div>", html)
+
+[<Fact>]
+let ``non-rendering field can't be rendered``() =
+    assertThrows(fun () -> render field |> ignore)
+
+[<Fact>]
+let ``non-rendering field can be rendered with another formlet``() =
+    let formlet = yields t2 <*> input <*> field
+    let html = render formlet
+    Assert.Equal("<input name=\"f0\" value=\"\" />", html)
+
+[<Fact>]
+let ``non-rendering field run``() =
+    let env = EnvDict.fromValueSeq ["f0","def"]
+    match run field env with
+    | Success v -> Assert.Equal("def", v)
+    | _ -> failwith "failed"
+    ()
+
+[<Fact>]
+let ``validation error in non-rendering field``() =
+    let fieldInt = field |> Validate.isInt |> map int
+    let env = EnvDict.fromValueSeq ["f0","def"]
+    match run fieldInt env with
+    | Success _ -> failwith "Should not have succeeded"
+    | Failure(errorForm,errorList) ->
+        Assert.Equal(1, errorList.Length)
+        Assert.Equal("def is not a valid number", errorList.[0])
+        (XmlWriter.wrap errorForm).ToString() |> printfn "%s"
+        //Assert.Equal(0, errorForm.Length)

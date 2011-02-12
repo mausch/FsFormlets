@@ -266,6 +266,14 @@ module Formlet =
 
     // Concrete HTML functions
 
+    let field : string Formlet =
+        let tag a b = []
+        generalGeneratedElement [] tag |> extractString
+
+    let optionalField: string option Formlet =
+        let tag a b = []
+        generalGeneratedElement [] tag |> extractOptional
+
     /// <summary>
     /// Creates a &lt;input type=&quot;text&quot;&gt; formlet
     /// </summary>
