@@ -39,3 +39,14 @@ let ``first``() =
         ]
     let html = renderToXml formlet |> template |> Renderer.RenderToString
     Assert.Equal("<html xmlns=\"http://www.w3.org/1999/xhtml\"><head><link type=\"text/css\" rel=\"stylesheet\" media=\"all\" href=\"/Content/css/main.css\" /></head><body><form action=\"actionUrl\" method=\"post\"><input name=\"f0\" value=\"a default value\" class=\"nice\" /></form></body></html>", html)
+
+[<Fact>]
+let ``render error form``() =
+    let formlet = f.TextBox("a default value", ["class","nice"])
+    let formlet = formlet |> Validate.isInt |> map int
+    let template form =
+        e.Html [ !+form ]
+    let env = EnvDict.fromValueSeq ["f0","abc"]
+    let errorForm,_,_ = run formlet env
+    let html = template errorForm |> Renderer.RenderToString
+    Assert.Equal("<html xmlns=\"http://www.w3.org/1999/xhtml\"><div><span class=\"errorinput\"><input name=\"f0\" value=\"abc\" class=\"nice\" /></span><span class=\"error\">abc is not a valid number</span></div></html>", html)
