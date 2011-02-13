@@ -72,13 +72,22 @@ type XhtmlFormlets() =
 
 [<AutoOpen>]
 module Integration =
+    let e = XhtmlElement()
+
     /// Lifts a WingBeats node into a formlet
-    let (<+>) (a: 'a Formlet) (b: Node): 'a Formlet = 
+    let (<+) (a: 'a Formlet) (b: Node): 'a Formlet = 
         [renderWingBeatsNodeToXNode b] |> xml |> apl a
+
+    /// Lifts a WingBeats node into a formlet
+    let (+>) (b: Node) (a: 'a Formlet) : 'a Formlet = 
+        let uf = [renderWingBeatsNodeToXNode b] |> xml
+        apr uf a
 
     type WingBeats.Xhtml.XhtmlElement with
         member x.Formlets = XhtmlFormlets()
 
-    open System.Xml.Linq
+    type XhtmlShortcut with
+        member x.Label forId text =
+            e.Label ["for",forId] [Node.Text text]
 
     let inline (!+) x = List.map renderXNodeToWingBeats x

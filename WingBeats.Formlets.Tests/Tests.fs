@@ -50,3 +50,12 @@ let ``render error form``() =
     let errorForm,_,_ = run formlet env
     let html = template errorForm |> Renderer.RenderToString
     Assert.Equal("<html xmlns=\"http://www.w3.org/1999/xhtml\"><span class=\"errorinput\"><input name=\"f0\" value=\"abc\" class=\"nice\" /></span><span class=\"error\">abc is not a valid number</span></html>", html)
+
+[<Fact>]
+let ``combine with wingbeats``() =
+    let formlet =
+        let id = "abc"
+        s.Label id "a label" +> f.TextBox("a default value", ["id",id])
+        <+ e.Br()
+    let html = render formlet
+    Assert.Equal("<label for=\"abc\">a label</label><input name=\"f0\" value=\"a default value\" id=\"abc\" /><br />", html)
