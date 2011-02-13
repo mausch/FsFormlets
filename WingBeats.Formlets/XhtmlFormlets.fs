@@ -81,4 +81,4 @@ module Integration =
 
     open System.Xml.Linq
 
-    let inline (!+) x = renderXNodeToWingBeats x
+    let inline (!+) x = List.map renderXNodeToWingBeats x

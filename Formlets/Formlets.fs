@@ -148,12 +148,15 @@ module Formlet =
     
     /// Renders a formlet to XNode
     let inline renderToXml (v: _ Formlet) = 
-        NameGen.run v |> fst |> XmlWriter.wrap
+        NameGen.run v |> fst
 
     /// Renders a formlet to string
     let inline render (v: _ Formlet) = 
         let x = renderToXml v
-        x.ToString()
+        let x = XElement(XName.op_Implicit "r", x)
+        let r = x.CreateReader()
+        r.MoveToContent() |> ignore
+        r.ReadInnerXml()
 
     // Validation functions
 

@@ -301,9 +301,10 @@ open System.Xml.Linq
 
 // DSL for XML literals, from http://fssnip.net/U
 
-let (!) s = XName.Get(s)
-let (@=) xn value = XAttribute(xn, value)
+let inline (!) s = XName.Get(s)
+let inline (@=) xn value = XAttribute(xn, value)
 let (@?=) xn value = match value with Some s -> XAttribute(xn, s) | None -> null
+let inline (==.) x y = XNode.DeepEquals(x,y)
 type XName with 
     member xn.Item 
         with get([<ParamArray>] objs: obj[]) = 
@@ -314,7 +315,8 @@ let ``from XElement``() =
     let div = !"div"
     let x = div.[div.["hello", div.[null]], div.["world"]]
     let formlet = xnode x
-    Assert.Equal(x.ToString(), render formlet)
+    let html = render formlet
+    Assert.True(x ==. XDocument.Parse(html).Root)
 
 [<Fact>]
 let ``radio with int values``() = 
@@ -377,14 +379,14 @@ let ``parse raw xml ``() =
     let formlet = rawXml "something <a href='someurl'>a link</a>"
     let html = render formlet
     printfn "%s" html
-    Assert.Equal("<div>something <a href=\"someurl\">a link</a></div>", html)
+    Assert.Equal("something <a href=\"someurl\">a link</a>", html)
 
 [<Fact>]
-let ``non-rendering field can't be rendered``() =
-    assertThrows(fun () -> render field |> ignore)
+let ``non-rendering field render``() =
+    Assert.Equal("", render field)
 
 [<Fact>]
-let ``non-rendering field can be rendered with another formlet``() =
+let ``non-rendering field rendered with another formlet``() =
     let formlet = yields t2 <*> input <*> field
     let html = render formlet
     Assert.Equal("<input name=\"f0\" value=\"\" />", html)
