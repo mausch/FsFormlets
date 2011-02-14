@@ -101,6 +101,7 @@ type XhtmlFormlets() =
         let e = XhtmlElement()
         let id = "l" + Guid.NewGuid().ToString()
         let label = e.Label ["for",id] [Node.Text text]
+        let attrs = attrs |> mergeAttr ["id",id]
         label +> x.TextBox(value,attrs)
 
 [<AutoOpen>]
