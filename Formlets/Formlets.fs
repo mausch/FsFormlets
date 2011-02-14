@@ -330,7 +330,7 @@ module Formlet =
     /// Creates a &lt;input type=&quot;checkbox&quot;&gt; formlet
     /// </summary>
     /// <param name="on">Initial check value</param>
-    let checkbox on : bool Formlet =
+    let checkbox on attributes : bool Formlet =
         let transform = 
             function
             | None -> false
@@ -341,7 +341,9 @@ module Formlet =
                 match value with
                 | Some x -> ["checked","checked"]
                 | _ -> []
-            [XmlWriter.xelem "input" (["name",name; "type","checkbox"] @ valueAttr) []]
+            let attr = ["name",name; "type","checkbox"] @ valueAttr
+            let attr = attributes |> mergeAttr attr
+            [XmlWriter.xelem "input" attr []]
         let on = if on then [Value ""] else []
         generalGeneratedElement on tag 
         |> extractOptional

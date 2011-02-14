@@ -41,7 +41,7 @@ let fullFormlet =
         yields t8
         <*> dateFormlet
         <*> password
-        <*> checkbox false
+        <*> checkbox false []
         <*> radio "1" ["1","uno"; "2","dos"]
         <*> select "a" ["a","uno"; "b","dos"]
         <*> textarea "" []
@@ -88,7 +88,7 @@ let radioRefill() =
 
 [<Fact>]
 let checkboxRefill() =
-    let formlet = checkbox false
+    let formlet = checkbox false []
     let env = EnvDict.fromValueSeq ["f0", "on"]
     let r = run formlet env |> fst3
     printfn "%A" r
