@@ -24,6 +24,12 @@ module EnvDict =
     let addFromFileSeq (l: (string*HttpPostedFileBase) seq) =
         l |> Seq.map (fun (k,v) -> k, File v) |> addFromSeq
     let fromFileSeq l = addFromFileSeq l empty
+    let internal requestFiles (r: HttpRequestBase) =
+        r.Files.AllKeys
+        |> Seq.map (fun k -> k, r.Files.[k])
+    let fromFormAndFiles (r: HttpRequestBase) : EnvDict =
+        let env = fromNV r.Form
+        env |> addFromFileSeq (requestFiles r)
 
 
 type 'a Environ = EnvDict -> 'a
