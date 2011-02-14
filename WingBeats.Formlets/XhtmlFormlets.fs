@@ -47,6 +47,33 @@ module Helpers =
 
 open Helpers
 
+[<AutoOpen>]
+module Integration =
+    let e = XhtmlElement()
+
+    /// Lifts a WingBeats node into a formlet
+    let (<+) (a: 'a Formlet) (b: Node): 'a Formlet = 
+        [renderWingBeatsNodeToXNode b] |> xml |> apl a
+
+    /// Lifts a WingBeats node into a formlet
+    let (+>) (b: Node) (a: 'a Formlet) : 'a Formlet = 
+        let uf = [renderWingBeatsNodeToXNode b] |> xml
+        apr uf a
+
+    type XhtmlShortcut with
+        member x.Label forId text =
+            e.Label ["for",forId] [Node.Text text]
+        member x.Form httpMethod action (children: #seq<Node>) =
+            e.Form ["action",action; "method",httpMethod] children
+        member x.FormGet url (children: #seq<Node>) = x.Form "get" url children
+        member x.FormPost url (children: #seq<Node>) = x.Form "post" url children
+        member x.Submit text = e.Input ["type","submit"; "value",text]
+
+    let inline (!+) x = List.map renderXNodeToWingBeats x
+
+
+open System
+
 type XhtmlFormlets() =
     let e = XhtmlElement()
     let s = e.Shortcut
@@ -70,24 +97,13 @@ type XhtmlFormlets() =
     member x.TextBox(value, css: string) : string Formlet =
         Formlet.input value []
 
+    member x.LabeledTextBox(text, value, attrs: _ list)  =
+        let e = XhtmlElement()
+        let id = "l" + Guid.NewGuid().ToString()
+        let label = e.Label ["for",id] [Node.Text text]
+        label +> x.TextBox(value,attrs)
+
 [<AutoOpen>]
-module Integration =
-    let e = XhtmlElement()
-
-    /// Lifts a WingBeats node into a formlet
-    let (<+) (a: 'a Formlet) (b: Node): 'a Formlet = 
-        [renderWingBeatsNodeToXNode b] |> xml |> apl a
-
-    /// Lifts a WingBeats node into a formlet
-    let (+>) (b: Node) (a: 'a Formlet) : 'a Formlet = 
-        let uf = [renderWingBeatsNodeToXNode b] |> xml
-        apr uf a
-
+module Integration2 =
     type WingBeats.Xhtml.XhtmlElement with
         member x.Formlets = XhtmlFormlets()
-
-    type XhtmlShortcut with
-        member x.Label forId text =
-            e.Label ["for",forId] [Node.Text text]
-
-    let inline (!+) x = List.map renderXNodeToWingBeats x
