@@ -85,8 +85,8 @@ type XhtmlFormlets() =
             node |> Alter.addAttribute (xName name, value)
         List.foldBack folder 
 
-    member x.CheckBox value : bool Formlet = 
-        Formlet.checkbox value
+    member x.CheckBox value attributes : bool Formlet = 
+        Formlet.checkbox value attributes
    
     member x.Textarea value (attrs: (string * string) list) : string Formlet =
         Formlet.textarea value attrs
@@ -97,12 +97,20 @@ type XhtmlFormlets() =
     member x.TextBox(value, css: string) : string Formlet =
         Formlet.input value []
 
-    member x.LabeledTextBox(text, value, attrs: _ list)  =
+    member internal x.LabeledElement(text, f, attrs) =
         let e = XhtmlElement()
         let id = "l" + Guid.NewGuid().ToString()
         let label = e.Label ["for",id] [Node.Text text]
         let attrs = attrs |> mergeAttr ["id",id]
-        label +> x.TextBox(value,attrs)
+        label +> f attrs
+
+    member x.LabeledTextBox(text, value, attrs: _ list)  =
+        let t (att: _ list) = x.TextBox(value, att)
+        x.LabeledElement(text, t, attrs)
+
+    member x.LabeledCheckBox(text, value, attrs: _ list) =
+        let t att = x.CheckBox value att
+        x.LabeledElement(text, t, attrs)       
 
 [<AutoOpen>]
 module Integration2 =
