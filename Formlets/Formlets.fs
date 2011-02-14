@@ -267,15 +267,20 @@ module Formlet =
             [XmlWriter.xelem "input" (["name", name] @ valueAttr @ attributes) []]
         generalGeneratedElement [Value defaultValue] tag |> extractOptional
 
+    let internal generatedField =
+        let tag _ _ = []
+        generalGeneratedElement [] tag
+
+    let internal iassignedField name =
+        let tag _ _ = []
+        generalAssignedElement name [] tag
+
     // Concrete HTML functions
 
-    let field : string Formlet =
-        let tag a b = []
-        generalGeneratedElement [] tag |> extractString
-
-    let optionalField: string option Formlet =
-        let tag a b = []
-        generalGeneratedElement [] tag |> extractOptional
+    let field = generatedField |> extractString
+    let assignedField = iassignedField >> extractString
+    let optionalField = generatedField |> extractOptional
+    let optionalAssignedField = iassignedField >> extractOptional
 
     /// <summary>
     /// Creates a &lt;input type=&quot;text&quot;&gt; formlet
