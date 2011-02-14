@@ -28,7 +28,7 @@ module Validate =
 
     let notEmpty =
         let isNullOrWhiteSpace (s: string) =
-            if s = null
+            if s = null || s = ""
                 then true
                 else s |> Seq.exists Char.IsWhiteSpace
         let isOK = isNullOrWhiteSpace >> not
