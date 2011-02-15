@@ -176,8 +176,7 @@ let processWithInvalidInt() =
               ]
     let env = EnvDict.fromValueSeq env
     let err,_,value = run dateFormlet env
-    let xdoc = XmlWriter.wrap err
-    printfn "Error form:\n%s" (xdoc.ToString())
+    printfn "Error form:\n%s" (XmlWriter.render err)
     Assert.True(value.IsNone)
 
 [<Fact>]
@@ -188,8 +187,7 @@ let processWithInvalidInts() =
               ]
     let env = EnvDict.fromValueSeq env
     let err,_,value = run dateFormlet env
-    let xdoc = XmlWriter.wrap err
-    printfn "Error form:\n%s" (xdoc.ToString())
+    printfn "Error form:\n%s" (XmlWriter.render err)
     Assert.True(value.IsNone)
 
 [<Fact>]
@@ -200,8 +198,7 @@ let processWithInvalidDate() =
               ]
     let env = EnvDict.fromValueSeq env
     let err,_,value = run dateFormlet env
-    let xdoc = XmlWriter.wrap err
-    printfn "Error form:\n%s" (xdoc.ToString())
+    printfn "Error form:\n%s" (XmlWriter.render err)
     Assert.True(value.IsNone)
     
 [<Fact>]
@@ -350,8 +347,7 @@ let ``validation without xml and with string``() =
     match run formlet env with
     | Success _ -> failwith "Formlet shouldn't have succeeded"
     | Failure(errorForm,errorMsg) -> 
-        let errorForm = XmlWriter.wrap errorForm
-        printfn "Error form: %s" (errorForm.ToString())
+        printfn "Error form: %s" (XmlWriter.render errorForm)
         printfn "%A" errorMsg
         Assert.Equal(1, errorMsg.Length)
         Assert.Equal("'abc' is not a valid number", errorMsg.[0])
@@ -367,8 +363,7 @@ let ``validation without xml and with string with multiple formlets``() =
     match run formlet env with
     | Success _ -> failwith "Formlet shouldn't have succeeded"
     | Failure(errorForm,errorMsg) -> 
-        let errorForm = XmlWriter.wrap errorForm
-        printfn "Error form: %s" (errorForm.ToString())
+        printfn "Error form: %s" (XmlWriter.render errorForm)
         printfn "%A" errorMsg
         Assert.Equal(2, errorMsg.Length)
         Assert.Equal("'abc' is not a valid number", errorMsg.[0])
@@ -408,5 +403,5 @@ let ``validation error in non-rendering field``() =
     | Failure(errorForm,errorList) ->
         Assert.Equal(1, errorList.Length)
         Assert.Equal("def is not a valid number", errorList.[0])
-        (XmlWriter.wrap errorForm).ToString() |> printfn "%s"
+        printfn "%s" (XmlWriter.render errorForm)
         //Assert.Equal(0, errorForm.Length)

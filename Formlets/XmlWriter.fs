@@ -107,8 +107,8 @@ module XmlWriter =
         plug (fun x -> [xelem name attributes x]) v
 
     let inline xnode (e: XNode) : unit XmlWriter = [e],()
-    let wrap (n: XNode list) =
-        match n with
-        | [] -> failwith "empty list"
-        | [x] -> x
-        | x -> xelem "div" [] x
+    let render (e: XNode seq) : string =
+        let x = XElement(XName.op_Implicit "r", e)
+        let r = x.CreateReader()
+        r.MoveToContent() |> ignore
+        r.ReadInnerXml()        
