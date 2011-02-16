@@ -95,10 +95,25 @@ type XhtmlFormlets() =
         let attributes = defaultArg attributes []
         Formlet.textarea value attributes
 
-    member x.TextBox(?value, ?attributes: (string * string) list) =
+    member x.iTextBox(value: string option, attributes: (string*string) list option, required: bool option, size: int option, maxlength: int option) =
         let value = defaultArg value ""
         let attributes = defaultArg attributes []
-        Formlet.input value attributes
+        let required = defaultArg required false
+        let requiredAttr = if required then ["required",""] else []
+        let size = match size with Some v -> ["size",v.ToString()] | _ -> []
+        let maxlength = match maxlength with Some v -> ["maxlength",v.ToString()] | _ -> []
+        let attributes = 
+            [requiredAttr;size;maxlength]
+            |> List.fold (fun s e -> s |> mergeAttr e) attributes
+        let formlet = Formlet.input value attributes
+        let formlet =
+            if required
+                then formlet |> Validate.notEmpty
+                else formlet
+        formlet
+
+    member x.TextBox(?value, ?attributes: (string * string) list, ?required: bool, ?size: int, ?maxlength: int) =
+        x.iTextBox(value, attributes, required, size, maxlength)
 
     member internal x.LabeledElement(text, f, attributes) =
         let e = XhtmlElement()
@@ -118,18 +133,10 @@ type XhtmlFormlets() =
         x.LabeledElement(text, t, attributes)
 
     member private x.iNumBox(value: float option, attributes: _ list option, required: bool option, size: int option, maxlength: int option, errorMsg: (string -> string) option) =
-        let value = match value with Some v -> v.ToString() | _ -> ""
-        let attributes = defaultArg attributes []
-        let required = defaultArg required false
+        let value = match value with Some v -> Some <| v.ToString() | _ -> None
         let errorMsg = defaultArg errorMsg (fun _ -> "Invalid number")
-        let required = if required then ["required",""] else []
-        let size = match size with Some v -> ["size",v.ToString()] | _ -> []
-        let maxlength = match maxlength with Some v -> ["maxlength",v.ToString()] | _ -> []
-        let attributes = 
-            [required;size;maxlength] 
-            |> List.fold (fun s e -> s |> mergeAttr e) attributes
-        let attributes = attributes |> mergeAttr ["type","number"]
-        x.TextBox(value, attributes)
+        x.iTextBox(value, attributes, required, size, maxlength)
+        |> mergeAttributes ["type","number"]
         |> satisfies (err (Double.TryParse >> fst) errorMsg)
         |> map float
 
