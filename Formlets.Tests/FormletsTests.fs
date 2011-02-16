@@ -7,6 +7,7 @@ open System.Collections.Specialized
 open System.Globalization
 open System.Web
 open System.Xml.Linq
+open Formlets.XmlWriter
 open Formlets
 
 let assertThrows<'e when 'e :> exn> f = 
@@ -301,7 +302,6 @@ open System.Xml.Linq
 let inline (!) s = XName.Get(s)
 let inline (@=) xn value = XAttribute(xn, value)
 let (@?=) xn value = match value with Some s -> XAttribute(xn, s) | None -> null
-let inline (==.) x y = XNode.DeepEquals(x,y)
 type XName with 
     member xn.Item 
         with get([<ParamArray>] objs: obj[]) = 
