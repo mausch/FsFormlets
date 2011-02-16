@@ -8,6 +8,9 @@ open WingBeats
 open WingBeats.Xml
 open WingBeats.Xhtml
 open WingBeats.Formlets
+open System.Xml.Linq
+
+let inline (==.) x y = XNode.DeepEquals(x,y)
 
 let e = XhtmlElement()
 let f = e.Formlets
@@ -59,3 +62,31 @@ let ``combine with wingbeats``() =
         <+ e.Br()
     let html = render formlet
     Assert.Equal("<label for=\"abc\">a label</label><input name=\"f0\" value=\"a default value\" id=\"abc\" /><br />", html)
+
+[<Fact>]
+let ``numbox render``() =
+    let formlet = f.NumBox(required = true, size = 4, maxlength = 4, attributes = ["class","nice"])
+    let html = render formlet
+    Assert.Equal("<input name=\"f0\" value=\"\" type=\"number\" maxlength=\"4\" size=\"4\" required=\"\" class=\"nice\" />", html)
+
+[<Fact>]
+let ``numbox run failure``() =
+    let formlet = f.NumBox(required = true, size = 4, maxlength = 4, attributes = ["class","nice"])
+    let env = EnvDict.fromValueSeq ["f0","abc"]
+    match run formlet env with
+    | Failure(errorForm, _) -> 
+        let html = XmlWriter.render errorForm
+        let xml = XDocument.Parse "<r><span class='errorinput'><input name='f0' value='abc' type='number' maxlength='4' size='4' required='' class='nice' /></span><span class='error'>Invalid number</span></r>"
+        Assert.True(xml.Root ==. XElement(XName.op_Implicit "r",errorForm))
+    | _ -> failwith "Formlet should not have succeeded"
+
+[<Fact>]
+let ``intbox doesn't accept float``() =
+    let formlet = f.IntBox()
+    let env = EnvDict.fromValueSeq ["f0","1.3"]
+    match run formlet env with
+    | Failure(errorForm, _) ->
+        let html = XmlWriter.render errorForm
+        let xml = XDocument.Parse "<r><span class='errorinput'><input name='f0' value='1.3' type='number' /></span><span class='error'>Invalid number</span></r>"
+        Assert.True(xml.Root ==. XElement(XName.op_Implicit "r",errorForm))
+    | _ -> failwith "Formlet should not have succeeded"

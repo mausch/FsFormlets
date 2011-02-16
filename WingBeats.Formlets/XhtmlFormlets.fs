@@ -6,8 +6,8 @@ open WingBeats.Xml
 open WingBeats.Xhtml
 open Formlets
 
-// copied from WingBeats.Xhtml.Shortcuts
 module Helpers = 
+    // copied from WingBeats.Xhtml.Shortcuts
     let xName name = { Name = name; NS = {Prefix = ""; Uri = "http://www.w3.org/1999/xhtml"} }
 
     let xAttr (name,value) = xName name, value
@@ -71,7 +71,6 @@ module Integration =
 
     let inline (!+) x = List.map renderXNodeToWingBeats x
 
-
 open System
 
 type XhtmlFormlets() =
@@ -85,32 +84,67 @@ type XhtmlFormlets() =
             node |> Alter.addAttribute (xName name, value)
         List.foldBack folder 
 
-    member x.CheckBox value attributes : bool Formlet = 
+    member x.Textf fmt = Printf.ksprintf e.Text fmt
+
+    member x.CheckBox(value, ?attributes) =
+        let attributes = defaultArg attributes []
         Formlet.checkbox value attributes
    
-    member x.Textarea value (attrs: (string * string) list) : string Formlet =
-        Formlet.textarea value attrs
+    member x.Textarea(?value, ?attributes: (string * string) list) =
+        let value = defaultArg value ""
+        let attributes = defaultArg attributes []
+        Formlet.textarea value attributes
 
-    member x.TextBox(value, attrs: (string * string) list) : string Formlet =
-        Formlet.input value attrs
+    member x.TextBox(?value, ?attributes: (string * string) list) =
+        let value = defaultArg value ""
+        let attributes = defaultArg attributes []
+        Formlet.input value attributes
 
-    member x.TextBox(value, css: string) : string Formlet =
-        Formlet.input value []
-
-    member internal x.LabeledElement(text, f, attrs) =
+    member internal x.LabeledElement(text, f, attributes) =
         let e = XhtmlElement()
         let id = "l" + Guid.NewGuid().ToString()
         let label = e.Label ["for",id] [Node.Text text]
-        let attrs = attrs |> mergeAttr ["id",id]
-        label +> f attrs
+        let attributes = attributes |> mergeAttr ["id",id]
+        label +> f attributes
 
-    member x.LabeledTextBox(text, value, attrs: _ list)  =
+    member x.LabeledTextBox(text, value, ?attributes: _ list) =
+        let attributes = defaultArg attributes []
         let t (att: _ list) = x.TextBox(value, att)
-        x.LabeledElement(text, t, attrs)
+        x.LabeledElement(text, t, attributes)
 
-    member x.LabeledCheckBox(text, value, attrs: _ list) =
-        let t att = x.CheckBox value att
-        x.LabeledElement(text, t, attrs)       
+    member x.LabeledCheckBox(text, value, ?attributes: _ list) =
+        let attributes = defaultArg attributes []
+        let t att = x.CheckBox(value, att)
+        x.LabeledElement(text, t, attributes)
+
+    member private x.iNumBox(value: float option, attributes: _ list option, required: bool option, size: int option, maxlength: int option, errorMsg: (string -> string) option) =
+        let value = match value with Some v -> v.ToString() | _ -> ""
+        let attributes = defaultArg attributes []
+        let required = defaultArg required false
+        let errorMsg = defaultArg errorMsg (fun _ -> "Invalid number")
+        let required = if required then ["required",""] else []
+        let size = match size with Some v -> ["size",v.ToString()] | _ -> []
+        let maxlength = match maxlength with Some v -> ["maxlength",v.ToString()] | _ -> []
+        let attributes = 
+            [required;size;maxlength] 
+            |> List.fold (fun s e -> s |> mergeAttr e) attributes
+        let attributes = attributes |> mergeAttr ["type","number"]
+        x.TextBox(value, attributes)
+        |> satisfies (err (Double.TryParse >> fst) errorMsg)
+        |> map float
+
+    member x.NumBox(?value: float, ?attributes: _ list, ?required: bool, ?size: int, ?maxlength: int, ?errorMsg: string -> string) =
+        x.iNumBox(value, attributes, required, size, maxlength, errorMsg)
+
+    member x.IntBox(?value: int, ?attributes: _ list, ?required: bool, ?size: int, ?maxlength: int, ?errorMsg: string -> string) =
+        let value = Option.map float value
+        let errorMsg2 (i: float) =
+            match errorMsg with
+            | Some f -> i.ToString() |> f
+            | _ -> "Invalid number"
+        x.iNumBox(value, attributes, required, size, maxlength, errorMsg)
+        |> satisfies (err (fun n -> Math.Truncate n = n) errorMsg2)
+        |> map int
 
 [<AutoOpen>]
 module Integration2 =
