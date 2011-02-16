@@ -164,8 +164,7 @@ module Helpers =
     /// </summary>
     /// <param name="kv">Key-value pair</param>
     /// <param name="attr">list of key-value pairs</param>
-    let addOrOverwrite kv attr = 
-        let key,value = kv
+    let addOrOverwrite (key,value) attr = 
         match Seq.tryFindWithIndex (fun (k,_) -> k = key) attr with
         | Some (i,(k,v)) -> List.replaceAt (k,value) i attr
         | _ -> (key,value)::attr

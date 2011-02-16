@@ -111,4 +111,13 @@ module XmlWriter =
         let x = XElement(XName.op_Implicit "r", e)
         let r = x.CreateReader()
         r.MoveToContent() |> ignore
-        r.ReadInnerXml()        
+        r.ReadInnerXml()
+
+    let mergeAttr a x =
+        let mergeInNode =
+            function
+            | TagA(name, attr, children) -> 
+                let attr = attr |> mergeAttr a
+                xelem name attr children
+            | x -> x
+        plug (List.map mergeInNode) x

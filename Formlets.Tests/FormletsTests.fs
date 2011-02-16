@@ -405,3 +405,19 @@ let ``validation error in non-rendering field``() =
         Assert.Equal("def is not a valid number", errorList.[0])
         printfn "%s" (XmlWriter.render errorForm)
         //Assert.Equal(0, errorForm.Length)
+
+[<Fact>]
+let ``merge attr``() =
+    let formlet = input |> mergeAttributes ["id","pepe"]
+    let html = render formlet
+    Assert.Equal("<input id=\"pepe\" name=\"f0\" value=\"\" />", html)
+
+[<Fact>]
+let ``merge attr in error form``() =
+    let formlet = input |> mergeAttributes ["id","pepe"] |> Validate.isInt
+    let env = EnvDict.fromValueSeq ["f0","a"]
+    match run formlet env with
+    | Failure(errorForm,_) -> 
+        let html = XmlWriter.render errorForm
+        Assert.Equal("<span class=\"errorinput\"><input id=\"pepe\" name=\"f0\" value=\"a\" /></span><span class=\"error\">a is not a valid number</span>", html)
+    | _ -> failwith "Should not have succeeded"

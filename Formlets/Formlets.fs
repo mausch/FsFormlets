@@ -153,6 +153,13 @@ module Formlet =
     /// Renders a formlet to string
     let inline render f = f |> renderToXml |> XmlWriter.render
 
+    let inline mergeAttributes (a: (string * string) seq) (f: 'a Formlet) : 'a Formlet =
+        let merge x = XmlWriter.mergeAttr a x
+        let xml1 x = XmlWriter.map id (merge x)
+        let xml2 x = Environ.map xml1 x
+        let xml3 x = XmlWriter.map xml2 (merge x)
+        NameGen.map xml3 f
+
     // Validation functions
 
     let private check (validator: 'a Validator) (a: 'a ALO) : 'a ALO =
