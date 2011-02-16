@@ -9,13 +9,12 @@ open WingBeats.Formlets
 open System.Xml.Linq
 
 let inline (==.) x y = 
-    let inline (!!) a = XName.op_Implicit a
     let rec orderAttributes =
         function
         | TagA(n,a,c) -> 
-            let a = a |> Seq.sortBy fst |> Seq.map (fun (k,v) -> box <| XAttribute(!!k,v)) |> Seq.toList
-            let c = c |> Seq.map orderAttributes |> Seq.map box |> Seq.toList
-            XElement(!!n, a @ c) :> XNode
+            let a = a |> Seq.sortBy fst |> Seq.toList
+            let c = c |> List.map orderAttributes
+            XmlWriter.xelem n a c
         | x -> x
     XNode.DeepEquals(x,y)
 
