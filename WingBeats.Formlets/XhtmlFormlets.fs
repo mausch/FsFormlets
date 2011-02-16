@@ -132,24 +132,51 @@ type XhtmlFormlets() =
         let t att = x.CheckBox(value, att)
         x.LabeledElement(text, t, attributes)
 
-    member private x.iNumBox(value: float option, attributes: _ list option, required: bool option, size: int option, maxlength: int option, errorMsg: (string -> string) option) =
+    member private x.iNumBox(value: float option, attributes: _ list option, required: bool option, size: int option, maxlength: int option, min: float option, max: float option, errorMsg: (string -> string) option, rangeErrorMsg: ((float option * float option) -> float -> string) option) =
         let value = match value with Some v -> Some <| v.ToString() | _ -> None
         let errorMsg = defaultArg errorMsg (fun _ -> "Invalid number")
+        let minAttr = match min with Some v -> ["min",v.ToString()] | _ -> []
+        let maxAttr = match max with Some v -> ["max",v.ToString()] | _ -> []
+        let defaultRangeErrorMsg (min,max) v =
+            match min,max with
+            | Some min, Some max -> sprintf "Value must be between %f and %f" min max
+            | Some min, None -> sprintf "Value must be higher than %f" min
+            | None, Some max -> sprintf "Value must be lower than %f" max
+            | _, _ -> ""            
+        let rangeErrorMsg = defaultArg rangeErrorMsg defaultRangeErrorMsg
+        let rangeErrorMsg = rangeErrorMsg (min,max)
+        let rangeValidator v =
+            match min,max with
+            | Some min, Some max -> v >= min && v <= max
+            | Some min, None -> v >= min
+            | None, Some max -> v <= max
+            | _,_ -> true
         x.iTextBox(value, attributes, required, size, maxlength)
-        |> mergeAttributes ["type","number"]
+        |> mergeAttributes (["type","number"] @ minAttr @ maxAttr)
         |> satisfies (err (Double.TryParse >> fst) errorMsg)
         |> map float
+        |> satisfies (err rangeValidator rangeErrorMsg)
 
-    member x.NumBox(?value: float, ?attributes: _ list, ?required: bool, ?size: int, ?maxlength: int, ?errorMsg: string -> string) =
-        x.iNumBox(value, attributes, required, size, maxlength, errorMsg)
+    member x.NumBox(?value: float, ?attributes: _ list, ?required: bool, ?size: int, ?maxlength: int, ?min: float, ?max: float, ?errorMsg: string -> string) =
+        x.iNumBox(value, attributes, required, size, maxlength, min, max, errorMsg, None)
 
-    member x.IntBox(?value: int, ?attributes: _ list, ?required: bool, ?size: int, ?maxlength: int, ?errorMsg: string -> string) =
+    member x.IntBox(?value: int, ?attributes: _ list, ?required: bool, ?size: int, ?maxlength: int, ?min: int, ?max: int, ?errorMsg: string -> string) =
         let value = Option.map float value
+        let min = Option.map float min
+        let max = Option.map float max
         let errorMsg2 (i: float) =
             match errorMsg with
             | Some f -> i.ToString() |> f
             | _ -> "Invalid number"
-        x.iNumBox(value, attributes, required, size, maxlength, errorMsg)
+        let defaultRangeErrorMsg (min,max) v =
+            let min = Option.map int min
+            let max = Option.map int max
+            match min,max with
+            | Some min, Some max -> sprintf "Value must be between %d and %d" min max
+            | Some min, None -> sprintf "Value must be higher than %d" min
+            | None, Some max -> sprintf "Value must be lower than %d" max
+            | _, _ -> ""
+        x.iNumBox(value, attributes, required, size, maxlength, min, max, errorMsg, Some defaultRangeErrorMsg)
         |> satisfies (err (fun n -> Math.Truncate n = n) errorMsg2)
         |> map int
 

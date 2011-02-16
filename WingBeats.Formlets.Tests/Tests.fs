@@ -1,13 +1,13 @@
 ﻿module Tests
 
 open Xunit
+open Formlets.XmlWriter
 open Formlets
 open WingBeats
 open WingBeats.Xml
 open WingBeats.Xhtml
 open WingBeats.Formlets
 open System.Xml.Linq
-
 
 let e = XhtmlElement()
 let f = e.Formlets
@@ -20,6 +20,16 @@ let internal form httpMethod action =
 
 let internal formGet x = form "get" x
 let internal formPost x = form "post" x
+
+let internal xnodeListComparer =
+    { new System.Collections.Generic.IComparer<XNode list> with
+        member x.Compare(a,b) = 
+            let eq = a.Length = b.Length && List.forall2 (fun x y -> x ==. y) a b
+            if eq then 0 else 1 }
+
+type Assert with
+    static member XmlEqual(x: XNode, y: XNode) = Assert.Equal(x,y, xnodeComparer)
+    static member XmlEqual(x: XNode list, y: XNode list) = Assert.Equal(x,y, xnodeListComparer)
 
 let layout (head: #seq<Xml.Node>) (body: #seq<Xml.Node>) = 
     e.Html [
@@ -74,7 +84,7 @@ let ``numbox run failure``() =
     | Failure(errorForm, _) -> 
         let html = XmlWriter.render errorForm
         let xml = XDocument.Parse "<r><span class='errorinput'><input name='f0' value='abc' type='number' maxlength='4' size='4' required='' class='nice' /></span><span class='error'>Invalid number</span></r>"
-        //Assert.True(xml.Root ==. XElement(XName.op_Implicit "r",errorForm))
+        Assert.XmlEqual(xml.Root, xelem "r" [] errorForm)
         printfn "%s" html
     | _ -> failwith "Formlet should not have succeeded"
 
@@ -86,6 +96,18 @@ let ``intbox doesn't accept float``() =
     | Failure(errorForm, _) ->
         let html = XmlWriter.render errorForm
         let xml = XDocument.Parse "<r><span class='errorinput'><input name='f0' value='1.3' type='number' /></span><span class='error'>Invalid number</span></r>"
-        //Assert.True(xml.Root ==. XElement(XName.op_Implicit "r",errorForm))
+        Assert.XmlEqual(xml.Root, xelem "r" [] errorForm)
+        printfn "%s" html
+    | _ -> failwith "Formlet should not have succeeded"
+
+[<Fact>]
+let ``intbox failure with range``() =
+    let formlet = f.IntBox(min = 5, max = 10)
+    let env = EnvDict.fromValueSeq ["f0","3"]
+    match run formlet env with
+    | Failure(errorForm, _) ->
+        let html = XmlWriter.render errorForm
+        let xml = XDocument.Parse "<r><span class='errorinput'><input min='5' max='10' name='f0' value='3' type='number' /></span><span class='error'>Value must be between 5 and 10</span></r>"
+        Assert.XmlEqual(xml.Root, xelem "r" [] errorForm)
         printfn "%s" html
     | _ -> failwith "Formlet should not have succeeded"
