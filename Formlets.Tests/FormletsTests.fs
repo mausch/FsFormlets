@@ -313,7 +313,7 @@ let ``from XElement``() =
     let x = div.[div.["hello", div.[null]], div.["world"]]
     let formlet = xnode x
     let html = render formlet
-    Assert.True(x ==. XDocument.Parse(html).Root)
+    Assert.True(x =. XDocument.Parse(html).Root)
 
 [<Fact>]
 let ``radio with int values``() = 

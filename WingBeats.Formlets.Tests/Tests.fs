@@ -24,7 +24,7 @@ let internal formPost x = form "post" x
 let internal xnodeListComparer =
     { new System.Collections.Generic.IComparer<XNode list> with
         member x.Compare(a,b) = 
-            let eq = a.Length = b.Length && List.forall2 (fun x y -> x ==. y) a b
+            let eq = a.Length = b.Length && List.forall2 (fun x y -> x =. y) a b
             if eq then 0 else 1 }
 
 type Assert with
