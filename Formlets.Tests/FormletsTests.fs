@@ -336,9 +336,13 @@ let ``radio with record values``() =
 
 [<Fact>]
 let ``validation without xml and with string``() =
+    let validator = 
+        { IsValid = Int32.TryParse >> fst
+          ErrorForm = fun _ b -> b
+          ErrorList = fun v -> [sprintf "'%s' is not a valid number" v] }
     let formlet = 
         input 
-        |> satisfies ((Int32.TryParse >> fst), (fun _ b -> b), (fun v -> [sprintf "'%s' is not a valid number" v]))
+        |> satisfies validator
         |> map int
     let env = EnvDict.fromValueSeq ["f0","abc"]
     match run formlet env with
@@ -351,9 +355,13 @@ let ``validation without xml and with string``() =
 
 [<Fact>]
 let ``validation without xml and with string with multiple formlets``() =
+    let validator = 
+        { IsValid = Int32.TryParse >> fst
+          ErrorForm = fun _ b -> b
+          ErrorList = fun v -> [sprintf "'%s' is not a valid number" v] }
     let inputInt = 
         input 
-        |> satisfies ((Int32.TryParse >> fst), (fun _ b -> b), (fun v -> [sprintf "'%s' is not a valid number" v]))
+        |> satisfies validator
         |> map int
     let formlet = yields t2 <*> inputInt <*> inputInt
     let env = EnvDict.fromValueSeq ["f0","abc"; "f1","def"]

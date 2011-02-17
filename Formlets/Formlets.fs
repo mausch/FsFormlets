@@ -16,7 +16,17 @@ open System.Web
 /// Validator type.
 /// Fst determines if value is valid
 /// Snd builds an error message
-type 'a Validator = ('a -> bool) * ('a -> XNode list -> XNode list) * ('a -> string list)
+type 'a Validator = {
+    IsValid: 'a -> bool
+    ErrorForm: 'a -> XNode list -> XNode list
+    ErrorList: 'a -> string list
+}
+
+module Validator =
+    let isValid (v: _ Validator) = v.IsValid
+    let errorForm (v: _ Validator) = v.ErrorForm
+    let errorList (v: _ Validator) = v.ErrorList
+    let toTuple (v: _ Validator) = v.IsValid, v.ErrorForm, v.ErrorList
 
 type 'a ValidationResult =
     | Pass of 'a
@@ -165,7 +175,7 @@ module Formlet =
     let private check (validator: 'a Validator) (a: 'a ALO) : 'a ALO =
         let result: 'a ValidationResult XmlWriter =
             let errorToValidationResult (o: 'a LO) =
-                let pred,_,_ = validator
+                let pred = Validator.isValid validator
                 let check' p v =
                     if p v
                         then Pass v
@@ -180,13 +190,12 @@ module Formlet =
             | Pass v -> lo_pure v
             | _ -> Error.failure |> ErrorList.puree
         let w = XmlWriter.map validationResultToError result
-        let _,errorXml,errorMsg = validator
         match result with
         | x, Fail v -> 
             let w =
-                let append a = ErrorList.append (errorMsg v) a
+                let append a = ErrorList.append (validator.ErrorList v) a
                 XmlWriter.map append w
-            XmlWriter.plug (errorXml v) w
+            XmlWriter.plug (validator.ErrorForm v) w
         | x -> w
 
     /// Applies a validator to a formlet
@@ -206,7 +215,9 @@ module Formlet =
                     XmlWriter.xelem "span" ["class","error"] [XText(errorMsg value)]
                 ]
             List.map (fun e -> e :> XNode) elems
-        isValid, addError, errorMsg >> List.singleton
+        { IsValid = isValid
+          ErrorForm = addError
+          ErrorList = errorMsg >> List.singleton }
 
     /// <summary>
     /// Constructs a validator from a regular expression
