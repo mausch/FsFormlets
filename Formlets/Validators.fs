@@ -19,6 +19,8 @@ module Validators =
             + @"@[a-z0-9][\w\.-]*[a-z0-9]\.[a-z][a-z\.]*[a-z]$", RegexOptions.IgnoreCase ||| RegexOptions.Compiled)
     let email (s: string) = rx.IsMatch s
 
+    let url (s: string) = Uri.TryCreate(s, UriKind.Absolute) |> fst
+
 module Validate =
     let isInt =
         let isOK = Int32.TryParse >> fst
@@ -48,3 +50,6 @@ module Validate =
     let regex pattern =
         let isOK n = Regex.IsMatch(n, pattern)
         satisfies (err isOK (fun _ -> "Invalid value"))
+
+    let isUrl =
+        satisfies (err Validators.url (fun _ -> "Invalid URL"))

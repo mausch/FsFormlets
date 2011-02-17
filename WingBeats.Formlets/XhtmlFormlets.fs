@@ -185,6 +185,11 @@ type XhtmlFormlets() =
         |> satisfies (err (fun n -> Math.Truncate n = n) errorMsg2)
         |> map int
 
+    member x.UrlBox(?value: string, ?attributes: _ list, ?required: bool) =
+        x.iTextBox(value, attributes, required, None, None, None)
+        |> mergeAttributes ["type","url"]
+        |> Validate.isUrl
+
 [<AutoOpen>]
 module Integration2 =
     type WingBeats.Xhtml.XhtmlElement with
