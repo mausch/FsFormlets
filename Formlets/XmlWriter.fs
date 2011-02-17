@@ -84,23 +84,6 @@ module XmlWriter =
         let attributes = List.map (fun a -> xattr a :> XObject) attributes
         XElement(!!name, attributes @ children) :> XNode
 
-    let inline (=.) x y =
-        // attributes must be ordered due to a bug in XNode.DeepEquals
-        // see http://connect.microsoft.com/VisualStudio/feedback/details/400469/xnode-deepequals-incorrect-result
-        let rec orderAttributes =
-            function
-            | TagA(n,a,c) -> 
-                let a = a |> Seq.sortBy fst |> Seq.toList
-                let c = c |> List.map orderAttributes
-                xelem n a c
-            | x -> x
-        XNode.DeepEquals(orderAttributes x, orderAttributes y)
-
-    let xnodeComparer = 
-        { new System.Collections.Generic.IComparer<XNode> with
-            member x.Compare(a,b) = 
-                if a =. b then 0 else 1 }
-
     let inline puree v : 'a XmlWriter = [],v
     //let ap (x: xml_item list,f) (y,a) = x @ y, f a
     let ap (f: ('a -> 'b) XmlWriter) (x: 'a XmlWriter) : 'b XmlWriter =

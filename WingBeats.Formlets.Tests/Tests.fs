@@ -1,5 +1,6 @@
 ﻿module Tests
 
+open TestHelpers
 open Xunit
 open Formlets.XmlWriter
 open Formlets
@@ -20,16 +21,6 @@ let internal form httpMethod action =
 
 let internal formGet x = form "get" x
 let internal formPost x = form "post" x
-
-let internal xnodeListComparer =
-    { new System.Collections.Generic.IComparer<XNode list> with
-        member x.Compare(a,b) = 
-            let eq = a.Length = b.Length && List.forall2 (fun x y -> x =. y) a b
-            if eq then 0 else 1 }
-
-type Assert with
-    static member XmlEqual(x: XNode, y: XNode) = Assert.Equal(x,y, xnodeComparer)
-    static member XmlEqual(x: XNode list, y: XNode list) = Assert.Equal(x,y, xnodeListComparer)
 
 let layout (head: #seq<Xml.Node>) (body: #seq<Xml.Node>) = 
     e.Html [

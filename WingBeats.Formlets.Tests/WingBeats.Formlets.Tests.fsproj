@@ -59,6 +59,11 @@
     <Compile Include="Tests.fs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Formlets.Tests\Formlets.Tests.fsproj">
+      <Name>Formlets.Tests</Name>
+      <Project>{300fb450-0ca2-435d-b41e-a9399594fc83}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\Formlets\Formlets.fsproj">
       <Name>Formlets</Name>
       <Project>{d628a18c-7c64-48cd-bc52-add7a88a8770}</Project>

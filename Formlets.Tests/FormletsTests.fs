@@ -1,7 +1,7 @@
 ﻿module FormletsTests
 
+open TestHelpers
 open Xunit
-
 open System
 open System.Collections.Specialized
 open System.Globalization
@@ -9,9 +9,6 @@ open System.Web
 open System.Xml.Linq
 open Formlets.XmlWriter
 open Formlets
-
-let assertThrows<'e when 'e :> exn> f = 
-    Assert.Throws<'e>(Assert.ThrowsDelegate(f)) |> ignore
 
 let input = input "" [] // no additional attributes
 
