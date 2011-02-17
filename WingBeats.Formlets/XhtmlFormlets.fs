@@ -190,6 +190,11 @@ type XhtmlFormlets() =
         |> mergeAttributes ["type","url"]
         |> Validate.isUrl
 
+    member x.EmailBox(?value: string, ?attributes: _ list, ?required: bool) =
+        x.iTextBox(value, attributes, required, None, None, None)
+        |> mergeAttributes ["type","email"]
+        |> Validate.isEmail
+
 [<AutoOpen>]
 module Integration2 =
     type WingBeats.Xhtml.XhtmlElement with
