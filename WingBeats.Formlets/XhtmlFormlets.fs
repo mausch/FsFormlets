@@ -95,25 +95,30 @@ type XhtmlFormlets() =
         let attributes = defaultArg attributes []
         Formlet.textarea value attributes
 
-    member x.iTextBox(value: string option, attributes: (string*string) list option, required: bool option, size: int option, maxlength: int option) =
+    member x.iTextBox(value: string option, attributes: (string*string) list option, required: bool option, size: int option, maxlength: int option, pattern: string option) =
         let value = defaultArg value ""
         let attributes = defaultArg attributes []
         let required = defaultArg required false
         let requiredAttr = if required then ["required",""] else []
         let size = match size with Some v -> ["size",v.ToString()] | _ -> []
         let maxlength = match maxlength with Some v -> ["maxlength",v.ToString()] | _ -> []
+        let patternAttr = match pattern with Some v -> ["pattern",v] | _ -> []
         let attributes = 
-            [requiredAttr;size;maxlength]
+            [requiredAttr;size;maxlength;patternAttr]
             |> List.fold (fun s e -> s |> mergeAttr e) attributes
         let formlet = Formlet.input value attributes
         let formlet =
             if required
                 then formlet |> Validate.notEmpty
                 else formlet
+        let formlet =
+            match pattern with
+            | Some v -> formlet |> Validate.regex v
+            | _ -> formlet
         formlet
 
-    member x.TextBox(?value, ?attributes: (string * string) list, ?required: bool, ?size: int, ?maxlength: int) =
-        x.iTextBox(value, attributes, required, size, maxlength)
+    member x.TextBox(?value, ?attributes: (string * string) list, ?required: bool, ?size: int, ?maxlength: int, ?pattern: string) =
+        x.iTextBox(value, attributes, required, size, maxlength, pattern)
 
     member internal x.LabeledElement(text, f, attributes) =
         let e = XhtmlElement()
@@ -151,7 +156,7 @@ type XhtmlFormlets() =
             | Some min, None -> v >= min
             | None, Some max -> v <= max
             | _,_ -> true
-        x.iTextBox(value, attributes, required, size, maxlength)
+        x.iTextBox(value, attributes, required, size, maxlength, None)
         |> mergeAttributes (["type","number"] @ minAttr @ maxAttr)
         |> satisfies (err (Double.TryParse >> fst) errorMsg)
         |> map float

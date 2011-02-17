@@ -43,3 +43,8 @@ module Validate =
 
     let isEmail =
         satisfies (err Validators.email (fun _ -> "Invalid email"))
+
+    open System.Text.RegularExpressions
+    let regex pattern =
+        let isOK n = Regex.IsMatch(n, pattern)
+        satisfies (err isOK (fun _ -> "Invalid value"))
