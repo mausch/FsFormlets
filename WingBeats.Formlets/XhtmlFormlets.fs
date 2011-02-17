@@ -162,10 +162,10 @@ type XhtmlFormlets() =
         |> map float
         |> satisfies (err rangeValidator rangeErrorMsg)
 
-    member x.NumBox(?value: float, ?attributes: _ list, ?required: bool, ?size: int, ?maxlength: int, ?min: float, ?max: float, ?errorMsg: string -> string) =
+    member x.NumBox(?value, ?attributes, ?required, ?size, ?maxlength, ?min, ?max, ?errorMsg) =
         x.iNumBox(value, attributes, required, size, maxlength, min, max, errorMsg, None)
 
-    member x.IntBox(?value: int, ?attributes: _ list, ?required: bool, ?size: int, ?maxlength: int, ?min: int, ?max: int, ?errorMsg: string -> string) =
+    member x.IntBox(?value, ?attributes, ?required, ?size, ?maxlength, ?min, ?max, ?errorMsg) =
         let value = Option.map float value
         let min = Option.map float min
         let max = Option.map float max
@@ -185,12 +185,12 @@ type XhtmlFormlets() =
         |> satisfies (err (fun n -> Math.Truncate n = n) errorMsg2)
         |> map int
 
-    member x.UrlBox(?value: string, ?attributes: _ list, ?required: bool) =
+    member x.UrlBox(?value, ?attributes, ?required) =
         x.iTextBox(value, attributes, required, None, None, None)
         |> mergeAttributes ["type","url"]
         |> Validate.isUrl
 
-    member x.EmailBox(?value: string, ?attributes: _ list, ?required: bool) =
+    member x.EmailBox(?value, ?attributes, ?required) =
         x.iTextBox(value, attributes, required, None, None, None)
         |> mergeAttributes ["type","email"]
         |> Validate.isEmail
