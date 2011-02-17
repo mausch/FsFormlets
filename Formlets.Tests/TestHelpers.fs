@@ -32,3 +32,5 @@ let internal xnodeListComparer =
 type Assert with
     static member XmlEqual(x: XNode, y: XNode) = Assert.Equal(x,y, xnodeComparer)
     static member XmlEqual(x: XNode list, y: XNode list) = Assert.Equal(x,y, xnodeListComparer)
+    static member XmlEqual(x: XNode, y: XNode list) = Assert.XmlEqual([x],y)
+    static member XmlEqual(x: XNode list, y: XNode) = Assert.XmlEqual(x,[y])
