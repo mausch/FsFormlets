@@ -37,7 +37,7 @@ type FormElements(validators: Validate) =
     member x.Text(?value, ?attributes: (string * string) list, ?required: bool, ?size: int, ?maxlength: int, ?pattern: string) =
         x.iText(value, attributes, required, size, maxlength, pattern)
 
-    member private x.iNumber(value: float option, attributes: _ list option, required: bool option, size: int option, maxlength: int option, min: float option, max: float option, errorMsg: (string -> string) option, rangeErrorMsg: ((float option * float option) -> float -> string) option) =
+    member private x.iFloat(value: float option, attributes: _ list option, required: bool option, size: int option, maxlength: int option, min: float option, max: float option, errorMsg: (string -> string) option, rangeErrorMsg: ((float option * float option) -> float -> string) option) =
         let value = match value with Some v -> Some <| v.ToString() | _ -> None
         let errorMsg = defaultArg errorMsg (fun _ -> "Invalid number")
         let minAttr = match min with Some v -> ["min",v.ToString()] | _ -> []
@@ -62,8 +62,8 @@ type FormElements(validators: Validate) =
         |> map float
         |> satisfies (validators.BuildValidator rangeValidator rangeErrorMsg)
 
-    member x.Number(?value, ?attributes, ?required, ?size, ?maxlength, ?min, ?max, ?errorMsg) =
-        x.iNumber(value, attributes, required, size, maxlength, min, max, errorMsg, None)
+    member x.Float(?value, ?attributes, ?required, ?size, ?maxlength, ?min, ?max, ?errorMsg) =
+        x.iFloat(value, attributes, required, size, maxlength, min, max, errorMsg, None)
 
     member x.Int(?value, ?attributes, ?required, ?size, ?maxlength, ?min, ?max, ?errorMsg) =
         let value = Option.map float value
@@ -81,7 +81,7 @@ type FormElements(validators: Validate) =
             | Some min, None -> sprintf "Value must be higher than %d" min
             | None, Some max -> sprintf "Value must be lower than %d" max
             | _, _ -> ""
-        x.iNumber(value, attributes, required, size, maxlength, min, max, errorMsg, Some defaultRangeErrorMsg)
+        x.iFloat(value, attributes, required, size, maxlength, min, max, errorMsg, Some defaultRangeErrorMsg)
         |> satisfies (validators.BuildValidator (fun n -> Math.Truncate n = n) errorMsg2)
         |> map int
 

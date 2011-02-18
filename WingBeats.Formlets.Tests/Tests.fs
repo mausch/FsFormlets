@@ -63,13 +63,13 @@ let ``combine with wingbeats``() =
 
 [<Fact>]
 let ``numbox render``() =
-    let formlet = f.Number(required = true, size = 4, maxlength = 4, attributes = ["class","nice"])
+    let formlet = f.Float(required = true, size = 4, maxlength = 4, attributes = ["class","nice"])
     let html = render formlet
     Assert.Equal("<input type=\"number\" name=\"f0\" value=\"\" maxlength=\"4\" size=\"4\" required=\"\" class=\"nice\" />", html)
 
 [<Fact>]
 let ``numbox run failure``() =
-    let formlet = f.Number(required = true, size = 4, maxlength = 4, attributes = ["class","nice"])
+    let formlet = f.Float(required = true, size = 4, maxlength = 4, attributes = ["class","nice"])
     let env = EnvDict.fromValueSeq ["f0","abc"]
     match run formlet env with
     | Failure(errorForm, _) -> 
