@@ -1,5 +1,4 @@
-﻿// Learn more about F# at http://fsharp.net
-namespace WingBeats.Formlets
+﻿namespace WingBeats.Formlets
 
 open WingBeats
 open WingBeats.Xml
@@ -73,7 +72,7 @@ module Integration =
 
 open System
 
-type XhtmlFormlets() =
+type XhtmlFormlets(validators: Validators) =
     let e = XhtmlElement()
     let s = e.Shortcut
 
@@ -109,11 +108,11 @@ type XhtmlFormlets() =
         let formlet = Formlet.input value attributes
         let formlet =
             if required
-                then formlet |> Validate.defaultValidator.notEmpty
+                then formlet |> validators.notEmpty
                 else formlet
         let formlet =
             match pattern with
-            | Some v -> formlet |> Validate.defaultValidator.regex v
+            | Some v -> formlet |> validators.regex v
             | _ -> formlet
         formlet
 
@@ -158,9 +157,9 @@ type XhtmlFormlets() =
             | _,_ -> true
         x.iTextBox(value, attributes, required, size, maxlength, None)
         |> mergeAttributes (["type","number"] @ minAttr @ maxAttr)
-        |> satisfies (err (Double.TryParse >> fst) errorMsg)
+        |> satisfies (validators.BuildValidator (Double.TryParse >> fst) errorMsg)
         |> map float
-        |> satisfies (err rangeValidator rangeErrorMsg)
+        |> satisfies (validators.BuildValidator rangeValidator rangeErrorMsg)
 
     member x.NumBox(?value, ?attributes, ?required, ?size, ?maxlength, ?min, ?max, ?errorMsg) =
         x.iNumBox(value, attributes, required, size, maxlength, min, max, errorMsg, None)
@@ -182,20 +181,21 @@ type XhtmlFormlets() =
             | None, Some max -> sprintf "Value must be lower than %d" max
             | _, _ -> ""
         x.iNumBox(value, attributes, required, size, maxlength, min, max, errorMsg, Some defaultRangeErrorMsg)
-        |> satisfies (err (fun n -> Math.Truncate n = n) errorMsg2)
+        |> satisfies (validators.BuildValidator (fun n -> Math.Truncate n = n) errorMsg2)
         |> map int
 
     member x.UrlBox(?value, ?attributes, ?required) =
         x.iTextBox(value, attributes, required, None, None, None)
         |> mergeAttributes ["type","url"]
-        |> Validate.defaultValidator.isUrl
+        |> validators.isUrl
 
     member x.EmailBox(?value, ?attributes, ?required) =
         x.iTextBox(value, attributes, required, None, None, None)
         |> mergeAttributes ["type","email"]
-        |> Validate.defaultValidator.isEmail
+        |> validators.isEmail
 
 [<AutoOpen>]
 module Integration2 =
     type WingBeats.Xhtml.XhtmlElement with
-        member x.Formlets = XhtmlFormlets()
+        member x.Formlets = XhtmlFormlets Validate.defaultValidator
+        member x.Formlets v = XhtmlFormlets v
