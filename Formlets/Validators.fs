@@ -40,7 +40,7 @@ type Validate() =
             let isOK = isNullOrWhiteSpace >> not
             satisfies (x.BuildValidator isOK (fun _ -> "Required field"))
 
-        f |> mergeAttributes ["required",""] |> validate
+        f |> mergeAttributes ["required","required"] |> validate
 
     member x.CreditCard =
         satisfies (x.BuildValidator luhn (fun _ -> "Invalid credit card number"))
