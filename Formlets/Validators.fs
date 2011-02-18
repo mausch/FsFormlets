@@ -38,7 +38,7 @@ type Validate() =
                     then true
                     else s |> Seq.exists Char.IsWhiteSpace
             let isOK = isNullOrWhiteSpace >> not
-            satisfies (x.BuildValidator isOK (fun _ -> "Mandatory field"))
+            satisfies (x.BuildValidator isOK (fun _ -> "Required field"))
 
         f |> mergeAttributes ["required",""] |> validate
 
