@@ -220,15 +220,6 @@ module Formlet =
           ErrorForm = addError
           ErrorList = errorMsg >> List.singleton }
 
-    /// <summary>
-    /// Constructs a validator from a regular expression
-    /// </summary>
-    /// <param name="rx">Regular expression to match</param>
-    /// <param name="errorMsg">Builds the error message</param>
-    let errx (rx: string) (errorMsg: string -> string) : string Validator =
-        let v value = System.Text.RegularExpressions.Regex(rx).IsMatch(value)
-        err v errorMsg
-
     // Generic HTML functions
 
     let generalElement nameGen defaultValue (tag: string -> InputValue list -> XNode list): InputValue list Formlet =
