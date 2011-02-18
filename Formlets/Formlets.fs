@@ -170,6 +170,8 @@ module Formlet =
         let xml3 x = XmlWriter.map xml2 (merge x)
         NameGen.map xml3 f
 
+    let inline getId f = f |> NameGen.run |> XmlWriter.getId
+
     // Validation functions
 
     let private check (validator: 'a Validator) (a: 'a ALO) : 'a ALO =
@@ -362,14 +364,15 @@ module Formlet =
         |> extractOptional
         |> map transform
 
+    let labelFor id text = 
+        [XmlWriter.labelFor id text] |> xml
+
     /// <summary>
     /// Creates a &lt;input type=&quot;radio&quot;&gt; formlet
     /// </summary>
     /// <param name="selected">Initial selected value</param>
     /// <param name="choices">Select options</param>
     let radio selected (choices: (string*string) seq): string Formlet =
-        let makeLabel id (text: string) = 
-            XmlWriter.xelem "label" ["for", id] [XText text]
         let makeRadio name value id selected = 
             let on = if selected then ["checked","checked"] else []
             XmlWriter.xelem "input" (["type","radio"; "name",name; "id",id; "value",value] @ on) []
@@ -378,7 +381,7 @@ module Formlet =
             choices 
             |> Seq.index
             |> Seq.map (fun (i,(value,label)) -> name, value, label, name + "_" + i.ToString(), selectedValue = value)
-            |> Seq.collect (fun (name,value,label,id,selected) -> [makeRadio name value id selected; makeLabel id label])
+            |> Seq.collect (fun (name,value,label,id,selected) -> [makeRadio name value id selected; XmlWriter.labelFor id label])
             |> Seq.toList
         generalGeneratedElement [Value selected] tag
         |> extractString

@@ -121,3 +121,11 @@ module XmlWriter =
                 xelem name attr children
             | x -> x
         plug (List.map mergeInNode) x
+
+    let getId =
+        function
+        | [TagA(_,attr,_)], _ -> List.tryFind (fun (k,_) -> k = "id") attr |> Option.map snd
+        | _ -> None
+
+    let labelFor id (text: string) = 
+        xelem "label" ["for", id] [XText text]

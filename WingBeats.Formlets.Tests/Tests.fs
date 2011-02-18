@@ -33,7 +33,7 @@ let layout (head: #seq<Xml.Node>) (body: #seq<Xml.Node>) =
 
 [<Fact>]
 let ``first``() =
-    let formlet = f.TextBox("a default value", ["class","nice"])
+    let formlet = f.Text("a default value", ["class","nice"])
     let template form = 
         layout [] [
             formPost "actionUrl" [ yield!!+form ]
@@ -43,7 +43,7 @@ let ``first``() =
 
 [<Fact>]
 let ``render error form``() =
-    let formlet = f.TextBox("a default value", ["class","nice"])
+    let formlet = f.Text("a default value", ["class","nice"])
     let formlet = formlet |> Validate.defaultValidator.isInt |> map int
     let template form =
         e.Html [ yield!!+form ]
@@ -56,20 +56,20 @@ let ``render error form``() =
 let ``combine with wingbeats``() =
     let formlet =
         let id = "abc"
-        s.Label id "a label" +> f.TextBox("a default value", ["id",id])
+        s.Label id "a label" +> f.Text("a default value", ["id",id])
         <+ e.Br()
     let html = render formlet
     Assert.Equal("<label for=\"abc\">a label</label><input name=\"f0\" value=\"a default value\" id=\"abc\" /><br />", html)
 
 [<Fact>]
 let ``numbox render``() =
-    let formlet = f.NumBox(required = true, size = 4, maxlength = 4, attributes = ["class","nice"])
+    let formlet = f.Number(required = true, size = 4, maxlength = 4, attributes = ["class","nice"])
     let html = render formlet
     Assert.Equal("<input type=\"number\" name=\"f0\" value=\"\" maxlength=\"4\" size=\"4\" required=\"\" class=\"nice\" />", html)
 
 [<Fact>]
 let ``numbox run failure``() =
-    let formlet = f.NumBox(required = true, size = 4, maxlength = 4, attributes = ["class","nice"])
+    let formlet = f.Number(required = true, size = 4, maxlength = 4, attributes = ["class","nice"])
     let env = EnvDict.fromValueSeq ["f0","abc"]
     match run formlet env with
     | Failure(errorForm, _) -> 
@@ -81,7 +81,7 @@ let ``numbox run failure``() =
 
 [<Fact>]
 let ``intbox doesn't accept float``() =
-    let formlet = f.IntBox()
+    let formlet = f.Int()
     let env = EnvDict.fromValueSeq ["f0","1.3"]
     match run formlet env with
     | Failure(errorForm, _) ->
@@ -93,7 +93,7 @@ let ``intbox doesn't accept float``() =
 
 [<Fact>]
 let ``intbox failure with range``() =
-    let formlet = f.IntBox(min = 5, max = 10)
+    let formlet = f.Int(min = 5, max = 10)
     let env = EnvDict.fromValueSeq ["f0","3"]
     match run formlet env with
     | Failure(errorForm, _) ->
