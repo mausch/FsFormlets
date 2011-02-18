@@ -94,7 +94,7 @@ type XhtmlFormlets(validators: Validators) =
         let attributes = defaultArg attributes []
         Formlet.textarea value attributes
 
-    member x.iTextBox(value: string option, attributes: (string*string) list option, required: bool option, size: int option, maxlength: int option, pattern: string option) =
+    member private x.iTextBox(value: string option, attributes: (string*string) list option, required: bool option, size: int option, maxlength: int option, pattern: string option) =
         let value = defaultArg value ""
         let attributes = defaultArg attributes []
         let required = defaultArg required false
@@ -119,7 +119,7 @@ type XhtmlFormlets(validators: Validators) =
     member x.TextBox(?value, ?attributes: (string * string) list, ?required: bool, ?size: int, ?maxlength: int, ?pattern: string) =
         x.iTextBox(value, attributes, required, size, maxlength, pattern)
 
-    member internal x.LabeledElement(text, f, attributes) =
+    member private x.LabeledElement(text, f, attributes) =
         let e = XhtmlElement()
         let id = "l" + Guid.NewGuid().ToString()
         let label = e.Label ["for",id] [Node.Text text]
