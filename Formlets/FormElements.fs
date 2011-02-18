@@ -3,6 +3,8 @@
 open System
 
 type FormElements(validators: Validators) =
+    let validation = ValidationModifiers(validators)
+    member x.Validate = validation
 
     member x.Checkbox(value, ?attributes) =
         let attributes = defaultArg attributes []
