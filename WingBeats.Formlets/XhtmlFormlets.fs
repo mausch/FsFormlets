@@ -109,11 +109,11 @@ type XhtmlFormlets() =
         let formlet = Formlet.input value attributes
         let formlet =
             if required
-                then formlet |> Validate.notEmpty
+                then formlet |> Validate.defaultValidator.notEmpty
                 else formlet
         let formlet =
             match pattern with
-            | Some v -> formlet |> Validate.regex v
+            | Some v -> formlet |> Validate.defaultValidator.regex v
             | _ -> formlet
         formlet
 
@@ -188,12 +188,12 @@ type XhtmlFormlets() =
     member x.UrlBox(?value, ?attributes, ?required) =
         x.iTextBox(value, attributes, required, None, None, None)
         |> mergeAttributes ["type","url"]
-        |> Validate.isUrl
+        |> Validate.defaultValidator.isUrl
 
     member x.EmailBox(?value, ?attributes, ?required) =
         x.iTextBox(value, attributes, required, None, None, None)
         |> mergeAttributes ["type","email"]
-        |> Validate.isEmail
+        |> Validate.defaultValidator.isEmail
 
 [<AutoOpen>]
 module Integration2 =

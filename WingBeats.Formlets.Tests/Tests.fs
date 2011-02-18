@@ -44,7 +44,7 @@ let ``first``() =
 [<Fact>]
 let ``render error form``() =
     let formlet = f.TextBox("a default value", ["class","nice"])
-    let formlet = formlet |> Validate.isInt |> map int
+    let formlet = formlet |> Validate.defaultValidator.isInt |> map int
     let template form =
         e.Html [ yield!!+form ]
     let env = EnvDict.fromValueSeq ["f0","abc"]

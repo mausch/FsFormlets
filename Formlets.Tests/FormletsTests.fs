@@ -12,7 +12,7 @@ open Formlets
 
 let input = input "" [] // no additional attributes
 
-let inputInt = input |> Validate.isInt |> map int
+let inputInt = input |> Validate.defaultValidator.isInt |> map int
 
 let inline fst3 (a,_,_) = a
 let inline snd3 (_,b,_) = b
@@ -401,7 +401,7 @@ let ``non-rendering field run``() =
 
 [<Fact>]
 let ``validation error in non-rendering field``() =
-    let fieldInt = field |> Validate.isInt |> map int
+    let fieldInt = field |> Validate.defaultValidator.isInt |> map int
     let env = EnvDict.fromValueSeq ["f0","def"]
     match run fieldInt env with
     | Success _ -> failwith "Should not have succeeded"
@@ -419,7 +419,7 @@ let ``merge attr``() =
 
 [<Fact>]
 let ``merge attr in error form``() =
-    let formlet = input |> mergeAttributes ["id","pepe"] |> Validate.isInt
+    let formlet = input |> mergeAttributes ["id","pepe"] |> Validate.defaultValidator.isInt
     let env = EnvDict.fromValueSeq ["f0","a"]
     match run formlet env with
     | Failure(errorForm,_) -> 
