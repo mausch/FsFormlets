@@ -4,7 +4,7 @@ type ValidationModifiers(validators: Validators) =
     member x.Required f =
         f |> mergeAttributes ["required",""] |> validators.NotEmpty
             
-    member x.Pattern pattern f =
+    member x.Regex pattern f =
         f |> mergeAttributes ["pattern",pattern] |> validators.Regex pattern
 
     member x.Float f =
