@@ -4,8 +4,6 @@ open System
 
 type FormElements(validators: Validators) =
 
-    member x.Textf fmt = Printf.ksprintf text fmt
-
     member x.Checkbox(value, ?attributes) =
         let attributes = defaultArg attributes []
         Formlet.checkbox value attributes

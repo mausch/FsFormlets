@@ -116,7 +116,7 @@ module Formlet =
         let xml2 = XmlWriter.map (fun _ -> xml1) v
         NameGen.puree xml2
 
-    /// maps a xml forest to formlet
+    /// Maps a xml forest to formlet
     let xml x : unit Formlet = 
         XmlWriter.xml x |> mapXml
 
@@ -130,8 +130,11 @@ module Formlet =
     /// No-operation formlet
     let nop = puree ()
 
-    /// maps text to formlet
+    /// Maps text to formlet
     let inline text (s: string) : unit Formlet = xml [XText s]
+
+    /// Maps formatted text to formlet
+    let inline textf fmt = Printf.ksprintf text fmt
 
     /// <summary>
     /// maps a HTML tag to wrap a formlet
