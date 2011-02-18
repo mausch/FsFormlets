@@ -45,29 +45,35 @@ type Validate() =
     member x.CreditCard =
         satisfies (x.BuildValidator luhn (fun _ -> "Invalid credit card number"))
 
-    member x.LessOrEqualInt (n: int) f =
-        let validator = x.BuildValidator (fun v -> v <= n) (fun _ -> sprintf "Value must be %d or lower" n)
+    member x.LessOrEqual printer n f =
+        let validator = x.BuildValidator (fun v -> v <= n) (fun _ -> printer n)
         f |> mergeAttributes ["max",n.ToString()] |> satisfies validator
 
-    member x.LessOrEqualFloat (n: float) f =
-        let validator = x.BuildValidator (fun v -> v <= n) (fun _ -> sprintf "Value must be %f or lower" n)
-        f |> mergeAttributes ["max",n.ToString()] |> satisfies validator
+    member x.LessOrEqualInt =
+        x.LessOrEqual (sprintf "Value must be %d or lower")
 
-    member x.GreaterOrEqualInt (n: int) f =
-        let validator = x.BuildValidator (fun v -> v >= n) (fun _ -> sprintf "Value must be %d or higher" n)
+    member x.LessOrEqualFloat =
+        x.LessOrEqual (sprintf "Value must be %f or lower")
+
+    member x.GreaterOrEqual printer n f =
+        let validator = x.BuildValidator (fun v -> v >= n) (fun _ -> printer n)
         f |> mergeAttributes ["min",n.ToString()] |> satisfies validator
 
-    member x.GreaterOrEqualFloat (n: float) f =
-        let validator = x.BuildValidator (fun v -> v >= n) (fun _ -> sprintf "Value must be %f or higher" n)
-        f |> mergeAttributes ["min",n.ToString()] |> satisfies validator
+    member x.GreaterOrEqualInt =
+        x.GreaterOrEqual (sprintf "Value must be %d or higher")
 
-    member x.InRangeInt (min: int) (max: int) f =
-        let validator = x.BuildValidator (fun v -> v >= min && v <= max) (fun _ -> sprintf "Value must be between %d and %d" min max)
+    member x.GreaterOrEqualFloat =
+        x.GreaterOrEqual (sprintf "Value must be %f or higher")
+
+    member x.InRange printer min max f =
+        let validator = x.BuildValidator (fun v -> v >= min && v <= max) (fun _ -> printer min max)
         f |> mergeAttributes ["min",min.ToString(); "max",max.ToString()] |> satisfies validator
 
-    member x.InRangeFloat (min: float) (max: float) f = 
-        let validator = x.BuildValidator (fun v -> v >= min && v <= max) (fun _ -> sprintf "Value must be between %f and %f" min max)
-        f |> mergeAttributes ["min",min.ToString(); "max",max.ToString()] |> satisfies validator
+    member x.InRangeInt =
+        x.InRange (sprintf "Value must be between %d and %d")
+
+    member x.InRangeFloat = 
+        x.InRange (sprintf "Value must be between %f and %f")
 
     member x.Email f =
         let validate = 
