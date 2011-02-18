@@ -73,5 +73,5 @@ module Integration =
 [<AutoOpen>]
 module Integration2 =
     type WingBeats.Xhtml.XhtmlElement with
-        member x.Formlets = FormElements Validate.defaultValidator
+        member x.Formlets = FormElements Validate.Default
         member x.Formlets v = FormElements v

@@ -3,7 +3,7 @@
 open System
 open System.Text.RegularExpressions
 
-type Validators() =
+type Validate() =
     // from http://rosettacode.org/wiki/Luhn_test_of_credit_card_numbers#F.23
     let luhn (s:string) =
         let rec g r c = function
@@ -18,52 +18,76 @@ type Validators() =
             + @"([-a-z0-9!#$%&'*+/=?^_`{|}~]|(?<!\.)\.)*)(?<!\.)" 
             + @"@[a-z0-9][\w\.-]*[a-z0-9]\.[a-z][a-z\.]*[a-z]$", RegexOptions.IgnoreCase ||| RegexOptions.Compiled)
 
-    static member DefaultValidator = Validators()
+    static member Default = Validate()
 
     abstract member BuildValidator: ('a -> bool) -> ('a -> string) -> 'a Validator
     default x.BuildValidator a b = Formlet.err a b
 
-    member x.IsInt =
-        let isOK = Int32.TryParse >> fst
-        let msg = sprintf "%s is not a valid number"
-        let e = x.BuildValidator isOK msg
-        satisfies e
+    member x.Int f =
+        let isInt = 
+            let isOK = Int32.TryParse >> fst
+            let msg = sprintf "%s is not a valid number"
+            let e = x.BuildValidator isOK msg
+            satisfies e
+        f |> isInt |> map int
 
-    member x.NotEmpty = 
-        let isNullOrWhiteSpace (s: string) =
-            if s = null || s = ""
-                then true
-                else s |> Seq.exists Char.IsWhiteSpace
-        let isOK = isNullOrWhiteSpace >> not
-        satisfies (x.BuildValidator isOK (fun _ -> "Mandatory field"))
+    member x.Required f =
+        let validate =
+            let isNullOrWhiteSpace (s: string) =
+                if s = null || s = ""
+                    then true
+                    else s |> Seq.exists Char.IsWhiteSpace
+            let isOK = isNullOrWhiteSpace >> not
+            satisfies (x.BuildValidator isOK (fun _ -> "Mandatory field"))
+
+        f |> mergeAttributes ["required",""] |> validate
 
     member x.CreditCard =
         satisfies (x.BuildValidator luhn (fun _ -> "Invalid credit card number"))
 
-    member x.InRange min max =
-        let isOK n = n >= min && n <= max
-        satisfies (x.BuildValidator isOK (fun _ -> sprintf "Field must be between %d and %d" min max))
+    member x.LessOrEqualInt (n: int) f =
+        let validator = x.BuildValidator (fun v -> v <= n) (fun _ -> sprintf "Value must be %d or lower" n)
+        f |> mergeAttributes ["max",n.ToString()] |> satisfies validator
 
-    member x.IsEmail =
-        satisfies (x.BuildValidator emailRx.IsMatch (fun _ -> "Invalid email"))
+    member x.GreaterOrEqualInt (n: int) f =
+        let validator = x.BuildValidator (fun v -> v >= n) (fun _ -> sprintf "Value must be %d or higher" n)
+        f |> mergeAttributes ["min",n.ToString()] |> satisfies validator
 
-    member x.Regex pattern =
-        let isOK n = Regex.IsMatch(n, pattern)
-        satisfies (x.BuildValidator isOK (fun _ -> "Invalid value"))
+    member x.InRangeInt (min: int) (max: int) f =
+        let validator = x.BuildValidator (fun v -> v >= min && v <= max) (fun _ -> sprintf "Value must be between %d and %d" min max)
+        f |> mergeAttributes ["min",min.ToString(); "max",max.ToString()] |> satisfies validator
 
-    member x.IsUrl =
-        let isOK s = Uri.TryCreate(s, UriKind.Absolute) |> fst
-        satisfies (x.BuildValidator isOK (fun _ -> "Invalid URL"))
+    member x.Email f =
+        let validate = 
+            satisfies (x.BuildValidator emailRx.IsMatch (fun _ -> "Invalid email"))
+        f |> mergeAttributes ["type","email"] |> validate
+
+    member x.Regex pattern f =
+        let validate = 
+            let isOK n = Regex.IsMatch(n, pattern)
+            satisfies (x.BuildValidator isOK (fun _ -> "Invalid value"))
+        f |> mergeAttributes ["pattern",pattern] |> validate
+
+    member x.Url f =
+        let validate =
+            let isOK s = Uri.TryCreate(s, UriKind.Absolute) |> fst
+            satisfies (x.BuildValidator isOK (fun _ -> "Invalid URL"))
+        f |> mergeAttributes ["type","url"] |> validate
+
+    member x.Float f =
+        let validate = 
+            satisfies (x.BuildValidator (Double.TryParse >> fst) (fun _ -> "Invalid value"))
+        f |> mergeAttributes ["type","number"] |> validate |> map float
+
+    member x.Decimal f =
+        let validate =
+            satisfies (x.BuildValidator (Decimal.TryParse >> fst) (fun _ -> "Invalid value"))
+        f |> mergeAttributes ["type","number"] |> validate |> map decimal
     
-    member x.IsFloat =
-        satisfies (x.BuildValidator (Double.TryParse >> fst) (fun _ -> "Invalid value"))
-
-    member x.IsDecimal =
-        satisfies (x.BuildValidator (Decimal.TryParse >> fst) (fun _ -> "Invalid value"))
-
     member x.FloatIsInt =
         satisfies (x.BuildValidator (fun (n:float) -> Math.Truncate n = n) (fun _ -> "Invalid value"))
 
-    member x.Maxlength n =
-        satisfies (x.BuildValidator (fun (s: string) -> s.Length <= n) (fun _ -> "Invalid value"))
-
+    member x.Maxlength (n: int) f =
+        let validate =
+            satisfies (x.BuildValidator (fun (s: string) -> s.Length <= n) (fun _ -> "Invalid value"))
+        f |> mergeAttributes ["maxlength",n.ToString()] |> validate

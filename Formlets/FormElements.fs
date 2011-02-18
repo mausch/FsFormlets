@@ -2,9 +2,8 @@
 
 open System
 
-type FormElements(validators: Validators) =
-    let validation = ValidationModifiers(validators)
-    member x.Validate = validation
+type FormElements(validators: Validate) =
+    member x.Validate = validators
 
     member x.Checkbox(value, ?attributes) =
         let attributes = defaultArg attributes []
@@ -27,7 +26,7 @@ type FormElements(validators: Validators) =
         let formlet = Formlet.input value attributes
         let formlet =
             if required
-                then formlet |> validators.NotEmpty
+                then formlet |> validators.Required
                 else formlet
         let formlet =
             match pattern with
@@ -59,7 +58,7 @@ type FormElements(validators: Validators) =
             | _,_ -> true
         x.iText(value, attributes, required, size, maxlength, None)
         |> mergeAttributes (["type","number"] @ minAttr @ maxAttr)
-        |> validators.IsFloat
+        |> validators.Float
         |> map float
         |> satisfies (validators.BuildValidator rangeValidator rangeErrorMsg)
 
@@ -89,12 +88,12 @@ type FormElements(validators: Validators) =
     member x.Url(?value, ?attributes, ?required) =
         x.iText(value, attributes, required, None, None, None)
         |> mergeAttributes ["type","url"]
-        |> validators.IsUrl
+        |> validators.Url
 
     member x.Email(?value, ?attributes, ?required) =
         x.iText(value, attributes, required, None, None, None)
         |> mergeAttributes ["type","email"]
-        |> validators.IsEmail
+        |> validators.Email
 
     member x.WithLabel text (f: _ Formlet) =
         let id,f = 
