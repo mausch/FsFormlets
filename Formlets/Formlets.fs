@@ -177,12 +177,11 @@ module Formlet =
     let private check (validator: 'a Validator) (a: 'a ALO) : 'a ALO =
         let result: 'a ValidationResult XmlWriter =
             let errorToValidationResult (o: 'a LO) =
-                let pred = Validator.isValid validator
                 let check' p v =
                     if p v
                         then Pass v
                         else Fail v
-                let mappedCheck = lo_map (check' pred)
+                let mappedCheck = lo_map (check' validator.IsValid)
                 match mappedCheck o with
                 | _,Some v -> v
                 | _ -> Dead
