@@ -59,7 +59,7 @@ type FormElements(validators: Validators) =
             | _,_ -> true
         x.iText(value, attributes, required, size, maxlength, None)
         |> mergeAttributes (["type","number"] @ minAttr @ maxAttr)
-        |> satisfies (validators.BuildValidator (Double.TryParse >> fst) errorMsg)
+        |> validators.isFloat
         |> map float
         |> satisfies (validators.BuildValidator rangeValidator rangeErrorMsg)
 

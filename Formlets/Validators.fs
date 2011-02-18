@@ -57,6 +57,16 @@ type Validators() =
 
     member x.isUrl =
         satisfies (x.BuildValidator url (fun _ -> "Invalid URL"))
+    
+    member x.isFloat =
+        satisfies (x.BuildValidator (Double.TryParse >> fst) (fun _ -> "Invalid value"))
 
-module Validate =
-    let defaultValidator = Validators()
+    member x.isDecimal =
+        satisfies (x.BuildValidator (Decimal.TryParse >> fst) (fun _ -> "Invalid value"))
+
+    member x.floatIsInt =
+        satisfies (x.BuildValidator (fun (n:float) -> Math.Truncate n = n) (fun _ -> "Invalid value"))
+
+    member x.maxlength n =
+        satisfies (x.BuildValidator (fun (s: string) -> s.Length <= n) (fun _ -> "Invalid value"))
+

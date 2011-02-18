@@ -53,6 +53,7 @@
     <Compile Include="Error.fs" />
     <Compile Include="Formlets.fs" />
     <Compile Include="Validators.fs" />
+    <Compile Include="ValidationModifiers.fs" />
     <Compile Include="FormElements.fs" />
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
