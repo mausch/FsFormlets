@@ -378,9 +378,8 @@ module Formlet =
             XmlWriter.xelem "input" (["type","radio"; "name",name; "id",id; "value",value] @ on) []
         let tag name boundValue = 
             let selectedValue = extractOptionString boundValue |> Option.get
-            choices 
-            |> Seq.index
-            |> Seq.map (fun (i,(value,label)) -> name, value, label, name + "_" + i.ToString(), selectedValue = value)
+            choices
+            |> Seq.mapi (fun i (value,label) -> name, value, label, name + "_" + i.ToString(), selectedValue = value)
             |> Seq.collect (fun (name,value,label,id,selected) -> [makeRadio name value id selected; XmlWriter.labelFor id label])
             |> Seq.toList
         generalGeneratedElement [Value selected] tag
