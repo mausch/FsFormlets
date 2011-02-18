@@ -63,18 +63,18 @@ let ``combine with wingbeats``() =
 
 [<Fact>]
 let ``numbox render``() =
-    let formlet = f.Float(required = true, size = 4, maxlength = 4, attributes = ["class","nice"])
+    let formlet = f.Float(required = true, maxlength = 4, attributes = ["class","nice"])
     let html = render formlet
-    Assert.Equal("<input type=\"number\" name=\"f0\" value=\"\" maxlength=\"4\" size=\"4\" required=\"\" class=\"nice\" />", html)
+    Assert.Equal("<input type=\"number\" name=\"f0\" value=\"\" maxlength=\"4\" required=\"\" class=\"nice\" />", html)
 
 [<Fact>]
 let ``numbox run failure``() =
-    let formlet = f.Float(required = true, size = 4, maxlength = 4, attributes = ["class","nice"])
+    let formlet = f.Float(required = true, maxlength = 4, attributes = ["class","nice"])
     let env = EnvDict.fromValueSeq ["f0","abc"]
     match run formlet env with
     | Failure(errorForm, _) -> 
         let html = XmlWriter.render errorForm
-        let xml = XDocument.Parse "<r><span class='errorinput'><input name='f0' value='abc' type='number' maxlength='4' size='4' required='' class='nice' /></span><span class='error'>Invalid number</span></r>"
+        let xml = XDocument.Parse "<r><span class='errorinput'><input name='f0' value='abc' type='number' maxlength='4' required='' class='nice' /></span><span class='error'>Invalid number</span></r>"
         Assert.XmlEqual(xml.Root, xelem "r" [] errorForm)
         printfn "%s" html
     | _ -> failwith "Formlet should not have succeeded"

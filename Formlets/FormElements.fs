@@ -14,15 +14,14 @@ type FormElements(validators: Validate) =
         let attributes = defaultArg attributes []
         Formlet.textarea value attributes
 
-    member private x.iText(value: string option, attributes: (string*string) list option, required: bool option, size: int option, maxlength: int option, pattern: string option) =
+    member private x.iText(value: string option, attributes: (string*string) list option, required: bool option, maxlength: int option, pattern: string option) =
         let value = defaultArg value ""
         let attributes = defaultArg attributes []
         let required = defaultArg required false
         let requiredAttr = if required then ["required",""] else []
-        let size = match size with Some v -> ["size",v.ToString()] | _ -> []
         let maxlength = match maxlength with Some v -> ["maxlength",v.ToString()] | _ -> []
         let patternAttr = match pattern with Some v -> ["pattern",v] | _ -> []
-        let attributes = attributes |> mergeAttr (requiredAttr @ size @ maxlength @ patternAttr)
+        let attributes = attributes |> mergeAttr (requiredAttr @ maxlength @ patternAttr)
         let formlet = Formlet.input value attributes
         let formlet =
             if required
@@ -34,10 +33,10 @@ type FormElements(validators: Validate) =
             | _ -> formlet
         formlet
 
-    member x.Text(?value, ?attributes: (string * string) list, ?required: bool, ?size: int, ?maxlength: int, ?pattern: string) =
-        x.iText(value, attributes, required, size, maxlength, pattern)
+    member x.Text(?value, ?attributes: (string * string) list, ?required: bool, ?maxlength: int, ?pattern: string) =
+        x.iText(value, attributes, required, maxlength, pattern)
 
-    member private x.iFloat(value: float option, attributes: _ list option, required: bool option, size: int option, maxlength: int option, min: float option, max: float option, errorMsg: (string -> string) option, rangeErrorMsg: ((float option * float option) -> float -> string) option) =
+    member private x.iFloat(value: float option, attributes: _ list option, required: bool option, maxlength: int option, min: float option, max: float option, errorMsg: (string -> string) option, rangeErrorMsg: ((float option * float option) -> float -> string) option) =
         let value = match value with Some v -> Some <| v.ToString() | _ -> None
         let errorMsg = defaultArg errorMsg (fun _ -> "Invalid number")
         let minAttr = match min with Some v -> ["min",v.ToString()] | _ -> []
@@ -56,16 +55,16 @@ type FormElements(validators: Validate) =
             | Some min, None -> v >= min
             | None, Some max -> v <= max
             | _,_ -> true
-        x.iText(value, attributes, required, size, maxlength, None)
+        x.iText(value, attributes, required, maxlength, None)
         |> mergeAttributes (["type","number"] @ minAttr @ maxAttr)
         |> validators.Float
         |> map float
         |> satisfies (validators.BuildValidator rangeValidator rangeErrorMsg)
 
-    member x.Float(?value, ?attributes, ?required, ?size, ?maxlength, ?min, ?max, ?errorMsg) =
-        x.iFloat(value, attributes, required, size, maxlength, min, max, errorMsg, None)
+    member x.Float(?value, ?attributes, ?required, ?maxlength, ?min, ?max, ?errorMsg) =
+        x.iFloat(value, attributes, required, maxlength, min, max, errorMsg, None)
 
-    member x.Int(?value, ?attributes, ?required, ?size, ?maxlength, ?min, ?max, ?errorMsg) =
+    member x.Int(?value, ?attributes, ?required, ?maxlength, ?min, ?max, ?errorMsg) =
         let value = Option.map float value
         let min = Option.map float min
         let max = Option.map float max
@@ -81,17 +80,17 @@ type FormElements(validators: Validate) =
             | Some min, None -> sprintf "Value must be higher than %d" min
             | None, Some max -> sprintf "Value must be lower than %d" max
             | _, _ -> ""
-        x.iFloat(value, attributes, required, size, maxlength, min, max, errorMsg, Some defaultRangeErrorMsg)
+        x.iFloat(value, attributes, required, maxlength, min, max, errorMsg, Some defaultRangeErrorMsg)
         |> satisfies (validators.BuildValidator (fun n -> Math.Truncate n = n) errorMsg2)
         |> map int
 
     member x.Url(?value, ?attributes, ?required) =
-        x.iText(value, attributes, required, None, None, None)
+        x.iText(value, attributes, required, None, None)
         |> mergeAttributes ["type","url"]
         |> validators.Url
 
     member x.Email(?value, ?attributes, ?required) =
-        x.iText(value, attributes, required, None, None, None)
+        x.iText(value, attributes, required, None, None)
         |> mergeAttributes ["type","email"]
         |> validators.Email
 
