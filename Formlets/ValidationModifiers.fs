@@ -27,15 +27,15 @@ type ValidationModifiers(validators: Validators) =
 
     member x.LessOrEqualInt (n: int) f =
         let validator = validators.BuildValidator (fun v -> v <= n) (fun _ -> sprintf "Value must be %d or lower" n)
-        f |> satisfies validator
+        f |> mergeAttributes ["max",n.ToString()] |> satisfies validator
 
     member x.GreaterOrEqualInt (n: int) f =
         let validator = validators.BuildValidator (fun v -> v >= n) (fun _ -> sprintf "Value must be %d or higher" n)
-        f |> satisfies validator
+        f |> mergeAttributes ["min",n.ToString()] |> satisfies validator
 
     member x.InRangeInt (min: int) (max: int) f =
         let validator = validators.BuildValidator (fun v -> v >= min && v <= max) (fun _ -> sprintf "Value must be between %d and %d" min max)
-        f |> satisfies validator
+        f |> mergeAttributes ["min",min.ToString(); "max",max.ToString()] |> satisfies validator
 
 module Validate =
     let defaultValidator = Validators()
