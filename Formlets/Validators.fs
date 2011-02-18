@@ -22,6 +22,8 @@ type Validators() =
 
     let url (s: string) = Uri.TryCreate(s, UriKind.Absolute) |> fst
 
+    static member DefaultValidator = Validators()
+
     abstract member BuildValidator: ('a -> bool) -> ('a -> string) -> 'a Validator
     default x.BuildValidator a b = Formlet.err a b
 
