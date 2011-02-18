@@ -18,10 +18,6 @@ type Validators() =
             + @"([-a-z0-9!#$%&'*+/=?^_`{|}~]|(?<!\.)\.)*)(?<!\.)" 
             + @"@[a-z0-9][\w\.-]*[a-z0-9]\.[a-z][a-z\.]*[a-z]$", RegexOptions.IgnoreCase ||| RegexOptions.Compiled)
 
-    let email (s: string) = emailRx.IsMatch s
-
-    let url (s: string) = Uri.TryCreate(s, UriKind.Absolute) |> fst
-
     static member DefaultValidator = Validators()
 
     abstract member BuildValidator: ('a -> bool) -> ('a -> string) -> 'a Validator
@@ -49,14 +45,15 @@ type Validators() =
         satisfies (x.BuildValidator isOK (fun _ -> sprintf "Field must be between %d and %d" min max))
 
     member x.IsEmail =
-        satisfies (x.BuildValidator email (fun _ -> "Invalid email"))
+        satisfies (x.BuildValidator emailRx.IsMatch (fun _ -> "Invalid email"))
 
     member x.Regex pattern =
         let isOK n = Regex.IsMatch(n, pattern)
         satisfies (x.BuildValidator isOK (fun _ -> "Invalid value"))
 
     member x.IsUrl =
-        satisfies (x.BuildValidator url (fun _ -> "Invalid URL"))
+        let isOK s = Uri.TryCreate(s, UriKind.Absolute) |> fst
+        satisfies (x.BuildValidator isOK (fun _ -> "Invalid URL"))
     
     member x.IsFloat =
         satisfies (x.BuildValidator (Double.TryParse >> fst) (fun _ -> "Invalid value"))
