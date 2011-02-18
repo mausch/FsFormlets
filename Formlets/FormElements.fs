@@ -23,9 +23,7 @@ type FormElements(validators: Validators) =
         let size = match size with Some v -> ["size",v.ToString()] | _ -> []
         let maxlength = match maxlength with Some v -> ["maxlength",v.ToString()] | _ -> []
         let patternAttr = match pattern with Some v -> ["pattern",v] | _ -> []
-        let attributes = 
-            [requiredAttr;size;maxlength;patternAttr]
-            |> List.fold (fun s e -> s |> mergeAttr e) attributes
+        let attributes = attributes |> mergeAttr (requiredAttr @ size @ maxlength @ patternAttr)
         let formlet = Formlet.input value attributes
         let formlet =
             if required
