@@ -27,11 +27,11 @@ type FormElements(validators: Validators) =
         let formlet = Formlet.input value attributes
         let formlet =
             if required
-                then formlet |> validators.notEmpty
+                then formlet |> validators.NotEmpty
                 else formlet
         let formlet =
             match pattern with
-            | Some v -> formlet |> validators.regex v
+            | Some v -> formlet |> validators.Regex v
             | _ -> formlet
         formlet
 
@@ -59,7 +59,7 @@ type FormElements(validators: Validators) =
             | _,_ -> true
         x.iText(value, attributes, required, size, maxlength, None)
         |> mergeAttributes (["type","number"] @ minAttr @ maxAttr)
-        |> validators.isFloat
+        |> validators.IsFloat
         |> map float
         |> satisfies (validators.BuildValidator rangeValidator rangeErrorMsg)
 
@@ -89,12 +89,12 @@ type FormElements(validators: Validators) =
     member x.Url(?value, ?attributes, ?required) =
         x.iText(value, attributes, required, None, None, None)
         |> mergeAttributes ["type","url"]
-        |> validators.isUrl
+        |> validators.IsUrl
 
     member x.Email(?value, ?attributes, ?required) =
         x.iText(value, attributes, required, None, None, None)
         |> mergeAttributes ["type","email"]
-        |> validators.isEmail
+        |> validators.IsEmail
 
     member x.WithLabel text (f: _ Formlet) =
         let id,f = 

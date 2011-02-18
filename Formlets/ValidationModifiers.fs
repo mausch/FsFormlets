@@ -2,28 +2,28 @@
 
 type ValidationModifiers(validators: Validators) =
     member x.Required f =
-        f |> mergeAttributes ["required",""] |> validators.notEmpty
+        f |> mergeAttributes ["required",""] |> validators.NotEmpty
             
     member x.Pattern pattern f =
-        f |> mergeAttributes ["pattern",pattern] |> validators.regex pattern
+        f |> mergeAttributes ["pattern",pattern] |> validators.Regex pattern
 
     member x.Float f =
-        f |> mergeAttributes ["type","number"] |> validators.isFloat |> map float
+        f |> mergeAttributes ["type","number"] |> validators.IsFloat |> map float
 
     member x.Decimal f =
-        f |> mergeAttributes ["type","number"] |> validators.isDecimal |> map decimal
+        f |> mergeAttributes ["type","number"] |> validators.IsDecimal |> map decimal
 
     member x.Int f =
-        f |> x.Float |> validators.floatIsInt |> map int
+        f |> x.Float |> validators.FloatIsInt |> map int
 
     member x.Url f =
-        f |> mergeAttributes ["type","url"] |> validators.isUrl
+        f |> mergeAttributes ["type","url"] |> validators.IsUrl
 
     member x.Email f =
-        f |> mergeAttributes ["type","email"] |> validators.isEmail
+        f |> mergeAttributes ["type","email"] |> validators.IsEmail
 
     member x.Maxlength (n: int) f =
-        f |> mergeAttributes ["maxlength",n.ToString()] |> validators.maxlength n
+        f |> mergeAttributes ["maxlength",n.ToString()] |> validators.Maxlength n
 
     member x.LessOrEqualInt (n: int) f =
         let validator = validators.BuildValidator (fun v -> v <= n) (fun _ -> sprintf "Value must be %d or lower" n)

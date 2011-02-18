@@ -27,13 +27,13 @@ type Validators() =
     abstract member BuildValidator: ('a -> bool) -> ('a -> string) -> 'a Validator
     default x.BuildValidator a b = Formlet.err a b
 
-    member x.isInt =
+    member x.IsInt =
         let isOK = Int32.TryParse >> fst
         let msg = sprintf "%s is not a valid number"
         let e = x.BuildValidator isOK msg
         satisfies e
 
-    member x.notEmpty = 
+    member x.NotEmpty = 
         let isNullOrWhiteSpace (s: string) =
             if s = null || s = ""
                 then true
@@ -41,32 +41,32 @@ type Validators() =
         let isOK = isNullOrWhiteSpace >> not
         satisfies (x.BuildValidator isOK (fun _ -> "Mandatory field"))
 
-    member x.creditCard =
+    member x.CreditCard =
         satisfies (x.BuildValidator luhn (fun _ -> "Invalid credit card number"))
 
-    member x.inRange min max =
+    member x.InRange min max =
         let isOK n = n >= min && n <= max
         satisfies (x.BuildValidator isOK (fun _ -> sprintf "Field must be between %d and %d" min max))
 
-    member x.isEmail =
+    member x.IsEmail =
         satisfies (x.BuildValidator email (fun _ -> "Invalid email"))
 
-    member x.regex pattern =
+    member x.Regex pattern =
         let isOK n = Regex.IsMatch(n, pattern)
         satisfies (x.BuildValidator isOK (fun _ -> "Invalid value"))
 
-    member x.isUrl =
+    member x.IsUrl =
         satisfies (x.BuildValidator url (fun _ -> "Invalid URL"))
     
-    member x.isFloat =
+    member x.IsFloat =
         satisfies (x.BuildValidator (Double.TryParse >> fst) (fun _ -> "Invalid value"))
 
-    member x.isDecimal =
+    member x.IsDecimal =
         satisfies (x.BuildValidator (Decimal.TryParse >> fst) (fun _ -> "Invalid value"))
 
-    member x.floatIsInt =
+    member x.FloatIsInt =
         satisfies (x.BuildValidator (fun (n:float) -> Math.Truncate n = n) (fun _ -> "Invalid value"))
 
-    member x.maxlength n =
+    member x.Maxlength n =
         satisfies (x.BuildValidator (fun (s: string) -> s.Length <= n) (fun _ -> "Invalid value"))
 
