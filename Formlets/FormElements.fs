@@ -91,6 +91,10 @@ type FormElements(validators: IValidate) =
     member x.SelectMulti(value, choices) =
         Formlet.selectMultiA value choices
 
+    member x.File(?attributes) =
+        let attributes = defaultArg attributes []
+        Formlet.file attributes
+
     member x.WithLabel text (f: _ Formlet) =
         let id,f = 
             match getId f with
