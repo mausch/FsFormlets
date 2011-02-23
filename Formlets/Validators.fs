@@ -113,6 +113,8 @@ type Validate() as this =
             let validate = 
                 let isOK n = Regex.IsMatch(n, pattern)
                 satisfies (v.BuildValidator isOK (fun _ -> "Invalid value"))
+            // TODO be careful with differences between .net and ecmascript regexes
+            // see http://msdn.microsoft.com/en-us/library/04ses44d.aspx
             f |> mergeAttributes ["pattern",pattern] |> validate
 
         member x.Url f =
