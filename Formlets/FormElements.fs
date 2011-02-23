@@ -99,8 +99,10 @@ type FormElements(validators: IValidate) =
         let value = defaultArg value ""
         Formlet.hidden value
 
-    member x.Password() =
-        Formlet.password
+    member x.Password(?required) =
+        match required with
+        | Some true -> Formlet.password |> validators.Required
+        | _ -> Formlet.password
 
     member x.WithLabel text (f: _ Formlet) =
         let id,f = 
