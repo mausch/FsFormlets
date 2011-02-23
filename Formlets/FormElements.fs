@@ -95,6 +95,13 @@ type FormElements(validators: IValidate) =
         let attributes = defaultArg attributes []
         Formlet.file attributes
 
+    member x.Hidden(?value) =
+        let value = defaultArg value ""
+        Formlet.hidden value
+
+    member x.Password() =
+        Formlet.password
+
     member x.WithLabel text (f: _ Formlet) =
         let id,f = 
             match getId f with
