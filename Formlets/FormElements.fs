@@ -6,9 +6,14 @@ type FormElements(validators: IValidate) =
     let toString o = o.ToString()
     member x.Validate = validators
 
-    member x.Checkbox(value, ?attributes) =
+    member x.Checkbox(value, ?required, ?attributes) =
         let attributes = defaultArg attributes []
-        Formlet.checkbox value attributes
+        let formlet = Formlet.checkbox value attributes
+        let formlet = 
+            match required with
+            | Some true -> formlet |> validators.Required
+            | _ -> formlet
+        formlet
    
     member x.Textarea(?value, ?attributes: (string * string) list) =
         let value = defaultArg value ""
