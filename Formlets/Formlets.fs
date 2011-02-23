@@ -3,7 +3,6 @@
 (*
 Formlets implementation based on http://groups.inf.ed.ac.uk/links/formlets/
 TODO:
-* extend to use with querystring
 * change return type to Success | Fail | Invalid instead of Some | None (Error applicative)
 *)
 
@@ -13,9 +12,6 @@ open System.Collections.Specialized
 open System.Xml.Linq
 open System.Web
 
-/// Validator type.
-/// Fst determines if value is valid
-/// Snd builds an error message
 type 'a Validator = {
     IsValid: 'a -> bool
     ErrorForm: 'a -> XNode list -> XNode list
