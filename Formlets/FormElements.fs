@@ -73,6 +73,24 @@ type FormElements(validators: IValidate) =
         x.iText(value, attributes, required, None, None)
         |> validators.Email
 
+    member x.Radio(value, choices) =
+        Formlet.radio value choices
+
+    member x.Radio(value, choices) =
+        Formlet.radioA value choices
+
+    member x.Select(value, choices) =
+        Formlet.select value choices
+
+    member x.Select(value, choices) =
+        Formlet.selectA value choices
+
+    member x.SelectMulti(value, choices) =
+        Formlet.selectMulti value choices
+
+    member x.SelectMulti(value, choices) =
+        Formlet.selectMultiA value choices
+
     member x.WithLabel text (f: _ Formlet) =
         let id,f = 
             match getId f with
