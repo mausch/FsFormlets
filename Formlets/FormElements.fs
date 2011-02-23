@@ -2,7 +2,7 @@
 
 open System
 
-type FormElements(validators: Validate) =
+type FormElements(validators: IValidate) =
     let toString o = o.ToString()
     member x.Validate = validators
 
