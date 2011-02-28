@@ -3,7 +3,6 @@
 open System
 
 type FormElements(validators: IValidate) =
-    let toString o = o.ToString()
     member x.Validate = validators
 
     member x.Checkbox(value, ?required, ?attributes) =
@@ -42,7 +41,7 @@ type FormElements(validators: IValidate) =
         x.iText(value, attributes, required, maxlength, pattern)
 
     member private x.iFloat(value: float option, attributes: _ list option, required: bool option, maxlength: int option, min: float option, max: float option) =
-        let value = Option.map toString value
+        let value = Option.map string value
         let formlet = 
             x.iText(value, attributes, required, maxlength, None)
             |> validators.Float
@@ -58,7 +57,7 @@ type FormElements(validators: IValidate) =
         x.iFloat(value, attributes, required, maxlength, min, max)
 
     member x.Int(?value: int, ?attributes, ?required, ?maxlength, ?min, ?max) =
-        let value = Option.map toString value
+        let value = Option.map string value
         let formlet = 
             x.iText(value, attributes, required, maxlength, None)
             |> validators.Int
