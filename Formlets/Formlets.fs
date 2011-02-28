@@ -597,10 +597,13 @@ module Formlet =
             match settings.MockedResult with
             | Some v -> v
             | _ ->
-                let nv = NameValueCollection.fromSeq ["privatekey",settings.PrivateKey; "remoteip",requestIP; "challenge",challenge; "response",response]
-                use http = new System.Net.WebClient()
-                let bytes = http.UploadValues("http://www.google.com/recaptcha/api/verify", nv)
-                (System.Text.Encoding.UTF8.GetString bytes).Split('\n').[0] = "true"
+                if isNullOrWhiteSpace response
+                    then false
+                    else
+                        let nv = NameValueCollection.fromSeq ["privatekey",settings.PrivateKey; "remoteip",requestIP; "challenge",challenge; "response",response]
+                        use http = new System.Net.WebClient()
+                        let bytes = http.UploadValues("http://www.google.com/recaptcha/api/verify", nv)
+                        (System.Text.Encoding.UTF8.GetString bytes).Split('\n').[0] = "true"
         
         script (sprintf "http://www.google.com/recaptcha/api/challenge?k=%s" settings.PublicKey)
         *> noscript (
