@@ -62,10 +62,6 @@ type Validate() as this =
 
         override x.Required f =
             let validate =
-                let isNullOrWhiteSpace (s: string) =
-                    if s = null || s = ""
-                        then true
-                        else s |> Seq.exists Char.IsWhiteSpace
                 let isOK = isNullOrWhiteSpace >> not
                 satisfies (v.BuildValidator isOK (fun _ -> "Required field"))
 

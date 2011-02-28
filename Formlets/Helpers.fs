@@ -181,3 +181,8 @@ module Helpers =
             | "style",v -> addStyle v r
             | _ -> addOrOverwrite a r
         Seq.fold folder a2 a1
+
+    let isNullOrWhiteSpace (s: string) =
+        if s = null || s = ""
+            then true
+            else s |> Seq.exists Char.IsWhiteSpace
