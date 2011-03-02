@@ -2,6 +2,10 @@
 
 open System
 
+/// <summary>
+/// Validated form elements.
+/// These generate the appropriate HTML5 element so you can also use HTML5 for client-side validation
+/// </summary>
 type FormElements(validators: IValidate) =
     member x.Validate = validators
 
