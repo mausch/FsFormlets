@@ -51,9 +51,9 @@ type FormElements(validators: IValidate) =
             |> validators.Float
         let formlet =
             match min,max with
-            | Some min, Some max -> formlet |> validators.InRangeFloat min max
-            | Some min, None -> formlet |> validators.GreaterOrEqualFloat min
-            | None, Some max -> formlet |> validators.LessOrEqualFloat max
+            | Some min, Some max -> formlet |> validators.InRange min max
+            | Some min, None -> formlet |> validators.GreaterOrEqual min
+            | None, Some max -> formlet |> validators.LessOrEqual max
             | _ -> formlet
         formlet
 
@@ -67,9 +67,9 @@ type FormElements(validators: IValidate) =
             |> validators.Int
         let formlet =
             match min,max with
-            | Some min, Some max -> formlet |> validators.InRangeInt min max
-            | Some min, None -> formlet |> validators.GreaterOrEqualInt min
-            | None, Some max -> formlet |> validators.LessOrEqualInt max
+            | Some min, Some max -> formlet |> validators.InRange min max
+            | Some min, None -> formlet |> validators.GreaterOrEqual min
+            | None, Some max -> formlet |> validators.LessOrEqual max
             | _ -> formlet
         formlet
 

@@ -9,15 +9,9 @@ type IValidate =
     abstract member Required: string Formlet -> string Formlet
     abstract member Required: bool Formlet -> bool Formlet
     abstract member CreditCard: string Formlet -> string Formlet
-    abstract member LessOrEqual: ('a -> string) -> 'a -> 'a Formlet -> 'a Formlet when 'a:comparison
-    abstract member LessOrEqualInt: int -> int Formlet -> int Formlet
-    abstract member LessOrEqualFloat: float -> float Formlet -> float Formlet
-    abstract member GreaterOrEqual: ('a -> string) -> 'a -> 'a Formlet -> 'a Formlet when 'a: comparison
-    abstract member GreaterOrEqualInt: int -> int Formlet -> int Formlet
-    abstract member GreaterOrEqualFloat: float -> float Formlet -> float Formlet
-    abstract member InRange: ('a -> 'a -> string) -> 'a -> 'a -> 'a Formlet -> 'a Formlet when 'a: comparison
-    abstract member InRangeInt: int -> int -> int Formlet -> int Formlet
-    abstract member InRangeFloat: float -> float -> float Formlet -> float Formlet
+    abstract member LessOrEqual: 'a -> 'a Formlet -> 'a Formlet when 'a:comparison
+    abstract member GreaterOrEqual: 'a -> 'a Formlet -> 'a Formlet when 'a: comparison
+    abstract member InRange: 'a -> 'a -> 'a Formlet -> 'a Formlet when 'a: comparison
     abstract member Email: string Formlet -> string Formlet
     abstract member Regex : string -> string Formlet -> string Formlet
     abstract member Url: string Formlet -> string Formlet
@@ -70,35 +64,17 @@ type Validate() as this =
         override x.CreditCard f =
             f |> satisfies (v.BuildValidator luhn (fun _ -> "Invalid credit card number"))
 
-        override x.LessOrEqual printer n f =
-            let validator = v.BuildValidator (fun v -> v <= n) (fun _ -> printer n)
+        override x.LessOrEqual n f =
+            let validator = v.BuildValidator (fun v -> v <= n) (fun _ -> sprintf "Value must be %A or lower" n)
             f |> mergeAttributes ["max",n.ToString()] |> satisfies validator
 
-        override x.LessOrEqualInt n f =
-            v.LessOrEqual (sprintf "Value must be %d or lower") n f
-
-        override x.LessOrEqualFloat n f =
-            v.LessOrEqual (sprintf "Value must be %f or lower") n f
-
-        override x.GreaterOrEqual printer n f =
-            let validator = v.BuildValidator (fun v -> v >= n) (fun _ -> printer n)
+        override x.GreaterOrEqual n f =
+            let validator = v.BuildValidator (fun v -> v >= n) (fun _ -> sprintf "Value must be %A or higher" n)
             f |> mergeAttributes ["min",n.ToString()] |> satisfies validator
 
-        override x.GreaterOrEqualInt n f =
-            v.GreaterOrEqual (sprintf "Value must be %d or higher") n f
-
-        override x.GreaterOrEqualFloat n f =
-            v.GreaterOrEqual (sprintf "Value must be %f or higher") n f
-
-        override x.InRange printer min max f =
-            let validator = v.BuildValidator (fun v -> v >= min && v <= max) (fun _ -> printer min max)
+        override x.InRange min max f =
+            let validator = v.BuildValidator (fun v -> v >= min && v <= max) (fun _ -> sprintf "Value must be between %A and %A" min max)
             f |> mergeAttributes ["min",min.ToString(); "max",max.ToString()] |> satisfies validator
-
-        override x.InRangeInt min max f =
-            v.InRange (sprintf "Value must be between %d and %d") min max f
-
-        member x.InRangeFloat min max f = 
-            v.InRange (sprintf "Value must be between %f and %f") min max f
 
         member x.Email f =
             let validate = 
