@@ -356,6 +356,9 @@ module Formlet =
     let labelFor id text = 
         [XmlWriter.labelFor id text] |> xml
 
+    let labelForRaw id x =
+        [XmlWriter.labelRawFor id x] |> xml
+
     /// <summary>
     /// Creates a &lt;input type=&quot;radio&quot;&gt; formlet
     /// </summary>

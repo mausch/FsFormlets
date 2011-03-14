@@ -98,10 +98,11 @@ module XmlWriter =
     let inline plug (k: XNode list -> XNode list) (v: 'a XmlWriter): 'a XmlWriter = 
         k (fst v), snd v
     let inline xml (e: XNode list) : unit XmlWriter = e,()
-    let inline rawXml (x: string) : unit XmlWriter = 
+    let inline parseRawXml x =
         let x = sprintf "<r>%s</r>" x
         let xdoc = XDocument.Parse x
-        xdoc.Document.Root.Nodes() |> Seq.toList |> xml
+        xdoc.Document.Root.Nodes() |> Seq.toList
+    let rawXml = parseRawXml >> xml
     let inline text (s: string) = xml [XText s]
     let inline tag name attributes (v: 'a XmlWriter) : 'a XmlWriter = 
         plug (fun x -> [xelem name attributes x]) v
@@ -129,3 +130,6 @@ module XmlWriter =
 
     let labelFor id (text: string) = 
         xelem "label" ["for", id] [XText text]
+
+    let labelRawFor id (xml: string) =
+        xelem "label" ["for", id] (parseRawXml xml)

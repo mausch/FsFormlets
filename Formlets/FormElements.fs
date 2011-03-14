@@ -112,12 +112,18 @@ type FormElements(validators: IValidate) =
         | Some true -> Formlet.password |> validators.Required
         | _ -> Formlet.password
 
+    member private x.AddOrGetId f =
+        match getId f with
+        | Some id -> id,f
+        | _ ->
+            let id = "e" + Guid.NewGuid().ToString()
+            let f = f |> mergeAttributes ["id",id]
+            id, f
+
     member x.WithLabel text (f: _ Formlet) =
-        let id,f = 
-            match getId f with
-            | Some id -> id,f
-            | _ -> 
-                let id = "e" + Guid.NewGuid().ToString()
-                let f = f |> mergeAttributes ["id",id]
-                id, f
+        let id,f = x.AddOrGetId f
         labelFor id text *> f
+
+    member x.WithLabelRaw xml (f: _ Formlet) =
+        let id,f = x.AddOrGetId f
+        labelForRaw id xml *> f
