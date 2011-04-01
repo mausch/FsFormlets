@@ -12,11 +12,7 @@ type FormElements(validators: IValidate) =
     member x.Checkbox(value, ?required, ?attributes) =
         let attributes = defaultArg attributes []
         let formlet = Formlet.checkbox value attributes
-        let formlet = 
-            match required with
-            | Some true -> formlet |> validators.Required
-            | _ -> formlet
-        formlet
+        formlet |> Option.mapBoolOrId validators.Required required
    
     member x.Textarea(?value, ?attributes: (string * string) list) =
         let value = defaultArg value ""
@@ -27,10 +23,7 @@ type FormElements(validators: IValidate) =
         let value = defaultArg value ""
         let attributes = defaultArg attributes []
         let formlet = Formlet.input value attributes
-        let formlet =
-            match required with
-            | Some true -> formlet |> validators.Required
-            | _ -> formlet
+        let formlet = formlet |> Option.mapBoolOrId validators.Required required
         let formlet = formlet |> Option.mapOrId validators.Maxlength maxlength
         formlet |> Option.mapOrId validators.Regex pattern
 
@@ -101,9 +94,7 @@ type FormElements(validators: IValidate) =
         Formlet.hidden value
 
     member x.Password(?required) =
-        match required with
-        | Some true -> Formlet.password |> validators.Required
-        | _ -> Formlet.password
+        Formlet.password |> Option.mapBoolOrId validators.Required required
 
     member x.Search(?value, ?attributes, ?required, ?maxlength, ?pattern) =
         x.iText(value, attributes, required, maxlength, pattern)

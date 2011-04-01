@@ -123,6 +123,10 @@ module Option =
         | None -> id
         | Some v -> f v
 
+    let mapBoolOrId f =
+        function
+        | Some true -> f
+        | _ -> id
 
 [<AutoOpen>]
 module Helpers = 
