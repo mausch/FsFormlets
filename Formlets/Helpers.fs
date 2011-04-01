@@ -183,9 +183,7 @@ module Helpers =
         Seq.fold folder a2 a1
 
     let isNullOrWhiteSpace (s: string) =
-        if s = null || s = ""
-            then true
-            else s |> Seq.exists Char.IsWhiteSpace
+        String.IsNullOrEmpty(s) || Seq.exists Char.IsWhiteSpace s
 
     let dateFormat = "yyyy-MM-ddTHH:mm:ss.ffZ"
 
