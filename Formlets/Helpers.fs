@@ -77,6 +77,8 @@ module Seq =
 module List =
     let inline singleton a = [a]
 
+    let cons h t = List.Cons(h,t)
+
     /// <summary>
     /// Returns a list that skips N elements of the underlying list and then yields the remaining elements of the list
     /// </summary>
@@ -114,6 +116,13 @@ module List =
         | x when x >= List.length l -> failwith "Out of bounds"
         | 0 -> item::List.tail l
         | x -> (take x l) @ (item::(skip (x+1) l))
+
+module Option =
+    let mapOrId f =
+        function
+        | None -> id
+        | Some v -> f v
+
 
 [<AutoOpen>]
 module Helpers = 

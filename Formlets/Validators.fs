@@ -111,24 +111,11 @@ type Validate() as this =
             f |> mergeAttributes ["maxlength",n.ToString()] |> validate
 
         member x.DateTime (min: DateTime option) (max: DateTime option) f =
-            let attr =
-                match min with
-                | None -> []
-                | Some v -> ["min", Helpers.SerializeDateTime v]
-            let attr = 
-                match max with
-                | None -> attr
-                | Some v -> ("max", Helpers.SerializeDateTime v)::attr
+            let attr = []
+            let attr = attr |> Option.mapOrId (fun v -> List.cons ("min", Helpers.SerializeDateTime v)) min
+            let attr = attr |> Option.mapOrId (fun v -> List.cons ("max", Helpers.SerializeDateTime v)) max
             let validate = validator (TryDeserializeDateTime >> fst) "Invalid date/time"
             let f = f |> mergeAttributes attr |> validate |> map DeserializeDateTime
-            let f = 
-                match min with
-                | None -> f
-                | Some min -> 
-                    f |> validator ((<) min) (sprintf "Date must be after %A" min)
-            let f = 
-                match max with
-                | None -> f
-                | Some max -> 
-                    f |> validator ((>) max) (sprintf "Date must be before %A" max)
+            let f = f |> Option.mapOrId (fun v -> validator ((<) v) (sprintf "Date must be after %A" v)) min
+            let f = f |> Option.mapOrId (fun v -> validator ((>) v) (sprintf "Date must be after %A" v)) max
             f

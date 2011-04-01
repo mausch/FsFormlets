@@ -27,19 +27,12 @@ type FormElements(validators: IValidate) =
         let value = defaultArg value ""
         let attributes = defaultArg attributes []
         let formlet = Formlet.input value attributes
-        let formlet = 
-            match maxlength with
-            | Some v -> formlet |> validators.Maxlength v
-            | _ -> formlet
         let formlet =
             match required with
             | Some true -> formlet |> validators.Required
             | _ -> formlet
-        let formlet =
-            match pattern with
-            | Some v -> formlet |> validators.Regex v
-            | _ -> formlet
-        formlet
+        let formlet = formlet |> Option.mapOrId validators.Maxlength maxlength
+        formlet |> Option.mapOrId validators.Regex pattern
 
     member x.Text(?value, ?attributes: (string * string) list, ?required: bool, ?maxlength: int, ?pattern: string) =
         x.iText(value, attributes, required, maxlength, pattern)
@@ -121,10 +114,7 @@ type FormElements(validators: IValidate) =
     member x.DateTime(?value, ?attributes, ?required, ?min, ?max, ?step: int) =
         let value = Option.map Helpers.SerializeDateTime value
         let attributes = defaultArg attributes []
-        let attributes = 
-            match step with
-            | None -> attributes
-            | Some s -> attributes |> mergeAttr ["step", string s]
+        let attributes = attributes |> Option.mapOrId (fun s -> mergeAttr ["step", string s]) step
         x.iText(value, Some attributes, required, None, None)
         |> validators.DateTime min max
 
