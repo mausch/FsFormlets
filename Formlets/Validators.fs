@@ -37,6 +37,9 @@ type Validate() as this =
             + @"([-a-z0-9!#$%&'*+/=?^_`{|}~]|(?<!\.)\.)*)(?<!\.)" 
             + @"@[a-z0-9][\w\.-]*[a-z0-9]\.[a-z][a-z\.]*[a-z]$", RegexOptions.IgnoreCase ||| RegexOptions.Compiled)
 
+    let validator isOK err =
+        satisfies (v.BuildValidator isOK (fun _ -> err))
+
     static member Default = Validate() :> IValidate
 
     interface IValidate with
@@ -53,39 +56,38 @@ type Validate() as this =
         override x.Required f =
             f 
             |> mergeAttributes ["required","required"]
-            |> satisfies (v.BuildValidator ((=)true) (fun _ -> "Required field"))
+            |> validator id "Required field"
 
         override x.Required f =
             let validate =
                 let isOK = isNullOrWhiteSpace >> not
-                satisfies (v.BuildValidator isOK (fun _ -> "Required field"))
+                validator isOK "Required field"
 
             f |> mergeAttributes ["required","required"] |> validate
 
         override x.CreditCard f =
-            f |> satisfies (v.BuildValidator luhn (fun _ -> "Invalid credit card number"))
+            f |> validator luhn "Invalid credit card number"
 
         override x.LessOrEqual n f =
-            let validator = v.BuildValidator (fun v -> v <= n) (fun _ -> sprintf "Value must be %A or lower" n)
-            f |> mergeAttributes ["max",n.ToString()] |> satisfies validator
+            let validator = validator (fun v -> v <= n) (sprintf "Value must be %A or lower" n)
+            f |> mergeAttributes ["max",n.ToString()] |> validator
 
         override x.GreaterOrEqual n f =
-            let validator = v.BuildValidator (fun v -> v >= n) (fun _ -> sprintf "Value must be %A or higher" n)
-            f |> mergeAttributes ["min",n.ToString()] |> satisfies validator
+            let validator = validator (fun v -> v >= n) (sprintf "Value must be %A or higher" n)
+            f |> mergeAttributes ["min",n.ToString()] |> validator
 
         override x.InRange min max f =
-            let validator = v.BuildValidator (fun v -> v >= min && v <= max) (fun _ -> sprintf "Value must be between %A and %A" min max)
-            f |> mergeAttributes ["min",min.ToString(); "max",max.ToString()] |> satisfies validator
+            let validator = validator (fun v -> v >= min && v <= max) (sprintf "Value must be between %A and %A" min max)
+            f |> mergeAttributes ["min",min.ToString(); "max",max.ToString()] |> validator
 
         member x.Email f =
-            let validate = 
-                satisfies (v.BuildValidator emailRx.IsMatch (fun _ -> "Invalid email"))
+            let validate = validator emailRx.IsMatch "Invalid email"
             f |> mergeAttributes ["type","email"] |> validate
 
         member x.Regex pattern f =
             let validate = 
                 let isOK n = Regex.IsMatch(n, pattern)
-                satisfies (v.BuildValidator isOK (fun _ -> "Invalid value"))
+                validator isOK "Invalid value"
             // TODO be careful with differences between .net and ecmascript regexes
             // see http://msdn.microsoft.com/en-us/library/04ses44d.aspx
             f |> mergeAttributes ["pattern",pattern] |> validate
@@ -93,27 +95,22 @@ type Validate() as this =
         member x.Url f =
             let validate =
                 let isOK s = Uri.TryCreate(s, UriKind.Absolute) |> fst
-                satisfies (v.BuildValidator isOK (fun _ -> "Invalid URL"))
+                validator isOK "Invalid URL"
             f |> mergeAttributes ["type","url"] |> validate
 
         member x.Float f =
-            let validate = 
-                satisfies (v.BuildValidator (Double.TryParse >> fst) (fun _ -> "Invalid value"))
+            let validate = validator (Double.TryParse >> fst) "Invalid value"
             f |> mergeAttributes ["type","number"] |> validate |> map float
 
         member x.Decimal f =
-            let validate =
-                satisfies (v.BuildValidator (Decimal.TryParse >> fst) (fun _ -> "Invalid value"))
+            let validate = validator (Decimal.TryParse >> fst) "Invalid value"
             f |> mergeAttributes ["type","number"] |> validate |> map decimal
     
         member x.Maxlength (n: int) f =
-            let validate =
-                satisfies (v.BuildValidator (fun (s: string) -> s.Length <= n) (fun _ -> "Invalid value"))
+            let validate = validator (fun (s: string) -> s.Length <= n) "Invalid value"
             f |> mergeAttributes ["maxlength",n.ToString()] |> validate
 
         member x.DateTime (min: DateTime option) (max: DateTime option) f =
-            let validate =
-                satisfies (v.BuildValidator (TryDeserializeDateTime >> fst) (fun _ -> "Invalid date/time"))
             let attr =
                 match min with
                 | None -> []
@@ -122,15 +119,16 @@ type Validate() as this =
                 match max with
                 | None -> attr
                 | Some v -> ("max", Helpers.SerializeDateTime v)::attr
+            let validate = validator (TryDeserializeDateTime >> fst) "Invalid date/time"
             let f = f |> mergeAttributes attr |> validate |> map DeserializeDateTime
             let f = 
                 match min with
                 | None -> f
                 | Some min -> 
-                    f |> satisfies (v.BuildValidator ((<) min) (fun _ -> sprintf "Date must be after %A" min))
+                    f |> validator ((<) min) (sprintf "Date must be after %A" min)
             let f = 
                 match max with
                 | None -> f
                 | Some max -> 
-                    f |> satisfies (v.BuildValidator ((>) max) (fun _ -> sprintf "Date must be before %A" max))
+                    f |> validator ((>) max) (sprintf "Date must be before %A" max)
             f
