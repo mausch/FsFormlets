@@ -112,6 +112,22 @@ type FormElements(validators: IValidate) =
         | Some true -> Formlet.password |> validators.Required
         | _ -> Formlet.password
 
+    member x.Search(?value, ?attributes, ?required, ?maxlength, ?pattern) =
+        x.iText(value, attributes, required, maxlength, pattern)
+
+    member x.Tel(?value, ?attributes, ?required, ?maxlength, ?pattern) =
+        x.iText(value, attributes, required, maxlength, pattern)
+
+    member x.DateTime(?value, ?attributes, ?required, ?min, ?max, ?step: int) =
+        let value = Option.map Helpers.SerializeDateTime value
+        let attributes = defaultArg attributes []
+        let attributes = 
+            match step with
+            | None -> attributes
+            | Some s -> attributes |> mergeAttr ["step", string s]
+        x.iText(value, Some attributes, required, None, None)
+        |> validators.DateTime min max
+
     member private x.AddOrGetId f =
         match getId f with
         | Some id -> id,f

@@ -10,4 +10,5 @@ open System.Runtime.InteropServices
 [<assembly: AssemblyDescription("Formlets")>]
 [<assembly: AssemblyProduct("FsFormlets")>]
 [<assembly: AssemblyCopyright("Copyright Mauricio Scheffer 2011")>]
+[<assembly: InternalsVisibleTo("Formlets.Tests")>]
 do()

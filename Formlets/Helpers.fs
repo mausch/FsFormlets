@@ -186,3 +186,20 @@ module Helpers =
         if s = null || s = ""
             then true
             else s |> Seq.exists Char.IsWhiteSpace
+
+    let dateFormat = "yyyy-MM-ddTHH:mm:ss.ffZ"
+
+    let SerializeDateTime (dt: DateTime) =
+        dt.ToString(dateFormat)
+        
+    let DeserializeDateTime dt =
+        DateTime.ParseExact(dt, dateFormat, Globalization.CultureInfo.InvariantCulture, Globalization.DateTimeStyles.AdjustToUniversal)
+
+    let TryDeserializeDateTime dt =
+        DateTime.TryParseExact(dt, dateFormat, Globalization.CultureInfo.InvariantCulture, Globalization.DateTimeStyles.AdjustToUniversal)
+
+    let TryDeserializeDateTime' dt =
+        let ok,v = TryDeserializeDateTime dt
+        match ok,v with
+        | false, _ -> None
+        | true, v -> Some v

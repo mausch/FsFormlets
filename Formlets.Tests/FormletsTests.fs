@@ -10,6 +10,8 @@ open System.Xml.Linq
 open Formlets.XmlWriter
 open Formlets
 
+let e = FormElements(Validate.Default)
+
 let input = input "" [] // no additional attributes
 
 let inputInt = input |> Validate.Default.Int
@@ -426,3 +428,24 @@ let ``merge attr in error form``() =
         let html = XmlWriter.render errorForm
         Assert.Equal("<span class=\"errorinput\"><input id=\"pepe\" name=\"f0\" value=\"a\" /></span><span class=\"error\">a is not a valid number</span>", html)
     | _ -> failwith "Should not have succeeded"
+
+[<Fact>]
+let SerializeDateTime() =
+    let v = DateTime(2011,1,1, 12,34,56) |> Helpers.SerializeDateTime
+    Assert.Equal("2011-01-01T12:34:56.00Z", v)
+
+[<Fact>]
+let ``DateTime ok``() =
+    let f = e.DateTime()
+    let env = EnvDict.fromValueSeq ["f0","0037-12-13T02:10:33.00Z"]
+    match run f env with
+    | Success v -> Assert.Equal(DateTime(37,12,13,2,10,33), v)
+    | _ -> failwith "should not have failed"
+
+[<Fact>]
+let ``DateTime min error``() =
+    let f = e.DateTime(min = DateTime(2010,1,1))
+    let env = EnvDict.fromValueSeq ["f0","0037-12-13T02:10:33.00Z"]
+    match run f env with
+    | Success _ -> failwith "should not have succeeded"
+    | _ -> ()

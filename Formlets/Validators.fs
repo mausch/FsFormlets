@@ -18,6 +18,7 @@ type IValidate =
     abstract member Float: string Formlet -> float Formlet
     abstract member Decimal: string Formlet -> decimal Formlet
     abstract member Maxlength: int -> string Formlet -> string Formlet
+    abstract member DateTime: DateTime option -> DateTime option -> string Formlet -> DateTime Formlet
 
 type Validate() as this =
     let v = this :> IValidate
@@ -109,3 +110,27 @@ type Validate() as this =
             let validate =
                 satisfies (v.BuildValidator (fun (s: string) -> s.Length <= n) (fun _ -> "Invalid value"))
             f |> mergeAttributes ["maxlength",n.ToString()] |> validate
+
+        member x.DateTime (min: DateTime option) (max: DateTime option) f =
+            let validate =
+                satisfies (v.BuildValidator (TryDeserializeDateTime >> fst) (fun _ -> "Invalid date/time"))
+            let attr =
+                match min with
+                | None -> []
+                | Some v -> ["min", Helpers.SerializeDateTime v]
+            let attr = 
+                match max with
+                | None -> attr
+                | Some v -> ("max", Helpers.SerializeDateTime v)::attr
+            let f = f |> mergeAttributes attr |> validate |> map DeserializeDateTime
+            let f = 
+                match min with
+                | None -> f
+                | Some min -> 
+                    f |> satisfies (v.BuildValidator ((<) min) (fun _ -> sprintf "Date must be after %A" min))
+            let f = 
+                match max with
+                | None -> f
+                | Some max -> 
+                    f |> satisfies (v.BuildValidator ((>) max) (fun _ -> sprintf "Date must be before %A" max))
+            f
