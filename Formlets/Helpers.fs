@@ -200,8 +200,7 @@ module Helpers =
 
     let dateTimeFormat = "yyyy-MM-ddTHH:mm:ss.ffZ"
     let dateFormat = "yyyy-MM-dd"
-
-    let SerializeDateTime (dt: DateTime) = dt.ToString(dateTimeFormat)
+    let monthFormat = "yyyy-MM"
 
     let DeserializeDateTimeF (format: string) dt =
         DateTime.ParseExact(dt, format, Globalization.CultureInfo.InvariantCulture, Globalization.DateTimeStyles.AdjustToUniversal)
@@ -209,12 +208,14 @@ module Helpers =
     let TryDeserializeDateTimeF (format: string) dt =
         DateTime.TryParseExact(dt, format, Globalization.CultureInfo.InvariantCulture, Globalization.DateTimeStyles.AdjustToUniversal)
 
+    let SerializeDateTime (dt: DateTime) = dt.ToString(dateTimeFormat)
     let DeserializeDateTime = DeserializeDateTimeF dateTimeFormat
-
     let TryDeserializeDateTime = TryDeserializeDateTimeF dateTimeFormat
 
     let SerializeDate (dt: DateTime) = dt.ToString(dateFormat)
-
     let DeserializeDate = DeserializeDateTimeF dateFormat
-
     let TryDeserializeDate = TryDeserializeDateTimeF dateFormat
+
+    let SerializeMonth (dt: DateTime) = dt.ToString(monthFormat)
+    let DeserializeMonth = DeserializeDateTimeF monthFormat
+    let TryDeserializeMonth = TryDeserializeDateTimeF monthFormat

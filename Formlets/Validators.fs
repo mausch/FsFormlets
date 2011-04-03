@@ -20,6 +20,7 @@ type IValidate =
     abstract member Maxlength: int -> string Formlet -> string Formlet
     abstract member DateTime: DateTime option -> DateTime option -> string Formlet -> DateTime Formlet
     abstract member Date: DateTime option -> DateTime option -> string Formlet -> DateTime Formlet
+    abstract member Month: DateTime option -> DateTime option -> string Formlet -> DateTime Formlet
 
 type Validate() as this =
     let v = this :> IValidate
@@ -127,6 +128,16 @@ type Validate() as this =
             let attr = attr |> Option.mapOrId (fun v -> List.cons ("max", Helpers.SerializeDate v)) max
             let validate = validator (TryDeserializeDate >> fst) "Invalid date"
             let f = f |> mergeAttributes attr |> validate |> map DeserializeDate
+            let f = f |> Option.mapOrId (fun v -> validator ((<) v) (sprintf "Date must be after %A" v)) min
+            let f = f |> Option.mapOrId (fun v -> validator ((>) v) (sprintf "Date must be after %A" v)) max
+            f
+
+        member x.Month (min: DateTime option) (max: DateTime option) f =
+            let attr = []
+            let attr = attr |> Option.mapOrId (fun v -> List.cons ("min", Helpers.SerializeMonth v)) min
+            let attr = attr |> Option.mapOrId (fun v -> List.cons ("max", Helpers.SerializeMonth v)) max
+            let validate = validator (TryDeserializeMonth >> fst) "Invalid date"
+            let f = f |> mergeAttributes attr |> validate |> map DeserializeMonth
             let f = f |> Option.mapOrId (fun v -> validator ((<) v) (sprintf "Date must be after %A" v)) min
             let f = f |> Option.mapOrId (fun v -> validator ((>) v) (sprintf "Date must be after %A" v)) max
             f

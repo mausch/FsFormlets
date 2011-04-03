@@ -116,6 +116,13 @@ type FormElements(validators: IValidate) =
         x.iText(value, Some attributes, required, None, None)
         |> validators.Date min max
 
+    member x.Month(?value, ?attributes, ?required, ?min, ?max, ?step: int) =
+        let value = Option.map Helpers.SerializeMonth value
+        let attributes = defaultArg attributes []
+        let attributes = attributes |> Option.mapOrId (fun s -> mergeAttr ["step", string s]) step
+        x.iText(value, Some attributes, required, None, None)
+        |> validators.Month min max
+
     member private x.AddOrGetId f =
         match getId f with
         | Some id -> id,f
