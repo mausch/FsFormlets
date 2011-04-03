@@ -102,26 +102,21 @@ type FormElements(validators: IValidate) =
     member x.Tel(?value, ?attributes, ?required, ?maxlength, ?pattern) =
         x.iText(value, attributes, required, maxlength, pattern)
 
-    member x.DateTime(?value, ?attributes, ?required, ?min, ?max, ?step: int) =
+    member private x.iDateTime validator (value, attributes, required, min, max, step) =
         let value = Option.map dateTimeSerializer.Serialize value
         let attributes = defaultArg attributes []
         let attributes = attributes |> Option.mapOrId (fun s -> mergeAttr ["step", string s]) step
         x.iText(value, Some attributes, required, None, None)
-        |> validators.DateTime min max
+        |> validator min max
+
+    member x.DateTime(?value, ?attributes, ?required, ?min, ?max, ?step: int) =
+        x.iDateTime validators.DateTime (value, attributes, required, min, max, step)
 
     member x.Date(?value, ?attributes, ?required, ?min, ?max, ?step: int) =
-        let value = Option.map dateSerializer.Serialize value
-        let attributes = defaultArg attributes []
-        let attributes = attributes |> Option.mapOrId (fun s -> mergeAttr ["step", string s]) step
-        x.iText(value, Some attributes, required, None, None)
-        |> validators.Date min max
+        x.iDateTime validators.Date (value, attributes, required, min, max, step)
 
     member x.Month(?value, ?attributes, ?required, ?min, ?max, ?step: int) =
-        let value = Option.map monthSerializer.Serialize value
-        let attributes = defaultArg attributes []
-        let attributes = attributes |> Option.mapOrId (fun s -> mergeAttr ["step", string s]) step
-        x.iText(value, Some attributes, required, None, None)
-        |> validators.Month min max
+        x.iDateTime validators.Month (value, attributes, required, min, max, step)
 
     member private x.AddOrGetId f =
         match getId f with

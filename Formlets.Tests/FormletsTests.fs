@@ -431,7 +431,7 @@ let ``merge attr in error form``() =
 
 [<Fact>]
 let SerializeDateTime() =
-    let v = DateTime(2011,1,1, 12,34,56) |> Helpers.SerializeDateTime
+    let v = DateTime(2011,1,1, 12,34,56) |> dateTimeSerializer.Serialize
     Assert.Equal("2011-01-01T12:34:56.00Z", v)
 
 [<Fact>]
