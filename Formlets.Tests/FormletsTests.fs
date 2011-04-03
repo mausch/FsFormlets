@@ -484,3 +484,21 @@ let ``Week tryDeserialize fail``() =
     match r with
     | false, _ -> ()
     | _ -> failwith "Should have failed"
+
+[<Fact>]
+let ``Time deserialize without second fraction``() =
+    let dt = timeSerializer.Deserialize "23:45:56"
+    Assert.Equal(23, dt.Hour)
+    Assert.Equal(45, dt.Minute)
+    Assert.Equal(56, dt.Second)
+    Assert.Equal(00, dt.Millisecond)
+
+[<Fact>]
+let ``Time deserialize without second``() =
+    let dt = timeSerializer.Deserialize "23:45"
+    Assert.Equal(23, dt.Hour)
+    Assert.Equal(45, dt.Minute)
+    Assert.Equal(00, dt.Second)
+    Assert.Equal(00, dt.Millisecond)
+
+        

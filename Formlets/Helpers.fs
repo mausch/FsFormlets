@@ -222,26 +222,28 @@ module Helpers =
             then Some()
             else None
 
-    let dateTimeFormat = "yyyy-MM-ddTHH:mm:ss.ffZ"
-    let dateFormat = "yyyy-MM-dd"
-    let monthFormat = "yyyy-MM"
+    let dateTimeFormats = [|"yyyy-MM-ddTHH:mm:ss.ffZ"|]
+    let dateFormats = [|"yyyy-MM-dd"|]
+    let monthFormats = [|"yyyy-MM"|]
+    let timeFormats = [|"HH:mm:ss.ff"; "HH:mm:ss"; "HH:mm"|]
 
     type IDateSerialization =
         abstract member Serialize: DateTime -> string
         abstract member Deserialize: string -> DateTime
         abstract member TryDeserialize: string -> (bool * DateTime)
 
-    type DateSerialization(format: string) =
+    type DateSerialization(formats: string[]) =
         interface IDateSerialization with
-            member x.Serialize dt = dt.ToString(format)
+            member x.Serialize dt = dt.ToString(formats.[0])
             member x.Deserialize dt = 
-                DateTime.ParseExact(dt, format, Globalization.CultureInfo.InvariantCulture, Globalization.DateTimeStyles.AdjustToUniversal)
+                DateTime.ParseExact(dt, formats, Globalization.CultureInfo.InvariantCulture, Globalization.DateTimeStyles.AdjustToUniversal)
             member x.TryDeserialize dt = 
-                DateTime.TryParseExact(dt, format, Globalization.CultureInfo.InvariantCulture, Globalization.DateTimeStyles.AdjustToUniversal)
+                DateTime.TryParseExact(dt, formats, Globalization.CultureInfo.InvariantCulture, Globalization.DateTimeStyles.AdjustToUniversal)
 
-    let dateTimeSerializer = DateSerialization(dateTimeFormat) :> IDateSerialization
-    let dateSerializer = DateSerialization(dateFormat) :> IDateSerialization
-    let monthSerializer = DateSerialization(monthFormat) :> IDateSerialization
+    let dateTimeSerializer = DateSerialization(dateTimeFormats) :> IDateSerialization
+    let dateSerializer = DateSerialization(dateFormats) :> IDateSerialization
+    let monthSerializer = DateSerialization(monthFormats) :> IDateSerialization
+    let timeSerializer = DateSerialization(timeFormats) :> IDateSerialization
 
     open System.Globalization
 
