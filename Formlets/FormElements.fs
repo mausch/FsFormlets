@@ -46,7 +46,7 @@ type FormElements(validators: IValidate) =
     member x.Float(?value, ?attributes, ?required, ?maxlength, ?min, ?max) =
         x.iFloat(value, attributes, required, maxlength, min, max)
 
-    member x.Int(?value: int, ?attributes, ?required, ?maxlength, ?min, ?max) =
+    member x.iInt(value: int option, attributes, required, maxlength, min, max) =
         let value = Option.map string value
         let formlet = 
             x.iText(value, attributes, required, maxlength, None)
@@ -58,6 +58,19 @@ type FormElements(validators: IValidate) =
             | None, Some max -> formlet |> validators.LessOrEqual max
             | _ -> formlet
         formlet
+
+    member x.Int(?value: int, ?attributes, ?required, ?maxlength, ?min, ?max) =
+        x.iInt(value, attributes, required, maxlength, min, max)
+
+    member x.FloatRange(min, max, ?value, ?attributes, ?required) =
+        let attributes = defaultArg attributes []
+        let attributes = attributes |> mergeAttr ["type","range"]
+        x.iFloat(value, Some attributes, required, None, Some min, Some max)
+
+    member x.IntRange(min, max, ?value, ?attributes, ?required) =
+        let attributes = defaultArg attributes []
+        let attributes = attributes |> mergeAttr ["type","range"]
+        x.iInt(value, Some attributes, required, None, Some min, Some max)
 
     member x.Url(?value, ?attributes, ?required) =
         x.iText(value, attributes, required, None, None)
