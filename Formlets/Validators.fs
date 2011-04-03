@@ -42,6 +42,16 @@ type Validate() as this =
     let validator isOK err =
         satisfies (v.BuildValidator isOK (fun _ -> err))
 
+    let dateTime (s: IDateSerialization) (min: DateTime option) (max: DateTime option) f =
+        let attr = []
+        let attr = attr |> Option.mapOrId (fun v -> List.cons ("min", s.Serialize v)) min
+        let attr = attr |> Option.mapOrId (fun v -> List.cons ("max", s.Serialize v)) max
+        let validate = validator (s.TryDeserialize >> fst) "Invalid date"
+        let f = f |> mergeAttributes attr |> validate |> map s.Deserialize
+        let f = f |> Option.mapOrId (fun v -> validator ((<) v) (sprintf "Date must be after %A" v)) min
+        let f = f |> Option.mapOrId (fun v -> validator ((>) v) (sprintf "Date must be after %A" v)) max
+        f
+
     static member Default = Validate() :> IValidate
 
     interface IValidate with
@@ -112,32 +122,11 @@ type Validate() as this =
             let validate = validator (fun (s: string) -> s.Length <= n) "Invalid value"
             f |> mergeAttributes ["maxlength",n.ToString()] |> validate
 
-        member x.DateTime (min: DateTime option) (max: DateTime option) f =
-            let attr = []
-            let attr = attr |> Option.mapOrId (fun v -> List.cons ("min", Helpers.SerializeDateTime v)) min
-            let attr = attr |> Option.mapOrId (fun v -> List.cons ("max", Helpers.SerializeDateTime v)) max
-            let validate = validator (TryDeserializeDateTime >> fst) "Invalid date/time"
-            let f = f |> mergeAttributes attr |> validate |> map DeserializeDateTime
-            let f = f |> Option.mapOrId (fun v -> validator ((<) v) (sprintf "Date must be after %A" v)) min
-            let f = f |> Option.mapOrId (fun v -> validator ((>) v) (sprintf "Date must be after %A" v)) max
-            f
+        member x.DateTime min max f =
+            dateTime dateTimeSerializer min max f
 
-        member x.Date (min: DateTime option) (max: DateTime option) f =
-            let attr = []
-            let attr = attr |> Option.mapOrId (fun v -> List.cons ("min", Helpers.SerializeDate v)) min
-            let attr = attr |> Option.mapOrId (fun v -> List.cons ("max", Helpers.SerializeDate v)) max
-            let validate = validator (TryDeserializeDate >> fst) "Invalid date"
-            let f = f |> mergeAttributes attr |> validate |> map DeserializeDate
-            let f = f |> Option.mapOrId (fun v -> validator ((<) v) (sprintf "Date must be after %A" v)) min
-            let f = f |> Option.mapOrId (fun v -> validator ((>) v) (sprintf "Date must be after %A" v)) max
-            f
+        member x.Date min max f =
+            dateTime dateSerializer min max f
 
-        member x.Month (min: DateTime option) (max: DateTime option) f =
-            let attr = []
-            let attr = attr |> Option.mapOrId (fun v -> List.cons ("min", Helpers.SerializeMonth v)) min
-            let attr = attr |> Option.mapOrId (fun v -> List.cons ("max", Helpers.SerializeMonth v)) max
-            let validate = validator (TryDeserializeMonth >> fst) "Invalid date"
-            let f = f |> mergeAttributes attr |> validate |> map DeserializeMonth
-            let f = f |> Option.mapOrId (fun v -> validator ((<) v) (sprintf "Date must be after %A" v)) min
-            let f = f |> Option.mapOrId (fun v -> validator ((>) v) (sprintf "Date must be after %A" v)) max
-            f
+        member x.Month min max f =
+            dateTime monthSerializer min max f

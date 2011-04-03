@@ -103,21 +103,21 @@ type FormElements(validators: IValidate) =
         x.iText(value, attributes, required, maxlength, pattern)
 
     member x.DateTime(?value, ?attributes, ?required, ?min, ?max, ?step: int) =
-        let value = Option.map Helpers.SerializeDateTime value
+        let value = Option.map dateTimeSerializer.Serialize value
         let attributes = defaultArg attributes []
         let attributes = attributes |> Option.mapOrId (fun s -> mergeAttr ["step", string s]) step
         x.iText(value, Some attributes, required, None, None)
         |> validators.DateTime min max
 
     member x.Date(?value, ?attributes, ?required, ?min, ?max, ?step: int) =
-        let value = Option.map Helpers.SerializeDate value
+        let value = Option.map dateSerializer.Serialize value
         let attributes = defaultArg attributes []
         let attributes = attributes |> Option.mapOrId (fun s -> mergeAttr ["step", string s]) step
         x.iText(value, Some attributes, required, None, None)
         |> validators.Date min max
 
     member x.Month(?value, ?attributes, ?required, ?min, ?max, ?step: int) =
-        let value = Option.map Helpers.SerializeMonth value
+        let value = Option.map monthSerializer.Serialize value
         let attributes = defaultArg attributes []
         let attributes = attributes |> Option.mapOrId (fun s -> mergeAttr ["step", string s]) step
         x.iText(value, Some attributes, required, None, None)

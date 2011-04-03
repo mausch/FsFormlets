@@ -202,20 +202,19 @@ module Helpers =
     let dateFormat = "yyyy-MM-dd"
     let monthFormat = "yyyy-MM"
 
-    let DeserializeDateTimeF (format: string) dt =
-        DateTime.ParseExact(dt, format, Globalization.CultureInfo.InvariantCulture, Globalization.DateTimeStyles.AdjustToUniversal)
-        
-    let TryDeserializeDateTimeF (format: string) dt =
-        DateTime.TryParseExact(dt, format, Globalization.CultureInfo.InvariantCulture, Globalization.DateTimeStyles.AdjustToUniversal)
+    type IDateSerialization =
+        abstract member Serialize: DateTime -> string
+        abstract member Deserialize: string -> DateTime
+        abstract member TryDeserialize: string -> (bool * DateTime)
 
-    let SerializeDateTime (dt: DateTime) = dt.ToString(dateTimeFormat)
-    let DeserializeDateTime = DeserializeDateTimeF dateTimeFormat
-    let TryDeserializeDateTime = TryDeserializeDateTimeF dateTimeFormat
+    type DateSerialization(format: string) =
+        interface IDateSerialization with
+            member x.Serialize dt = dt.ToString(format)
+            member x.Deserialize dt = 
+                DateTime.ParseExact(dt, format, Globalization.CultureInfo.InvariantCulture, Globalization.DateTimeStyles.AdjustToUniversal)
+            member x.TryDeserialize dt = 
+                DateTime.TryParseExact(dt, format, Globalization.CultureInfo.InvariantCulture, Globalization.DateTimeStyles.AdjustToUniversal)
 
-    let SerializeDate (dt: DateTime) = dt.ToString(dateFormat)
-    let DeserializeDate = DeserializeDateTimeF dateFormat
-    let TryDeserializeDate = TryDeserializeDateTimeF dateFormat
-
-    let SerializeMonth (dt: DateTime) = dt.ToString(monthFormat)
-    let DeserializeMonth = DeserializeDateTimeF monthFormat
-    let TryDeserializeMonth = TryDeserializeDateTimeF monthFormat
+    let dateTimeSerializer = DateSerialization(dateTimeFormat) :> IDateSerialization
+    let dateSerializer = DateSerialization(dateFormat) :> IDateSerialization
+    let monthSerializer = DateSerialization(monthFormat) :> IDateSerialization
