@@ -118,15 +118,28 @@ module List =
         | x -> (take x l) @ (item::(skip (x+1) l))
 
 module Option =
-    let mapOrId f =
+    let inline mapOrId f =
         function
         | None -> id
         | Some v -> f v
 
-    let mapBoolOrId f =
+    let inline mapBoolOrId f =
         function
         | Some true -> f
         | _ -> id
+
+    let inline fromBool b = if b then Some() else None
+
+    let inline ap (f: ('a -> 'b) option) (a: 'a option) : 'b option = 
+        let (>>=) a f = Option.bind f a
+        f >>= fun f' -> a >>= fun a' -> Some (f' a')
+
+    type Builder() =
+        member x.Bind a f = Option.bind f a
+        member x.Return v = Some v
+        member x.Zero() = None
+
+    let builder = Builder()
 
 [<AutoOpen>]
 module Helpers = 
@@ -198,6 +211,17 @@ module Helpers =
     let isNullOrWhiteSpace (s: string) =
         String.IsNullOrEmpty(s) || Seq.exists Char.IsWhiteSpace s
 
+    type Int32 with
+        static member tryParse s =
+            match Int32.TryParse s with
+            | false, _ -> None
+            | _, v -> Some v
+
+    let (|Length|_|) (l: int) (s: string) =
+        if s.Length = l
+            then Some()
+            else None
+
     let dateTimeFormat = "yyyy-MM-ddTHH:mm:ss.ffZ"
     let dateFormat = "yyyy-MM-dd"
     let monthFormat = "yyyy-MM"
@@ -218,3 +242,59 @@ module Helpers =
     let dateTimeSerializer = DateSerialization(dateTimeFormat) :> IDateSerialization
     let dateSerializer = DateSerialization(dateFormat) :> IDateSerialization
     let monthSerializer = DateSerialization(monthFormat) :> IDateSerialization
+
+    open System.Globalization
+
+    let weekSerializer =
+        let culture = CultureInfo.InvariantCulture
+        let calendar = culture.Calendar
+        let dtFormat = culture.DateTimeFormat
+        { new IDateSerialization with
+            member x.Serialize dt =
+                // http://www.w3.org/TR/html5/common-microsyntaxes.html#week-number-of-the-last-day
+                (* let weeksInYear = 
+                    let start = DateTime(dt.Year,1,1)
+                    let thursday() = start.DayOfWeek = DayOfWeek.Thursday
+                    let wednesdayAnd400() = start.DayOfWeek = DayOfWeek.Wednesday && start.Year % 400 = 0
+                    let yearDiv4Not100() = start.Year % 4 = 0 && start.Year % 100 <> 0
+                    if thursday() && wednesdayAnd400() && yearDiv4Not100()
+                        then 53
+                        else 52 *)
+                let week = calendar.GetWeekOfYear(dt, CalendarWeekRule.FirstFullWeek, DayOfWeek.Thursday)
+                let year =
+                    if dt.Month = 1 && week > 4
+                        then dt.Year - 1
+                        else dt.Year
+                sprintf "%d-W%02d" year week
+            member x.Deserialize dt = 
+                match x.TryDeserialize dt with
+                | false, _ -> failwith "Invalid date"
+                | _, t -> t
+            member x.TryDeserialize dt = 
+                let checkLength() = 
+                    match dt with
+                    | null -> None
+                    | Length 8 -> Some()
+                    | _ -> None
+                let yearParser() = 
+                    dt.Substring(0, 4) 
+                    |> Int32.tryParse
+                    |> Option.bind (fun t -> if t > 0 then Some t else None)
+                let sepParser() = 
+                    let ok = dt.Substring(4,2) = "-W"
+                    Option.fromBool ok
+                let weekParser() =
+                    dt.Substring(6,2)
+                    |> Int32.tryParse
+                    |> Option.bind (fun v -> if v >= 1 && v <= 53 then Some v else None)
+                let inline (>>=) a f = Option.bind f a
+                let v = 
+                    checkLength() >>= fun() ->
+                    yearParser() >>= fun year ->
+                    sepParser() >>= fun() ->
+                    weekParser() >>= fun week ->
+                    Some (year,week)
+                match v with
+                | None -> false, DateTime.MinValue
+                | Some (year,week) -> true, calendar.AddWeeks(DateTime(year,1,1), week) }
+

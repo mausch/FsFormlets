@@ -457,3 +457,30 @@ let ``Date ok``() =
     match run f env with
     | Success v -> Assert.Equal(DateTime(37,12,13), v)
     | _ -> failwith "should not have failed"
+
+[<Fact>]
+let ``Week serialization``() =
+    let w = DateTime(2011,4,3) |> weekSerializer.Serialize
+    Assert.Equal("2011-W13", w)
+
+[<Fact>]
+let ``Week serialization first day of year``() =
+    let w = DateTime(2011,1,1) |> weekSerializer.Serialize
+    Assert.Equal("2010-W52", w)
+
+[<Fact>]
+let ``Week serialization padded``() =
+    let w = DateTime(2011,2,1) |> weekSerializer.Serialize
+    Assert.Equal("2011-W04", w)
+
+[<Fact>]
+let ``Week deserialization``() =
+    let dt = weekSerializer.Deserialize "2011-W13"
+    Assert.Equal(DateTime(2011,4,2), dt)
+
+[<Fact>]
+let ``Week tryDeserialize fail``() =
+    let r = weekSerializer.TryDeserialize "pepe"
+    match r with
+    | false, _ -> ()
+    | _ -> failwith "Should have failed"
