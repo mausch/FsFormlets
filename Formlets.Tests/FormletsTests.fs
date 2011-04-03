@@ -449,3 +449,11 @@ let ``DateTime min error``() =
     match run f env with
     | Success _ -> failwith "should not have succeeded"
     | _ -> ()
+
+[<Fact>]
+let ``Date ok``() =
+    let f = e.Date()
+    let env = EnvDict.fromValueSeq ["f0","0037-12-13"]
+    match run f env with
+    | Success v -> Assert.Equal(DateTime(37,12,13), v)
+    | _ -> failwith "should not have failed"

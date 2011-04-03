@@ -198,19 +198,23 @@ module Helpers =
     let isNullOrWhiteSpace (s: string) =
         String.IsNullOrEmpty(s) || Seq.exists Char.IsWhiteSpace s
 
-    let dateFormat = "yyyy-MM-ddTHH:mm:ss.ffZ"
+    let dateTimeFormat = "yyyy-MM-ddTHH:mm:ss.ffZ"
+    let dateFormat = "yyyy-MM-dd"
 
-    let SerializeDateTime (dt: DateTime) =
-        dt.ToString(dateFormat)
+    let SerializeDateTime (dt: DateTime) = dt.ToString(dateTimeFormat)
+
+    let DeserializeDateTimeF (format: string) dt =
+        DateTime.ParseExact(dt, format, Globalization.CultureInfo.InvariantCulture, Globalization.DateTimeStyles.AdjustToUniversal)
         
-    let DeserializeDateTime dt =
-        DateTime.ParseExact(dt, dateFormat, Globalization.CultureInfo.InvariantCulture, Globalization.DateTimeStyles.AdjustToUniversal)
+    let TryDeserializeDateTimeF (format: string) dt =
+        DateTime.TryParseExact(dt, format, Globalization.CultureInfo.InvariantCulture, Globalization.DateTimeStyles.AdjustToUniversal)
 
-    let TryDeserializeDateTime dt =
-        DateTime.TryParseExact(dt, dateFormat, Globalization.CultureInfo.InvariantCulture, Globalization.DateTimeStyles.AdjustToUniversal)
+    let DeserializeDateTime = DeserializeDateTimeF dateTimeFormat
 
-    let TryDeserializeDateTime' dt =
-        let ok,v = TryDeserializeDateTime dt
-        match ok,v with
-        | false, _ -> None
-        | true, v -> Some v
+    let TryDeserializeDateTime = TryDeserializeDateTimeF dateTimeFormat
+
+    let SerializeDate (dt: DateTime) = dt.ToString(dateFormat)
+
+    let DeserializeDate = DeserializeDateTimeF dateFormat
+
+    let TryDeserializeDate = TryDeserializeDateTimeF dateFormat
