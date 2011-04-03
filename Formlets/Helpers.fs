@@ -222,7 +222,7 @@ module Helpers =
             then Some()
             else None
 
-    let dateTimeFormats = [|"yyyy-MM-ddTHH:mm:ss.ffZ"|]
+    let dateTimeFormats = [|"yyyy-MM-ddTHH:mm:ss.ffZ"; "yyyy-MM-ddTHH:mm:ssZ"; "yyyy-MM-ddTHH:mmZ"|]
     let dateFormats = [|"yyyy-MM-dd"|]
     let monthFormats = [|"yyyy-MM"|]
     let timeFormats = [|"HH:mm:ss.ff"; "HH:mm:ss"; "HH:mm"|]
