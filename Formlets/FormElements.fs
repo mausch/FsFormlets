@@ -115,26 +115,26 @@ type FormElements(validators: IValidate) =
     member x.Tel(?value, ?attributes, ?required, ?maxlength, ?pattern) =
         x.iText(value, attributes, required, maxlength, pattern)
 
-    member private x.iDateTime validator (value, attributes, required, min, max) =
-        let value = Option.map dateTimeSerializer.Serialize value
+    member private x.iDateTime (serializer: _ IDateSerialization) validator (value, attributes, required, min, max) =
+        let value = Option.map serializer.Serialize value
         let attributes = defaultArg attributes []
         x.iText(value, Some attributes, required, None, None)
         |> validator min max
 
     member x.DateTime(?value, ?attributes, ?required, ?min, ?max) =
-        x.iDateTime validators.DateTime (value, attributes, required, min, max)
+        x.iDateTime dateTimeSerializer validators.DateTime (value, attributes, required, min, max)
 
     member x.Date(?value, ?attributes, ?required, ?min, ?max) =
-        x.iDateTime validators.Date (value, attributes, required, min, max)
+        x.iDateTime dateSerializer validators.Date (value, attributes, required, min, max)
 
     member x.Month(?value, ?attributes, ?required, ?min, ?max) =
-        x.iDateTime validators.Month (value, attributes, required, min, max)
+        x.iDateTime monthSerializer validators.Month (value, attributes, required, min, max)
 
     member x.Week(?value, ?attributes, ?required, ?min, ?max) =
-        x.iDateTime validators.Week (value, attributes, required, min, max)
+        x.iDateTime weekSerializer validators.Week (value, attributes, required, min, max)
 
     member x.Time(?value, ?attributes, ?required, ?min, ?max) =
-        x.iDateTime validators.Time (value, attributes, required, min, max)
+        x.iDateTime timeSerializer validators.Time (value, attributes, required, min, max)
 
     member x.Submit(?value, ?attributes) =
         let value = defaultArg value ""

@@ -467,7 +467,7 @@ let ``merge attr in error form``() =
 
 [<Fact>]
 let SerializeDateTime() =
-    let v = DateTime(2011,1,1, 12,34,56) |> dateTimeSerializer.Serialize
+    let v = DateTimeOffset(2011,1,1, 12,34,56, TimeSpan(0L)) |> dateTimeSerializer.Serialize
     Assert.Equal("2011-01-01T12:34:56.00Z", v)
 
 [<Fact>]
@@ -475,12 +475,12 @@ let ``DateTime ok``() =
     let f = e.DateTime()
     let env = EnvDict.fromValueSeq ["f0","0037-12-13T02:10:33.00Z"]
     match run f env with
-    | Success v -> Assert.Equal(DateTime(37,12,13,2,10,33), v)
+    | Success v -> Assert.Equal(DateTimeOffset(37,12,13,2,10,33, TimeSpan(0L)), v)
     | _ -> failwith "should not have failed"
 
 [<Fact>]
 let ``DateTime min error``() =
-    let f = e.DateTime(min = DateTime(2010,1,1))
+    let f = e.DateTime(min = DateTimeOffset(2010,1,1, 0,0,0, TimeSpan(0L)))
     let env = EnvDict.fromValueSeq ["f0","0037-12-13T02:10:33.00Z"]
     match run f env with
     | Success _ -> failwith "should not have succeeded"

@@ -18,7 +18,8 @@ type IValidate =
     abstract member Float: string Formlet -> float Formlet
     abstract member Decimal: string Formlet -> decimal Formlet
     abstract member Maxlength: int -> string Formlet -> string Formlet
-    abstract member DateTime: DateTime option -> DateTime option -> string Formlet -> DateTime Formlet
+    abstract member DateTimeLocal: DateTime option -> DateTime option -> string Formlet -> DateTime Formlet
+    abstract member DateTime: DateTimeOffset option -> DateTimeOffset option -> string Formlet -> DateTimeOffset Formlet
     abstract member Date: DateTime option -> DateTime option -> string Formlet -> DateTime Formlet
     abstract member Month: DateTime option -> DateTime option -> string Formlet -> DateTime Formlet
     abstract member Week: DateTime option -> DateTime option -> string Formlet -> DateTime Formlet
@@ -44,7 +45,7 @@ type Validate() as this =
     let validator isOK err =
         satisfies (v.BuildValidator isOK (fun _ -> err))
 
-    let dateTime (s: IDateSerialization) (min: DateTime option) (max: DateTime option) f =
+    let dateTime (s: _ IDateSerialization) min max f =
         let attr = []
         let attr = attr |> Option.mapOrId (fun v -> List.cons ("min", s.Serialize v)) min
         let attr = attr |> Option.mapOrId (fun v -> List.cons ("max", s.Serialize v)) max
@@ -123,6 +124,9 @@ type Validate() as this =
         member x.Maxlength (n: int) f =
             let validate = validator (fun (s: string) -> s.Length <= n) "Invalid value"
             f |> mergeAttributes ["maxlength",n.ToString()] |> validate
+
+        member x.DateTimeLocal min max f =
+            dateTime localDateTimeSerializer min max f
 
         member x.DateTime min max f =
             dateTime dateTimeSerializer min max f

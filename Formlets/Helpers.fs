@@ -223,27 +223,35 @@ module Helpers =
             else None
 
     let dateTimeFormats = [|"yyyy-MM-ddTHH:mm:ss.ffZ"; "yyyy-MM-ddTHH:mm:ssZ"; "yyyy-MM-ddTHH:mmZ"|]
+    let localDateTimeFormats = [|"yyyy-MM-ddTHH:mm:ss.ff"; "yyyy-MM-ddTHH:mm:ss"; "yyyy-MM-ddTHH:mm"|]
     let dateFormats = [|"yyyy-MM-dd"|]
     let monthFormats = [|"yyyy-MM"|]
     let timeFormats = [|"HH:mm:ss.ff"; "HH:mm:ss"; "HH:mm"|]
 
-    type IDateSerialization =
-        abstract member Serialize: DateTime -> string
-        abstract member Deserialize: string -> DateTime
-        abstract member TryDeserialize: string -> (bool * DateTime)
+    type 'a IDateSerialization =
+        abstract member Serialize: 'a -> string
+        abstract member Deserialize: string -> 'a
+        abstract member TryDeserialize: string -> (bool * 'a)
 
     type DateSerialization(formats: string[]) =
-        interface IDateSerialization with
+        interface DateTime IDateSerialization with
             member x.Serialize dt = dt.ToString(formats.[0])
             member x.Deserialize dt = 
                 DateTime.ParseExact(dt, formats, Globalization.CultureInfo.InvariantCulture, Globalization.DateTimeStyles.AdjustToUniversal)
             member x.TryDeserialize dt = 
                 DateTime.TryParseExact(dt, formats, Globalization.CultureInfo.InvariantCulture, Globalization.DateTimeStyles.AdjustToUniversal)
 
-    let dateTimeSerializer = DateSerialization(dateTimeFormats) :> IDateSerialization
-    let dateSerializer = DateSerialization(dateFormats) :> IDateSerialization
-    let monthSerializer = DateSerialization(monthFormats) :> IDateSerialization
-    let timeSerializer = DateSerialization(timeFormats) :> IDateSerialization
+    let localDateTimeSerializer = DateSerialization(localDateTimeFormats) :> IDateSerialization<_>
+    let dateSerializer = DateSerialization(dateFormats) :> IDateSerialization<_>
+    let monthSerializer = DateSerialization(monthFormats) :> IDateSerialization<_>
+    let timeSerializer = DateSerialization(timeFormats) :> IDateSerialization<_>
+    let dateTimeSerializer =
+        { new IDateSerialization<DateTimeOffset> with
+            member x.Serialize dt = dt.ToString(dateTimeFormats.[0])
+            member x.Deserialize dt = 
+                DateTimeOffset.ParseExact(dt, dateTimeFormats, Globalization.CultureInfo.InvariantCulture, Globalization.DateTimeStyles.AssumeUniversal)
+            member x.TryDeserialize dt = 
+                DateTimeOffset.TryParseExact(dt, dateTimeFormats, Globalization.CultureInfo.InvariantCulture, Globalization.DateTimeStyles.AssumeUniversal) }
 
     open System.Globalization
 
@@ -251,7 +259,7 @@ module Helpers =
         let culture = CultureInfo.InvariantCulture
         let calendar = culture.Calendar
         let dtFormat = culture.DateTimeFormat
-        { new IDateSerialization with
+        { new IDateSerialization<DateTime> with
             member x.Serialize dt =
                 // http://www.w3.org/TR/html5/common-microsyntaxes.html#week-number-of-the-last-day
                 (* let weeksInYear = 
