@@ -137,16 +137,13 @@ type FormElements(validators: IValidate) =
         x.iDateTime validators.Time (value, attributes, required, min, max)
 
     member x.Submit(?value, ?attributes) =
-        let attributes = defaultArg attributes []
-        let attributes = attributes |> mergeAttr ["type", "submit"]
         let value = defaultArg value ""
-        Formlet.optionalInput value attributes
+        let attributes = defaultArg attributes []
+        Formlet.submit value attributes
 
     member x.Image(src, alt, ?attributes) =
         let attributes = defaultArg attributes []
-        let attributes = attributes |> mergeAttr ["type", "image"; "src", src; "alt", alt]
-        Formlet.optionalInput "" attributes
-        // TODO get x and y
+        Formlet.image src alt attributes
 
     member private x.AddOrGetId f =
         match getId f with
