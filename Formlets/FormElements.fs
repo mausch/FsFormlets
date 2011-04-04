@@ -145,7 +145,7 @@ type FormElements(validators: IValidate) =
     member x.Image(src, alt, ?attributes) =
         let attributes = defaultArg attributes []
         let attributes = attributes |> mergeAttr ["type", "image"; "src", src; "alt", alt]
-        Formlet.input "" attributes // this should probably be optionalInput
+        Formlet.optionalInput "" attributes
         // TODO get x and y
 
     member private x.AddOrGetId f =
