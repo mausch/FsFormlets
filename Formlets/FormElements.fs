@@ -140,7 +140,7 @@ type FormElements(validators: IValidate) =
         let attributes = defaultArg attributes []
         let attributes = attributes |> mergeAttr ["type", "submit"]
         let value = defaultArg value ""
-        Formlet.input value attributes // this should probably be optionalInput
+        Formlet.optionalInput value attributes
 
     member x.Image(src, alt, ?attributes) =
         let attributes = defaultArg attributes []

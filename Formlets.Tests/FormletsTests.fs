@@ -119,6 +119,24 @@ let textareaRefill() =
     | _ -> failwith "err"
 
 [<Fact>]
+let ``optionalInput refill with value``() =
+    let f = Formlet.optionalInput "ovalue" []
+    let env = ["f0", "pepe"] |> EnvDict.fromValueSeq
+    let r = run f env |> fst3
+    let errorForm = XmlWriter.render r
+    printfn "%s" errorForm
+    Assert.Contains("name=\"f0\" value=\"pepe\"", errorForm)
+
+[<Fact>]
+let ``optionalInput refill without value``() =
+    let f = Formlet.optionalInput "ovalue" []
+    let r,_,v = run f []
+    Assert.True v.Value.IsNone
+    let errorForm = XmlWriter.render r
+    printfn "%s" errorForm
+    Assert.Contains("name=\"f0\" value=\"ovalue\"", errorForm)
+
+[<Fact>]
 let manualFormletRenderTest() =
     let html = render manualNameFormlet
     printfn "%s" html

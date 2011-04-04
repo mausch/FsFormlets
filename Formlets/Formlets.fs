@@ -223,13 +223,14 @@ module Formlet =
 
     let generalElement nameGen defaultValue (tag: string -> InputValue list -> XNode list): InputValue list Formlet =
         let t name = 
-            let xml = tag name
+            let tag = tag name
             let ealo = 
                 fun env -> 
                     let value = Environ.lookup name env
-                    let xml = xml value
+                    let dvalue = if value.Length = 0 then defaultValue else value
+                    let xml = tag dvalue
                     xml,([],Some value)
-            XmlWriter.plug (fun _ -> xml defaultValue) (XmlWriter.puree ealo)
+            XmlWriter.plug (fun _ -> tag defaultValue) (XmlWriter.puree ealo)
         NameGen.map t nameGen
             
     let generalGeneratedElement x = generalElement NameGen.nextName x
