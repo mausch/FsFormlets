@@ -136,6 +136,12 @@ type FormElements(validators: IValidate) =
     member x.Time(?value, ?attributes, ?required, ?min, ?max) =
         x.iDateTime validators.Time (value, attributes, required, min, max)
 
+    member x.Submit(?value, ?attributes) =
+        let attributes = defaultArg attributes []
+        let attributes = attributes |> mergeAttr ["type", "submit"]
+        let value = defaultArg value ""
+        Formlet.input value attributes
+
     member private x.AddOrGetId f =
         match getId f with
         | Some id -> id,f
