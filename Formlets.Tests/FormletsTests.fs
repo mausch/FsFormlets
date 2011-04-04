@@ -182,16 +182,17 @@ let processTest() =
                 "f0", "12"
                 "f1", "22"
                 "f2", ""
-                "f4", "1"
-                "f5", "b"
-                "f6", "blah blah"
-                "f7", "a"
-                "f7", "b"
+                "f3", ""
+                "f5", "1"
+                "f6", "b"
+                "f7", "blah blah"
+                "f8", "a"
+                "f8", "b"
               ]
     let filemock = { new HttpPostedFileBase() with
                         member x.ContentLength = 2
                         member x.ContentType = "" }
-    let env = env |> EnvDict.addFromFileSeq ["f8", filemock]
+    let env = env |> EnvDict.addFromFileSeq ["f9", filemock]
     match run fullFormlet env with
     | Success(dt,pass,chk,n,opt,t,many,f) ->
         Assert.Equal(DateTime(2010, 12, 22), dt)
@@ -483,7 +484,7 @@ let ``DateTime min error``() =
     let f = e.DateTime(min = DateTimeOffset(2010,1,1, 0,0,0, TimeSpan(0L)))
     let env = EnvDict.fromValueSeq ["f0","0037-12-13T02:10:33.00Z"]
     match run f env with
-    | Success _ -> failwith "should not have succeeded"
+    | Success v -> failwithf "should not have succeeded %A" v
     | _ -> ()
 
 [<Fact>]
