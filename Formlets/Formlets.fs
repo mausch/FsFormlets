@@ -497,11 +497,27 @@ module Formlet =
     let submit n attr = tag "input" (["type","submit"; "value",n] @ attr) nop
 
     /// <summary>
-    /// Creates an &lt;input type=&quot;image&quot;&gt; tag
+    /// Creates an &lt;input type=&quot;image&quot;&gt; formlet
     /// </summary>
     /// <param name="src">Image src</param>
+    /// <param name="src">Image alt</param>
     /// <param name="attr">Additional attributes</param>
-    let image src attr = tag "input" (["type","submit"; "src",src] @ attr) nop
+    let image src alt attr : (int * int) option Formlet = 
+        let tag name = 
+            [XmlWriter.xelem "input" (["name",name; "type","image"; "src",src; "alt",alt] @ attr) []]
+        fun i ->
+            let name,nexti = NameGen.nextName i
+            let xml = tag name
+            let collector = 
+                fun env -> 
+                    let x = Environ.lookup (name + ".x") env
+                    let y = Environ.lookup (name + ".y") env
+                    let value =
+                        match x,y with
+                        | [Value x],[Value y] -> Some (int x, int y)
+                        | _ -> None
+                    xml,([],Some value)
+            (xml,collector),nexti
 
     /// <summary>
     /// Creates a &lt;br/&gt; tag

@@ -137,6 +137,24 @@ let ``optionalInput refill without value``() =
     Assert.Contains("name=\"f0\" value=\"ovalue\"", errorForm)
 
 [<Fact>]
+let ``image with values``() =
+    let f = Formlet.image "src" "alt" []
+    let env = ["f0.x","12"; "f0.y","23"] |> EnvDict.fromValueSeq
+    match run f env with
+    | Success (Some (x,y)) ->
+        Assert.Equal(12, x)
+        Assert.Equal(23, y)
+    | _ -> failwith "Should not have failed"
+
+[<Fact>]
+let ``image without values``() =
+    let f = Formlet.image "src" "alt" []
+    let env = [] |> EnvDict.fromValueSeq
+    match run f env with
+    | Success None -> ()
+    | _ -> failwith "Should not have failed"
+
+[<Fact>]
 let manualFormletRenderTest() =
     let html = render manualNameFormlet
     printfn "%s" html
