@@ -21,6 +21,8 @@ type IValidate =
     abstract member DateTime: DateTime option -> DateTime option -> string Formlet -> DateTime Formlet
     abstract member Date: DateTime option -> DateTime option -> string Formlet -> DateTime Formlet
     abstract member Month: DateTime option -> DateTime option -> string Formlet -> DateTime Formlet
+    abstract member Week: DateTime option -> DateTime option -> string Formlet -> DateTime Formlet
+    abstract member Time: DateTime option -> DateTime option -> string Formlet -> DateTime Formlet
 
 type Validate() as this =
     let v = this :> IValidate
@@ -130,3 +132,9 @@ type Validate() as this =
 
         member x.Month min max f =
             dateTime monthSerializer min max f
+
+        member x.Week min max f =
+            dateTime weekSerializer min max f
+
+        member x.Time min max f =
+            dateTime timeSerializer min max f

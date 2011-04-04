@@ -130,6 +130,12 @@ type FormElements(validators: IValidate) =
     member x.Month(?value, ?attributes, ?required, ?min, ?max) =
         x.iDateTime validators.Month (value, attributes, required, min, max)
 
+    member x.Week(?value, ?attributes, ?required, ?min, ?max) =
+        x.iDateTime validators.Week (value, attributes, required, min, max)
+
+    member x.Time(?value, ?attributes, ?required, ?min, ?max) =
+        x.iDateTime validators.Time (value, attributes, required, min, max)
+
     member private x.AddOrGetId f =
         match getId f with
         | Some id -> id,f
