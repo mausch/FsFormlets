@@ -124,6 +124,9 @@ type FormElements(validators: IValidate) =
     member x.DateTime(?value, ?attributes, ?required, ?min, ?max) =
         x.iDateTime dateTimeSerializer validators.DateTime (value, attributes, required, min, max)
 
+    member x.DateTimeLocal(?value, ?attributes, ?required, ?min, ?max) =
+        x.iDateTime localDateTimeSerializer validators.DateTimeLocal (value, attributes, required, min, max)
+
     member x.Date(?value, ?attributes, ?required, ?min, ?max) =
         x.iDateTime dateSerializer validators.Date (value, attributes, required, min, max)
 
