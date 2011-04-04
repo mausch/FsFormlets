@@ -141,9 +141,9 @@ let ``image with values``() =
     let f = Formlet.image "src" "alt" []
     let env = ["f0.x","12"; "f0.y","23"] |> EnvDict.fromValueSeq
     match run f env with
-    | Success (Some (x,y)) ->
-        Assert.Equal(12, x)
-        Assert.Equal(23, y)
+    | Success (Some p) ->
+        Assert.Equal(12, p.X)
+        Assert.Equal(23, p.Y)
     | _ -> failwith "Should not have failed"
 
 [<Fact>]

@@ -503,7 +503,7 @@ module Formlet =
     /// <param name="src">Image src</param>
     /// <param name="src">Image alt</param>
     /// <param name="attr">Additional attributes</param>
-    let image src alt attr : (int * int) option Formlet = 
+    let image src alt attr : System.Drawing.Point option Formlet = 
         let tag name = 
             [XmlWriter.xelem "input" (["name",name; "type","image"; "src",src; "alt",alt] @ attr) []]
         fun i ->
@@ -515,7 +515,7 @@ module Formlet =
                     let y = Environ.lookup (name + ".y") env
                     let value =
                         match x,y with
-                        | [Value x],[Value y] -> Some (int x, int y)
+                        | [Value x],[Value y] -> Some <| System.Drawing.Point(int x, int y)
                         | _ -> None
                     xml,([],Some value)
             (xml,collector),nexti
