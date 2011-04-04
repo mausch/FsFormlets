@@ -494,7 +494,8 @@ module Formlet =
     /// </summary>
     /// <param name="n">Submit value</param>
     /// <param name="attr">Additional attributes</param>
-    let submit n attr = tag "input" (["type","submit"; "value",n] @ attr) nop
+    let submit value attr : string option Formlet = 
+        optionalInput value (["type","submit"] @ attr)
 
     /// <summary>
     /// Creates an &lt;input type=&quot;image&quot;&gt; formlet
