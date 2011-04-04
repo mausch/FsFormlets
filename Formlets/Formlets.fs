@@ -255,7 +255,7 @@ module Formlet =
         let extractOne =
             function
             | Value v -> v
-            | _ -> failwith "Unexpected file"
+            | _ -> failwith "Value expected, got file instead"
         map (List.map extractOne) f
 
     let getValueAttr =
@@ -263,7 +263,7 @@ module Formlet =
         | [v] -> 
             match v with
             | Value v -> ["value", v]
-            | _ -> failwith "file not expected"
+            | _ -> failwith "Value expected, got file instead"
         | _ -> []
 
     let optionalInput defaultValue attributes: string option Formlet =
@@ -471,13 +471,13 @@ module Formlet =
     let file attr : HttpPostedFileBase option Formlet = 
         let tag name boundValue = 
             [XmlWriter.xelem "input" (["type", "file"; "name", name] @ attr) []]
-        let fileOnly =
-            function
-            | Some (File f) -> Some f
-            | None -> None
-            | _ -> failwith "File expected, got value instead"
         let r = generalGeneratedElement [] tag
-        map (Seq.nth 0 >> Some >> fileOnly) r
+        let oneFileOrNone =
+            function
+            | [] -> None
+            | [File f] -> Some f
+            | _ -> failwith "File expected, got value instead"
+        map oneFileOrNone r
 
     /// <summary>
     /// Creates a &lt;form&gt; tag
