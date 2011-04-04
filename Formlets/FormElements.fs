@@ -115,21 +115,20 @@ type FormElements(validators: IValidate) =
     member x.Tel(?value, ?attributes, ?required, ?maxlength, ?pattern) =
         x.iText(value, attributes, required, maxlength, pattern)
 
-    member private x.iDateTime validator (value, attributes, required, min, max, step) =
+    member private x.iDateTime validator (value, attributes, required, min, max) =
         let value = Option.map dateTimeSerializer.Serialize value
         let attributes = defaultArg attributes []
-        let attributes = attributes |> Option.mapOrId (fun s -> mergeAttr ["step", string s]) step
         x.iText(value, Some attributes, required, None, None)
         |> validator min max
 
-    member x.DateTime(?value, ?attributes, ?required, ?min, ?max, ?step: int) =
-        x.iDateTime validators.DateTime (value, attributes, required, min, max, step)
+    member x.DateTime(?value, ?attributes, ?required, ?min, ?max) =
+        x.iDateTime validators.DateTime (value, attributes, required, min, max)
 
-    member x.Date(?value, ?attributes, ?required, ?min, ?max, ?step: int) =
-        x.iDateTime validators.Date (value, attributes, required, min, max, step)
+    member x.Date(?value, ?attributes, ?required, ?min, ?max) =
+        x.iDateTime validators.Date (value, attributes, required, min, max)
 
-    member x.Month(?value, ?attributes, ?required, ?min, ?max, ?step: int) =
-        x.iDateTime validators.Month (value, attributes, required, min, max, step)
+    member x.Month(?value, ?attributes, ?required, ?min, ?max) =
+        x.iDateTime validators.Month (value, attributes, required, min, max)
 
     member private x.AddOrGetId f =
         match getId f with
