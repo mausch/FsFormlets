@@ -115,7 +115,7 @@ type FormElements(validators: IValidate) =
     member x.Tel(?value, ?attributes, ?required, ?maxlength, ?pattern) =
         x.iText(value, attributes, required, maxlength, pattern)
 
-    member private x.iDateTime (serializer: _ IDateSerialization) validator (value, attributes, required, min, max) =
+    member private x.iDateTime (serializer: _ ISerializer) validator (value, attributes, required, min, max) =
         let value = Option.map serializer.Serialize value
         let attributes = defaultArg attributes []
         x.iText(value, Some attributes, required, None, None)

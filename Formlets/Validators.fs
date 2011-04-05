@@ -45,7 +45,7 @@ type Validate() as this =
     let validator isOK err =
         satisfies (v.BuildValidator isOK (fun _ -> err))
 
-    let dateTime (s: _ IDateSerialization) min max f =
+    let dateTime (s: _ ISerializer) min max f =
         let attr = []
         let attr = attr |> Option.mapOrId (fun v -> List.cons ("min", s.Serialize v)) min
         let attr = attr |> Option.mapOrId (fun v -> List.cons ("max", s.Serialize v)) max
