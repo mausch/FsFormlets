@@ -216,22 +216,53 @@ module Helpers =
             match Int32.TryParse s with
             | false, _ -> None
             | _, v -> Some v
+        static member tryParseHex s = 
+            match Int32.TryParse(s, Globalization.NumberStyles.AllowHexSpecifier, Globalization.CultureInfo.InvariantCulture) with
+            | false, _ -> None
+            | _, v -> Some v
 
     let (|Length|_|) (l: int) (s: string) =
         if s.Length = l
             then Some()
             else None
 
+    type 'a ISerializer =
+        abstract member Serialize: 'a -> string
+        abstract member Deserialize: string -> 'a
+        abstract member TryDeserialize: string -> (bool * 'a)
+
+    open System.Drawing
+
+    let colorSerializer = 
+        { new ISerializer<Color> with
+            member x.Serialize c = sprintf "#%02X%02X%02X" c.R c.G c.B
+            member x.Deserialize s =
+                match x.TryDeserialize s with
+                | true, c -> c
+                | _ -> failwith "Invalid color"
+            member x.TryDeserialize s = 
+                let inline (>>=) a f = Option.bind f a
+                let checkLength() = 
+                    match s with
+                    | null -> None
+                    | Length 7 -> Some()
+                    | _ -> None
+                let checkFirst() = if s.[0] = '#' then Some() else None
+                let getValue() = s.Substring(1) |> Int32.tryParseHex 
+                let color =
+                    checkLength() >>= fun() ->
+                    checkFirst() >>= fun() ->
+                    getValue() >>= fun rgb ->
+                    Some (Color.FromArgb rgb)
+                match color with
+                | Some c -> true, c
+                | _ -> false, Color.Black }
+
     let dateTimeFormats = [|"yyyy-MM-ddTHH:mm:ss.ffZ"; "yyyy-MM-ddTHH:mm:ssZ"; "yyyy-MM-ddTHH:mmZ"|]
     let localDateTimeFormats = [|"yyyy-MM-ddTHH:mm:ss.ff"; "yyyy-MM-ddTHH:mm:ss"; "yyyy-MM-ddTHH:mm"|]
     let dateFormats = [|"yyyy-MM-dd"|]
     let monthFormats = [|"yyyy-MM"|]
     let timeFormats = [|"HH:mm:ss.ff"; "HH:mm:ss"; "HH:mm"|]
-
-    type 'a ISerializer =
-        abstract member Serialize: 'a -> string
-        abstract member Deserialize: string -> 'a
-        abstract member TryDeserialize: string -> (bool * 'a)
 
     type DateSerialization(formats: string[]) =
         interface DateTime ISerializer with

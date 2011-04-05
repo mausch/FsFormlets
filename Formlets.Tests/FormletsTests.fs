@@ -4,6 +4,7 @@ open TestHelpers
 open Xunit
 open System
 open System.Collections.Specialized
+open System.Drawing
 open System.Globalization
 open System.Web
 open System.Xml.Linq
@@ -538,4 +539,15 @@ let ``Time deserialize without second``() =
     Assert.Equal(00, dt.Second)
     Assert.Equal(00, dt.Millisecond)
 
-        
+[<Fact>]
+let ``Color serialize``() =
+    let color = colorSerializer.Serialize Color.Red
+    Assert.Equal("#FF0000", color)
+
+let ``Color deserialize ok``() =
+    let color = colorSerializer.TryDeserialize "#FF3A3B"
+    Assert.True(fst color)
+    let color = snd color
+    Assert.Equal(0xFFuy, color.R)
+    Assert.Equal(0x3Auy, color.G)
+    Assert.Equal(0x3Buy, color.B)

@@ -1,6 +1,7 @@
 ﻿namespace Formlets
 
 open System
+open System.Drawing
 open System.Text.RegularExpressions
 
 type IValidate = 
@@ -24,6 +25,7 @@ type IValidate =
     abstract member Month: DateTime option -> DateTime option -> string Formlet -> DateTime Formlet
     abstract member Week: DateTime option -> DateTime option -> string Formlet -> DateTime Formlet
     abstract member Time: DateTime option -> DateTime option -> string Formlet -> DateTime Formlet
+    abstract member Color: string Formlet -> Color Formlet
 
 type Validate() as this =
     let v = this :> IValidate
@@ -142,3 +144,6 @@ type Validate() as this =
 
         member x.Time min max f =
             dateTime timeSerializer min max f
+
+        member x.Color f =
+            f |> validator (colorSerializer.TryDeserialize >> fst) "Invalid color" |> map colorSerializer.Deserialize

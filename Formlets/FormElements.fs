@@ -148,6 +148,14 @@ type FormElements(validators: IValidate) =
         let attributes = defaultArg attributes []
         Formlet.image src alt attributes
 
+    member x.Color(?value, ?attributes) =
+        let attributes = defaultArg attributes []
+        let attributes = ("type","color")::attributes
+        let value = defaultArg value System.Drawing.Color.Black
+        let value = colorSerializer.Serialize value
+        Formlet.input value attributes
+        |> validators.Color
+
     member private x.AddOrGetId f =
         match getId f with
         | Some id -> id,f
