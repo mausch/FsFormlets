@@ -18,6 +18,7 @@ type 'a Validator = {
     ErrorList: 'a -> string list
 }
 
+[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Validator =
     let isValid (v: _ Validator) = v.IsValid
     let errorForm (v: _ Validator) = v.ErrorForm

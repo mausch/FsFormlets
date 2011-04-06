@@ -4,8 +4,7 @@ open System
 open System.Drawing
 open System.Text.RegularExpressions
 
-type IValidate = 
-    abstract member BuildValidator: ('a -> bool) -> ('a -> string) -> 'a Validator    
+type IValidationFunctions = 
     abstract member Int: string Formlet -> int Formlet
     abstract member Required: string Formlet -> string Formlet
     abstract member Required: bool Formlet -> bool Formlet
@@ -27,8 +26,11 @@ type IValidate =
     abstract member Time: DateTime option -> DateTime option -> string Formlet -> DateTime Formlet
     abstract member Color: string Formlet -> Color Formlet
 
-type Validate() as this =
-    let v = this :> IValidate
+type IValidatorBuilder =
+    abstract member Build: ('a -> bool) -> ('a -> string) -> 'a Validator
+
+type Validate(validatorBuilder: IValidatorBuilder) as this =
+    let v = this :> IValidationFunctions
 
     // from http://rosettacode.org/wiki/Luhn_test_of_credit_card_numbers#F.23
     let luhn (s:string) =
@@ -45,7 +47,7 @@ type Validate() as this =
             + @"@[a-z0-9][\w\.-]*[a-z0-9]\.[a-z][a-z\.]*[a-z]$", RegexOptions.IgnoreCase ||| RegexOptions.Compiled)
 
     let validator isOK err =
-        satisfies (v.BuildValidator isOK (fun _ -> err))
+        satisfies (validatorBuilder.Build isOK (fun _ -> err))
 
     let dateTime (s: _ ISerializer) min max f =
         let attr = []
@@ -57,16 +59,19 @@ type Validate() as this =
         let f = f |> Option.mapOrId (fun v -> validator ((>) v) (sprintf "Date must be after %A" v)) max
         f
 
-    static member Default = Validate() :> IValidate
+    static member DefaultValidatorBuilder = 
+        { new IValidatorBuilder with
+            member x.Build a b = Formlet.err a b }
 
-    interface IValidate with
-        member x.BuildValidator a b = Formlet.err a b
+    static member Default = Validate(Validate.DefaultValidatorBuilder) :> IValidationFunctions
+
+    interface IValidationFunctions with
 
         member x.Int f =
             let isInt = 
                 let isOK = Int32.TryParse >> fst
                 let msg = sprintf "%s is not a valid number"
-                let e = v.BuildValidator isOK msg
+                let e = validatorBuilder.Build isOK msg
                 satisfies e
             f |> isInt |> map int
 
