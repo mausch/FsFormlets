@@ -412,14 +412,14 @@ module Formlet =
     /// </summary>
     /// <param name="selected">Initial selected value</param>
     /// <param name="choices">Select options</param>
-    let select selected (choices: (string*string) seq): string Formlet = 
-        let tag = selectTag [selected] choices []
+    let select selected (choices: (string*string) seq) attr: string Formlet = 
+        let tag = selectTag [selected] choices attr
         generalGeneratedElement [] tag
         |> extractString
 
-    let selectA (selected: 'a) (choices: ('a * string) seq) =
+    let selectA (selected: 'a) (choices: ('a * string) seq) attr =
         let mappedChoices, mapHashToValue = buildHashMap choices
-        select (hashs selected) mappedChoices
+        select (hashs selected) mappedChoices attr
         |> map mapHashToValue
 
     /// <summary>
@@ -427,14 +427,15 @@ module Formlet =
     /// </summary>
     /// <param name="selected">Initial selected values</param>
     /// <param name="choices">Select options</param>
-    let selectMulti selected (choices: (string*string) seq): string list Formlet = 
-        let tag = selectTag selected choices ["multiple","multiple"]
+    let selectMulti selected (choices: (string*string) seq) attr: string list Formlet = 
+        let attr = ("multiple","multiple")::attr
+        let tag = selectTag selected choices attr
         generalGeneratedElement [] tag
         |> extractStrings
 
-    let selectMultiA (selected: 'a seq) (choices: ('a * string) seq) : 'a list Formlet =
+    let selectMultiA (selected: 'a seq) (choices: ('a * string) seq) attr: 'a list Formlet =
         let mappedChoices, mapHashToValue = buildHashMap choices
-        selectMulti (Seq.map hashs selected) mappedChoices
+        selectMulti (Seq.map hashs selected) mappedChoices attr
         |> map (List.map mapHashToValue)
     
     /// <summary>

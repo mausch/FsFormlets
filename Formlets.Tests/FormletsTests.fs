@@ -44,9 +44,9 @@ let fullFormlet =
         <*> password
         <*> checkbox false []
         <*> radio "1" ["1","uno"; "2","dos"]
-        <*> select "a" ["a","uno"; "b","dos"]
+        <*> select "a" ["a","uno"; "b","dos"] []
         <*> textarea "" []
-        <*> selectMulti ["a";"b"] ["a","uno"; "b","dos"]
+        <*> selectMulti ["a";"b"] ["a","uno"; "b","dos"] []
         <*> file []
     )
 
@@ -139,7 +139,7 @@ let ``optionalInput refill without value``() =
 
 [<Fact>]
 let ``select refill``() =
-    let f = select "a" ["a","a"; "b","b"]
+    let f = select "a" ["a","a"; "b","b"] []
     let env = EnvDict.fromValueSeq ["f0", "b"]
     let errorForm, errorList, value = run f env
     Assert.True value.IsSome

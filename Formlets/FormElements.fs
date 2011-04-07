@@ -86,17 +86,21 @@ type FormElements(validators: IValidationFunctions) =
     member x.Radio(value, choices) =
         Formlet.radioA value choices
 
-    member x.Select(value, choices) =
-        Formlet.select value choices
+    member x.Select(value, choices, ?attr) =
+        let attr = defaultArg attr []
+        Formlet.select value choices attr
 
-    member x.Select(value, choices) =
-        Formlet.selectA value choices
+    member x.Select(value, choices, ?attr) =
+        let attr = defaultArg attr []
+        Formlet.selectA value choices attr
 
-    member x.SelectMulti(value, choices) =
-        Formlet.selectMulti value choices
+    member x.SelectMulti(value, choices, ?attr) =
+        let attr = defaultArg attr []
+        Formlet.selectMulti value choices attr
 
-    member x.SelectMulti(value, choices) =
-        Formlet.selectMultiA value choices
+    member x.SelectMulti(value, choices, ?attr) =
+        let attr = defaultArg attr []
+        Formlet.selectMultiA value choices attr
 
     member x.File(?attributes) =
         let attributes = defaultArg attributes []
