@@ -400,8 +400,11 @@ module Formlet =
         XmlWriter.xelem "option" (["value",value] @ on) [XText text]
     let internal makeSelect name attr options = 
         XmlWriter.xelem "select" (["name",name] @ attr) options
-    let internal selectTag selected choices attr name boundValue =
-        // TODO use boundValue
+    let internal selectTag selected choices attr name (boundValue: InputValue list) =
+        let selected =
+            match boundValue with
+            | [] -> selected
+            | _ -> boundValue |> Seq.map (function Value v -> v | _ -> failwithf "Value expected, file found at name %s" name)
         [choices |> Seq.map (makeOption selected) |> Seq.toList |> makeSelect name attr]
 
     /// <summary>

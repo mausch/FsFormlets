@@ -138,6 +138,18 @@ let ``optionalInput refill without value``() =
     Assert.Contains("name=\"f0\" value=\"ovalue\"", errorForm)
 
 [<Fact>]
+let ``select refill``() =
+    let f = select "a" ["a","a"; "b","b"]
+    let env = EnvDict.fromValueSeq ["f0", "b"]
+    let errorForm, errorList, value = run f env
+    Assert.True value.IsSome
+    Assert.Equal("b", value.Value)
+    Assert.Equal(0, errorList.Length)
+    let errorForm = XmlWriter.render errorForm
+    printfn "%s" errorForm
+    Assert.Contains("value=\"b\" selected=\"selected\"", errorForm)
+
+[<Fact>]
 let ``image with values``() =
     let f = Formlet.image "src" "alt" []
     let env = ["f0.x","12"; "f0.y","23"] |> EnvDict.fromValueSeq
