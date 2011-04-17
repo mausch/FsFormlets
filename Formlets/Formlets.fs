@@ -657,3 +657,7 @@ module Formlet =
         hidden tokenValue
         |> satisfies (err (eq session.[tokenKey]) (fun _ -> "Invalid CSRF token"))
         |> map ignore
+
+    let pickler (value: 'a) : 'a Formlet =
+        hidden (losSerializer.Serialize value)
+        |> map (losSerializer.Deserialize >> unbox)

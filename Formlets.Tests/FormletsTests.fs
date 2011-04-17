@@ -556,6 +556,7 @@ let ``Color serialize``() =
     let color = colorSerializer.Serialize Color.Red
     Assert.Equal("#FF0000", color)
 
+[<Fact>]
 let ``Color deserialize ok``() =
     let color = colorSerializer.TryDeserialize "#FF3A3B"
     Assert.True(fst color)
@@ -563,3 +564,22 @@ let ``Color deserialize ok``() =
     Assert.Equal(0xFFuy, color.R)
     Assert.Equal(0x3Auy, color.G)
     Assert.Equal(0x3Buy, color.B)
+
+[<Fact>]
+let ``hidden with initial value``() =
+    let f = hidden "blabla"
+    let html = render f
+    Assert.Contains("value=\"blabla\"", html)
+
+[<Fact>]
+let ``function pickle``() =
+    let afunction a b = a + b
+    let f = pickler afunction
+    let html = render f
+    printfn "%s" html
+    let bin = losSerializer.Serialize afunction
+    let env = EnvDict.fromValueSeq ["f0",bin]
+    match run f env with
+    | Success ff -> Assert.Equal(5, ff 2 3)
+    | _ -> failwith "should not have failed"
+    ()

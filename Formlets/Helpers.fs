@@ -230,6 +230,24 @@ module Helpers =
         abstract member Serialize: 'a -> string
         abstract member Deserialize: string -> 'a
         abstract member TryDeserialize: string -> (bool * 'a)
+    
+    open System.IO
+
+    let losSerializer =
+        let f = System.Web.UI.LosFormatter()
+        { new ISerializer<obj> with
+            member x.Serialize o = 
+                use ms = new MemoryStream()
+                f.Serialize(ms, o)
+                ms.Flush()
+                ms.Seek(0L, SeekOrigin.Begin) |> ignore
+                use r = new StreamReader(ms)
+                r.ReadToEnd()
+            member x.Deserialize a = f.Deserialize(a)
+            member x.TryDeserialize a = 
+                try
+                    true, x.Deserialize a
+                with _ -> false, null }
 
     open System.Drawing
 
