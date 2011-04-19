@@ -583,3 +583,30 @@ let ``function pickle``() =
     | Success ff -> Assert.Equal(5, ff 2 3)
     | _ -> failwith "should not have failed"
     ()
+
+[<Fact>]
+let ``bin serializer string``() =
+    let s = "toto"
+    let r = binSerializer.Serialize s
+    printfn "length: %d, content: %s" r.Length r
+    Assert.Equal(s, binSerializer.Deserialize r |> string)
+
+[<Fact>]
+let ``bin serializer fun``() =
+    let f a b = a + b
+    let r = binSerializer.Serialize f
+    printfn "length: %d, content: %s" r.Length r
+
+[<Fact>]
+let ``los serializer string``() =
+    let s = "toto"
+    let r = losSerializer.Serialize s
+    printfn "length: %d, content: %s" r.Length r
+    Assert.Equal(s, losSerializer.Deserialize r |> string)
+
+[<Fact>]
+let ``los serializer fun``() =
+    let f a b = a + b
+    let r = losSerializer.Serialize f
+    printfn "length: %d, content: %s" r.Length r
+

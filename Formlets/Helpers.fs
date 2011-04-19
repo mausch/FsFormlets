@@ -233,6 +233,10 @@ module Helpers =
     
     open System.IO
 
+    type Stream with
+        member x.Rewind() =
+            x.Seek(0L, SeekOrigin.Begin) |> ignore
+
     let losSerializer =
         let f = System.Web.UI.LosFormatter()
         { new ISerializer<obj> with
@@ -240,10 +244,34 @@ module Helpers =
                 use ms = new MemoryStream()
                 f.Serialize(ms, o)
                 ms.Flush()
-                ms.Seek(0L, SeekOrigin.Begin) |> ignore
+                ms.Rewind()
                 use r = new StreamReader(ms)
                 r.ReadToEnd()
             member x.Deserialize a = f.Deserialize(a)
+            member x.TryDeserialize a = 
+                try
+                    true, x.Deserialize a
+                with _ -> false, null }
+
+    open System.IO.Compression
+
+    let binSerializer =
+        let f = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
+        { new ISerializer<obj> with
+            member x.Serialize o = 
+                use ms = new MemoryStream()
+                //use cs = new DeflateStream(ms, CompressionMode.Compress)
+                f.Serialize(ms, o)
+                //cs.Flush()
+                ms.Flush()
+                ms.Rewind()
+                Convert.ToBase64String(ms.ToArray())
+            member x.Deserialize a = 
+                use ms = new MemoryStream(Convert.FromBase64String(a))
+                ms.Flush()
+                ms.Rewind()
+                //use cs = new DeflateStream(ms, CompressionMode.Decompress)
+                f.Deserialize(ms)
             member x.TryDeserialize a = 
                 try
                     true, x.Deserialize a
