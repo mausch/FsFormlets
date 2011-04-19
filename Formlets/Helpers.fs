@@ -247,7 +247,10 @@ module Helpers =
                 ms.Rewind()
                 use r = new StreamReader(ms)
                 r.ReadToEnd()
-            member x.Deserialize a = f.Deserialize(a)
+            member x.Deserialize a = 
+                if a = null
+                    then null
+                    else f.Deserialize(a)
             member x.TryDeserialize a = 
                 try
                     true, x.Deserialize a
