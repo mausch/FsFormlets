@@ -257,9 +257,29 @@ module Helpers =
                 with _ -> false, null }
 
     open System.IO.Compression
+    open System.Runtime.Serialization
+    open System.Xml.Linq
+
+    type XNode with
+        static member Parse(x: string) =
+            let x = sprintf "<r>%s</r>" x
+            let xdoc = XDocument.Parse x
+            xdoc.Document.Root.Nodes() |> Seq.toList            
 
     let binSerializer =
-        let f = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
+        let ctx = StreamingContext(StreamingContextStates.All)
+        let ss = SurrogateSelector()
+        let surrogate =
+            let k = "v"
+            { new ISerializationSurrogate with
+                member x.GetObjectData(o, info, ctx) = 
+                    info.AddValue(k, o.ToString())
+                member x.SetObjectData(o, info, ctx, selector) = 
+                    let nodes = info.GetString(k) |> XNode.Parse
+                    box nodes.[0] }
+        for t in [typeof<XText>; typeof<XElement>; typeof<XNode>] do
+            ss.AddSurrogate(t, ctx, surrogate)
+        let f = Formatters.Binary.BinaryFormatter(ss, ctx)
         { new ISerializer<obj> with
             member x.Serialize o = 
                 use ms = new MemoryStream()

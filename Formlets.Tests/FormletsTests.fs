@@ -598,6 +598,14 @@ let ``bin serializer fun``() =
     printfn "length: %d, content: %s" r.Length r
 
 [<Fact>]
+let ``bin serializer xtext``() =
+    let x = XText("something")
+    let r = binSerializer.Serialize x
+    printfn "length: %d, content: %s" r.Length r
+    let x2 = binSerializer.Deserialize r :?> XText
+    Assert.Equal(x.Value, x2.Value)
+
+[<Fact>]
 let ``los serializer string``() =
     let s = "toto"
     let r = losSerializer.Serialize s
