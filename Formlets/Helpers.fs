@@ -290,11 +290,14 @@ module Helpers =
                 ms.Rewind()
                 Convert.ToBase64String(ms.ToArray())
             member x.Deserialize a = 
-                use ms = new MemoryStream(Convert.FromBase64String(a))
-                ms.Flush()
-                ms.Rewind()
-                //use cs = new DeflateStream(ms, CompressionMode.Decompress)
-                f.Deserialize(ms)
+                if a = null
+                    then null
+                    else
+                        use ms = new MemoryStream(Convert.FromBase64String(a))
+                        ms.Flush()
+                        ms.Rewind()
+                        //use cs = new DeflateStream(ms, CompressionMode.Decompress)
+                        f.Deserialize(ms)
             member x.TryDeserialize a = 
                 try
                     true, x.Deserialize a
