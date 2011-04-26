@@ -282,22 +282,18 @@ module Helpers =
         let f = Formatters.Binary.BinaryFormatter(ss, ctx)
         { new ISerializer<obj> with
             member x.Serialize o = 
-                use ms = new MemoryStream()
-                //use cs = new DeflateStream(ms, CompressionMode.Compress)
-                f.Serialize(ms, o)
-                //cs.Flush()
-                ms.Flush()
-                ms.Rewind()
-                Convert.ToBase64String(ms.ToArray())
+                using (new MemoryStream()) 
+                    (fun ms ->
+                        using (new DeflateStream(ms, CompressionMode.Compress, false))
+                            (fun cs -> f.Serialize(cs, o))
+                        Convert.ToBase64String(ms.ToArray()))
             member x.Deserialize a = 
                 if a = null
                     then null
                     else
-                        use ms = new MemoryStream(Convert.FromBase64String(a))
-                        ms.Flush()
-                        ms.Rewind()
-                        //use cs = new DeflateStream(ms, CompressionMode.Decompress)
-                        f.Deserialize(ms)
+                        use ms = new MemoryStream(Convert.FromBase64String(a), false)
+                        use cs = new DeflateStream(ms, CompressionMode.Decompress, false)
+                        f.Deserialize(cs)
             member x.TryDeserialize a = 
                 try
                     true, x.Deserialize a
