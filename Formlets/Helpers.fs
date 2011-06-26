@@ -130,17 +130,6 @@ module Option =
 
     let inline fromBool b = if b then Some() else None
 
-    let inline ap (f: ('a -> 'b) option) (a: 'a option) : 'b option = 
-        let (>>=) a f = Option.bind f a
-        f >>= fun f' -> a >>= fun a' -> Some (f' a')
-
-    type Builder() =
-        member x.Bind a f = Option.bind f a
-        member x.Return v = Some v
-        member x.Zero() = None
-
-    let builder = Builder()
-
 [<AutoOpen>]
 module Helpers = 
     let inline hashs a = (hash a).ToString()
