@@ -69,6 +69,7 @@ module Integration =
         member x.Submit text = e.Input ["type","submit"; "value",text]
 
     let inline (!+) x = List.map renderXNodeToWingBeats x
+    let inline (!++) x = !+ (renderToXml x)
 
 [<AutoOpen>]
 module Integration2 =
