@@ -134,6 +134,12 @@ module Option =
 module Helpers = 
     let inline hashs a = (hash a).ToString()
 
+    let inline orF f g =
+        fun x -> f x || g x
+
+    let inline andF f g = 
+        fun x -> f x && g x
+
     /// Builds a pair (2-tuple)
     let inline t2 a b = a,b
 

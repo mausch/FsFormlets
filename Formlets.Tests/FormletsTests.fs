@@ -152,7 +152,7 @@ let ``select refill``() =
 [<Fact>]
 let ``image with values``() =
     let f = Formlet.image "src" "alt" []
-    let env = ["f0.x","12"; "f0.y","23"] |> EnvDict.fromValueSeq
+    let env = EnvDict.fromValueSeq ["f0.x","12"; "f0.y","23"]
     match run f env with
     | Success (Some p) ->
         Assert.Equal(12, p.X)
@@ -162,7 +162,7 @@ let ``image with values``() =
 [<Fact>]
 let ``image without values``() =
     let f = Formlet.image "src" "alt" []
-    let env = [] |> EnvDict.fromValueSeq
+    let env = EnvDict.fromValueSeq []
     match run f env with
     | Success None -> ()
     | _ -> failwith "Should not have failed"
@@ -618,3 +618,18 @@ let ``los serializer fun``() =
     let r = losSerializer.Serialize f
     printfn "length: %d, content: %s" r.Length r
 
+[<Fact>]
+let ``regex with empty value is valid``() =
+    let f = Validate.Default.Regex "\\d" input
+    let env = EnvDict.fromValueSeq ["f0",""]
+    match run f env with
+    | Success _ -> ()
+    | Failure _ -> failwith "formlet should not have failed"
+
+[<Fact>]
+let ``email with empty value is valid``() =
+    let f = Validate.Default.Email input
+    let env = EnvDict.fromValueSeq ["f0",""]
+    match run f env with
+    | Success _ -> ()
+    | Failure _ -> failwith "formlet should not have failed"

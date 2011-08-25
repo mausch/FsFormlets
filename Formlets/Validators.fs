@@ -13,7 +13,7 @@ type IValidationFunctions =
     abstract member GreaterOrEqual: 'a -> 'a Formlet -> 'a Formlet when 'a: comparison
     abstract member InRange: 'a -> 'a -> 'a Formlet -> 'a Formlet when 'a: comparison
     abstract member Email: string Formlet -> string Formlet
-    abstract member Regex : string -> string Formlet -> string Formlet
+    abstract member Regex : string -> (string Formlet -> string Formlet)
     abstract member Url: string Formlet -> string Formlet
     abstract member Float: string Formlet -> float Formlet
     abstract member Decimal: string Formlet -> decimal Formlet
@@ -31,6 +31,8 @@ type IValidatorBuilder =
 
 type Validate(validatorBuilder: IValidatorBuilder) as this =
     let v = this :> IValidationFunctions
+
+    let (||.) = orF
 
     // from http://rosettacode.org/wiki/Luhn_test_of_credit_card_numbers#F.23
     let luhn (s:string) =
@@ -103,16 +105,18 @@ type Validate(validatorBuilder: IValidatorBuilder) as this =
             f |> mergeAttributes ["min",min.ToString(); "max",max.ToString()] |> validator
 
         member x.Email f =
-            let validate = validator emailRx.IsMatch "Invalid email"
+            let isOK = String.IsNullOrEmpty ||. emailRx.IsMatch
+            let validate = validator isOK "Invalid email"
             f |> mergeAttributes ["type","email"] |> validate
 
-        member x.Regex pattern f =
-            let validate = 
-                let isOK n = Regex.IsMatch(n, pattern)
-                validator isOK "Invalid value"
-            // TODO be careful with differences between .net and ecmascript regexes
-            // see http://msdn.microsoft.com/en-us/library/04ses44d.aspx
-            f |> mergeAttributes ["pattern",pattern] |> validate
+        member x.Regex pattern =
+            let rx = Regex(pattern)
+            let isOK = String.IsNullOrEmpty ||. rx.IsMatch
+            fun f ->
+                let validate = validator isOK "Invalid value"
+                // TODO be careful with differences between .net and ecmascript regexes
+                // see http://msdn.microsoft.com/en-us/library/04ses44d.aspx
+                f |> mergeAttributes ["pattern",pattern] |> validate
 
         member x.Url f =
             let validate =
