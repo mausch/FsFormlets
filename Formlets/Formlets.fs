@@ -240,10 +240,8 @@ module Formlet =
     let extractOptionString =
         function
         | [] -> None
-        | [x] -> 
-            match x with
-            | Value v -> Some v
-            | _ -> failwith "Unexpected file"
+        | [Value v] -> Some v
+        | [File _] -> failwith "Unexpected file"
         | _ -> failwith "Unexpected multiple values"
 
     let extractOptional (f: InputValue list Formlet) : string option Formlet =
@@ -261,10 +259,8 @@ module Formlet =
 
     let getValueAttr =
         function
-        | [v] -> 
-            match v with
-            | Value v -> ["value", v]
-            | _ -> failwith "Value expected, got file instead"
+        | [Value v] -> ["value", v]
+        | [File _] -> failwith "Value expected, got file instead"
         | _ -> []
 
     let optionalInput defaultValue attributes: string option Formlet =
