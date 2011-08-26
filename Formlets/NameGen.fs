@@ -4,6 +4,7 @@ type 'a NameGen = int -> 'a * int
 
 /// Applicative functor that generates form element names
 module NameGen =
+    let prefix = "f"
     let inline puree v : 'a NameGen = fun (gen: int) -> v,gen
     let ap (f: ('a -> 'b) NameGen) (a: 'a NameGen) : 'b NameGen =
         fun (gen: int) ->
@@ -14,5 +15,5 @@ module NameGen =
     let inline map f x = puree f <*> x
     let inline map2 f x y = puree f <*> x <*> y
     let nextName : string NameGen = 
-        fun gen -> "f" + gen.ToString(), gen+1
+        fun gen -> prefix + gen.ToString(), gen+1
     let inline run (c: 'a NameGen) = fst (c 0)
