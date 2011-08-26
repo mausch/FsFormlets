@@ -46,7 +46,7 @@ type FormElements(validators: IValidationFunctions) =
     member x.Float(?value, ?attributes, ?required, ?maxlength, ?min, ?max) =
         x.iFloat(value, attributes, required, maxlength, min, max)
 
-    member x.iInt(value: int option, attributes, required, maxlength, min, max) =
+    member private x.iInt(value: int option, attributes, required, maxlength, min, max) =
         let value = Option.map string value
         let formlet = 
             x.iText(value, attributes, required, maxlength, None)
