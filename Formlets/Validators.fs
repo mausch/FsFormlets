@@ -33,8 +33,6 @@ type IValidatorBuilder =
 type Validate(validatorBuilder: IValidatorBuilder) as this =
     let v = this :> IValidationFunctions
 
-    let (||.) = orF
-
     // from http://rosettacode.org/wiki/Luhn_test_of_credit_card_numbers#F.23
     let luhn (s:string) =
         let rec g r c = function
@@ -106,13 +104,13 @@ type Validate(validatorBuilder: IValidatorBuilder) as this =
             f |> mergeAttributes ["min",min.ToString(); "max",max.ToString()] |> validator
 
         member x.Email f =
-            let isOK = String.IsNullOrEmpty ||. emailRx.IsMatch
+            let isOK a = String.IsNullOrEmpty a || emailRx.IsMatch a
             let validate = validator isOK "Invalid email"
             f |> mergeAttributes ["type","email"] |> validate
 
         member x.Regex pattern =
             let rx = Regex(pattern)
-            let isOK = String.IsNullOrEmpty ||. rx.IsMatch
+            let isOK a = String.IsNullOrEmpty a || rx.IsMatch a
             fun f ->
                 let validate = validator isOK "Invalid value"
                 // TODO be careful with differences between .net and ecmascript regexes
