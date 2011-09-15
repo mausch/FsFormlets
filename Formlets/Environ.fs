@@ -4,6 +4,7 @@ open System
 open System.Collections.Generic
 open System.Collections.Specialized
 open System.Web
+open FSharpx
 
 type InputValue =
     | Value of string

@@ -10,6 +10,7 @@ open System.Web
 open System.Xml.Linq
 open Formlets.XmlWriter
 open Formlets
+open FSharpx
 
 let e = FormElements(Validate.Default)
 
@@ -25,7 +26,7 @@ let dateFormlet =
     let baseFormlet = 
         div ["style","padding:8px"] (
             span ["style", "border: 2px solid; padding: 4px"] (
-                yields t2 <*>
+                yields tuple2 <*>
                 text "Month: " *> inputInt <*>
                 text "Day: " *> inputInt
                 <* br <* submit "Send" []
@@ -38,8 +39,9 @@ let dateFormlet =
     map (fun (month,day) -> DateTime(2010, month, day)) validatingFormlet
 
 let fullFormlet =
+    let inline tuple8 a b c d e f g h = a,b,c,d,e,f,g,h
     span [] (
-        yields t8
+        yields tuple8
         <*> dateFormlet
         <*> password
         <*> checkbox false []
@@ -415,7 +417,7 @@ let ``validation without xml and with string with multiple formlets``() =
         input 
         |> satisfies validator
         |> map int
-    let formlet = yields t2 <*> inputInt <*> inputInt
+    let formlet = yields tuple2 <*> inputInt <*> inputInt
     let env = EnvDict.fromValueSeq ["f0","abc"; "f1","def"]
     match run formlet env with
     | Success _ -> failwith "Formlet shouldn't have succeeded"
@@ -439,7 +441,7 @@ let ``non-rendering field render``() =
 
 [<Fact>]
 let ``non-rendering field rendered with another formlet``() =
-    let formlet = yields t2 <*> input <*> field
+    let formlet = yields tuple2 <*> input <*> field
     let html = render formlet
     Assert.Equal("<input name=\"f0\" value=\"\" />", html)
 

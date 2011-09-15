@@ -3,6 +3,7 @@
 open System
 open System.Drawing
 open System.Text.RegularExpressions
+open FSharpx
 
 type IValidationFunctions = 
     abstract member Int: string Formlet -> int Formlet

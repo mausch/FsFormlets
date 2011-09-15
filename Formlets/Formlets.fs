@@ -11,6 +11,7 @@ open System.Collections.Generic
 open System.Collections.Specialized
 open System.Xml.Linq
 open System.Web
+open FSharpx
 
 type 'a Validator = {
     IsValid: 'a -> bool
@@ -30,21 +31,22 @@ type 'a ValidationResult =
     | Fail of 'a
     | Dead
 
-type private 'a LO = 'a Error ErrorList
+type private 'a LO = 'a option ErrorList
 type private 'a ELO = 'a LO Environ
 type private 'a AELO = 'a ELO XmlWriter
 type private 'a AE = 'a Environ XmlWriter
-type private 'a AO = 'a Error XmlWriter
+type private 'a AO = 'a option XmlWriter
 type private 'a NAE = 'a AE NameGen
 type private 'a EAO = 'a AO Environ
 type private 'a ALO = 'a LO XmlWriter
 type private 'a EALO = 'a ALO Environ
 type private 'a AEALO = 'a EALO XmlWriter
-type 'a Formlet = 'a Error ErrorList XmlWriter Environ XmlWriter NameGen
+type 'a Formlet = 'a option ErrorList XmlWriter Environ XmlWriter NameGen
 
 [<AutoOpen>]
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Formlet =
+    open FSharpx
 
     let inline private ae_pure x : 'a AE = XmlWriter.puree (Environ.puree x)
     let inline private ae_ap (f: ('a -> 'b) AE) (x: 'a AE) : 'b AE =
@@ -56,17 +58,17 @@ module Formlet =
     let inline private nae_map (f: 'a -> 'b) (x: 'a NAE) : 'b NAE = 
         nae_ap (nae_pure f) x
 
-    let inline private ao_pure x : 'a AO = XmlWriter.puree (Error.puree x)
+    let inline private ao_pure x : 'a AO = XmlWriter.puree (Some x)
     let inline private ao_ap (f: ('a -> 'b) AO) (x: 'a AO) : 'b AO = 
-        (XmlWriter.map2 Error.ap) f x
+        (XmlWriter.map2 (flip Option.ap)) f x
 
     let inline private eao_pure x : 'a EAO = Environ.puree (ao_pure x)
     let inline private eao_ap (f: ('a -> 'b) EAO) (x: 'a EAO) : 'b EAO =
         (Environ.map2 ao_ap) f x
 
-    let inline private lo_pure x : 'a LO = ErrorList.puree (Error.puree x)
+    let inline private lo_pure x : 'a LO = ErrorList.puree (Some x)
     let inline private lo_ap (f: ('a -> 'b) LO) (x: 'a LO) : 'b LO =
-        (ErrorList.map2 Error.ap) f x
+        (ErrorList.map2 (flip Option.ap)) f x
     let inline private lo_map (f: 'a -> 'b) (x: 'a LO) : 'b LO =
         lo_ap (lo_pure f) x
 
@@ -109,7 +111,7 @@ module Formlet =
     let inline yields x = puree x // friendly alias
 
     let private mapXml (v: 'a XmlWriter) : 'a Formlet =
-        let xml1 = XmlWriter.map (Error.puree >> ErrorList.puree) v |> Environ.puree
+        let xml1 = XmlWriter.map (Some >> ErrorList.puree) v |> Environ.puree
         let xml2 = XmlWriter.map (fun _ -> xml1) v
         NameGen.puree xml2
 
@@ -189,7 +191,7 @@ module Formlet =
         let validationResultToError: 'b ValidationResult -> 'b LO = 
             function 
             | Pass v -> lo_pure v
-            | _ -> Error.failure |> ErrorList.puree
+            | _ -> ErrorList.puree None
         let w = XmlWriter.map validationResultToError result
         match result with
         | x, Fail v -> 
@@ -629,7 +631,7 @@ module Formlet =
         
         script (sprintf "http://www.google.com/recaptcha/api/challenge?k=%s" settings.PublicKey)
         *> noscript (
-            yields t2
+            yields tuple2
             <*> iframe (sprintf "http://www.google.com/recaptcha/api/noscript?k=%s" settings.PublicKey) ["height","300"; "width","500"; "frameborder","0"] 
             *> assignedTextarea "recaptcha_challenge_field" "" ["rows","3"; "cols","40"]
             <*> assignedHidden "recaptcha_response_field" "manual_challenge"
