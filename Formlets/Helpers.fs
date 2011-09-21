@@ -3,7 +3,7 @@
 open System
 
 module List =
-    open FSharpx.List
+    open FSharpx
 
     /// <summary>
     /// Replaces an item in a list. Probably horribly inefficient
@@ -16,7 +16,7 @@ module List =
         | x when x < 0 -> failwith "Out of bounds"
         | x when x >= List.length l -> failwith "Out of bounds"
         | 0 -> item::List.tail l
-        | x -> (take x l) @ (item::(skip (x+1) l))
+        | x -> (List.take x l) @ (item::(List.skip (x+1) l))
 
 module Option =
     let inline mapOrId f =
@@ -81,14 +81,7 @@ module Helpers =
         String.IsNullOrEmpty(s) || Seq.exists Char.IsWhiteSpace s
 
     type Int32 with
-        static member tryParse s =
-            match Int32.TryParse s with
-            | false, _ -> None
-            | _, v -> Some v
-        static member tryParseHex s = 
-            match Int32.TryParse(s, Globalization.NumberStyles.AllowHexSpecifier, Globalization.CultureInfo.InvariantCulture) with
-            | false, _ -> None
-            | _, v -> Some v
+        static member parseHex s = Int32.parseWithOptions Globalization.NumberStyles.AllowHexSpecifier Globalization.CultureInfo.InvariantCulture s
 
     let (|Length|_|) (l: int) (s: string) =
         if s.Length = l
@@ -174,18 +167,19 @@ module Helpers =
         { new ISerializer<Color> with
             member x.Serialize c = sprintf "#%02X%02X%02X" c.R c.G c.B
             member x.Deserialize s =
-                match x.TryDeserialize s with
-                | true, c -> c
-                | _ -> failwith "Invalid color"
+                x.TryDeserialize s
+                |> Option.fromBoolAndValue 
+                |> Option.getOrElseF (fun () -> failwith "Invalid color")
+
             member x.TryDeserialize s = 
-                let inline (>>=) a f = Option.bind f a
+                let (>>=) = Option.(>>=)
                 let checkLength() = 
                     match s with
                     | null -> None
                     | Length 7 -> Some()
                     | _ -> None
                 let checkFirst() = if s.[0] = '#' then Some() else None
-                let getValue() = s.Substring(1) |> Int32.tryParseHex 
+                let getValue() = s.Substring(1) |> Int32.parseHex 
                 let color =
                     checkLength() >>= fun() ->
                     checkFirst() >>= fun() ->
@@ -245,9 +239,9 @@ module Helpers =
                         else dt.Year
                 sprintf "%d-W%02d" year week
             member x.Deserialize dt = 
-                match x.TryDeserialize dt with
-                | false, _ -> failwith "Invalid date"
-                | _, t -> t
+                x.TryDeserialize dt 
+                |> Option.fromBoolAndValue 
+                |> Option.getOrElseF (fun () -> failwith "Invalid date")
             member x.TryDeserialize dt = 
                 let checkLength() = 
                     match dt with
@@ -256,16 +250,16 @@ module Helpers =
                     | _ -> None
                 let yearParser() = 
                     dt.Substring(0, 4) 
-                    |> Int32.tryParse
+                    |> Int32.parse
                     |> Option.bind (fun t -> if t > 0 then Some t else None)
                 let sepParser() = 
                     let ok = dt.Substring(4,2) = "-W"
                     Option.fromBool ok
                 let weekParser() =
                     dt.Substring(6,2)
-                    |> Int32.tryParse
+                    |> Int32.parse
                     |> Option.bind (fun v -> if v >= 1 && v <= 53 then Some v else None)
-                let inline (>>=) a f = Option.bind f a
+                let (>>=) = Option.(>>=)
                 let v = 
                     checkLength() >>= fun() ->
                     yearParser() >>= fun year ->

@@ -70,7 +70,7 @@ type Validate(validatorBuilder: IValidatorBuilder) as this =
 
         member x.Int f =
             let isInt = 
-                let isOK = Int32.TryParse >> fst
+                let isOK = Int32.parse >> Option.isSome
                 let msg = sprintf "%s is not a valid number"
                 let e = validatorBuilder.Build isOK msg
                 satisfies e
@@ -124,11 +124,11 @@ type Validate(validatorBuilder: IValidatorBuilder) as this =
             f |> mergeAttributes ["type","url"] |> validate
 
         member x.Float f =
-            let validate = validator (Double.TryParse >> fst) "Invalid value"
+            let validate = validator (Double.parse >> Option.isSome) "Invalid value"
             f |> mergeAttributes ["type","number"] |> validate |> map float
 
         member x.Decimal f =
-            let validate = validator (Decimal.TryParse >> fst) "Invalid value"
+            let validate = validator (Decimal.parse >> Option.isSome) "Invalid value"
             f |> mergeAttributes ["type","number"] |> validate |> map decimal
     
         member x.Maxlength (n: int) f =

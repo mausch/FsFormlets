@@ -33,7 +33,7 @@ let dateFormlet =
             )
         )
     let isDate (month,day) = 
-        DateTime.TryParseExact(sprintf "%d%d%d" 2010 month day, "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None) |> fst
+        sprintf "%d%d%d" 2010 month day |> DateTime.parseExact [| "yyyyMMdd" |] |> Option.isSome
     let dateValidator = err isDate (fun (month,day) -> sprintf "%d/%d is not a valid date" month day)
     let validatingFormlet = baseFormlet |> satisfies dateValidator
     map (fun (month,day) -> DateTime(2010, month, day)) validatingFormlet
@@ -383,7 +383,7 @@ let ``radio with record values``() =
     let formlet = radioA r1 [r1,"dos"; r2,"cinco"]
     let html = render formlet
     printfn "%s" html
-    let env = EnvDict.fromValueSeq ["f0",(hash r2).ToString()]
+    let env = EnvDict.fromValueSeq ["f0", hashs r2]
     match run formlet env with
     | Success v -> Assert.Equal(r2,v)
     | _ -> failwith "Shouldn't have failed"
@@ -391,7 +391,7 @@ let ``radio with record values``() =
 [<Fact>]
 let ``validation without xml and with string``() =
     let validator = 
-        { IsValid = Int32.TryParse >> fst
+        { IsValid = Int32.parse >> Option.isSome
           ErrorForm = fun _ b -> b
           ErrorList = fun v -> [sprintf "'%s' is not a valid number" v] }
     let formlet = 
@@ -410,7 +410,7 @@ let ``validation without xml and with string``() =
 [<Fact>]
 let ``validation without xml and with string with multiple formlets``() =
     let validator = 
-        { IsValid = Int32.TryParse >> fst
+        { IsValid = Int32.parse >> Option.isSome
           ErrorForm = fun _ b -> b
           ErrorList = fun v -> [sprintf "'%s' is not a valid number" v] }
     let inputInt = 

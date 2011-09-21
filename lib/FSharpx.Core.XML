@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <doc>
-<assembly><name>FSharpx</name></assembly>
+<assembly><name>FSharpx.Core</name></assembly>
 <members>
 <member name="">
 
@@ -144,9 +144,6 @@
  Conversion functions from Action/Func to FSharpFunc
  We need these because FuncConvert often makes C# type inference fail.
  </summary>
-</member>
-<member name="">
-
 </member>
 <member name="">
 
@@ -591,6 +588,12 @@
 <summary>
  Sequential application
 </summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
 </member>
 <member name="">
 
@@ -1527,6 +1530,12 @@
 <member name="">
 
 </member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
 <member name="M:FSharpx.Option.op_LessEqualsLess``3(Microsoft.FSharp.Core.FSharpFunc`2{``0,Microsoft.FSharp.Core.FSharpOption{``1}})">
 <summary>
  Right-to-left Kleisli composition
@@ -1885,12 +1894,12 @@
 <member name="T:FSharpx.State">
 
 </member>
-<member name="M:FSharpx.String.startsWith(System.String,System.String)">
+<member name="M:FSharpx.Strings.startsWith(System.String,System.String)">
 <summary>
  Checks wether the given text starts with the given prefix
 </summary>
 </member>
-<member name="T:FSharpx.String">
+<member name="T:FSharpx.Strings">
 
 </member>
 <member name="">
@@ -2000,6 +2009,9 @@
 <summary>
  Sequential application, parameterized by append
 </summary>
+</member>
+<member name="">
+
 </member>
 <member name="T:FSharpx.Validation">
 

@@ -38,8 +38,8 @@
     <Compile Include="FormletsTests.fs" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="FSharpx">
-      <HintPath>..\lib\FSharpx.dll</HintPath>
+    <Reference Include="FSharpx.Core">
+      <HintPath>..\lib\FSharpx.Core.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core" />
