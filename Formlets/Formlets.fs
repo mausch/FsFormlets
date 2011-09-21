@@ -153,10 +153,16 @@ module Formlet =
     let inline run (v: 'a Formlet) : EnvDict -> (XNode list * string list * 'a option) = 
         (NameGen.run v |> snd) >> (fun (a,(b,c)) -> a,b,c)
 
+
     let (|Success|Failure|) a =
         match a with
         | _,_,Some v -> Success v
         | errorForm,errorMsgs,None -> Failure(errorForm, errorMsgs)
+
+    let inline runToChoice f env =
+        match run f env with
+        | Success v -> Choice1Of2 v
+        | Failure e -> Choice2Of2 e        
     
     /// Renders a formlet to XNode
     let inline renderToXml (v: _ Formlet) = 
