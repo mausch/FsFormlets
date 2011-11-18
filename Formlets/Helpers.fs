@@ -70,11 +70,11 @@ module Helpers =
     /// <param name="a1">Original list</param>
     /// <param name="a2">List to merge</param>
     let mergeAttr a1 a2 =
-        let folder r a =
-            match a with
+        let folder r =
+            function
             | "class",v -> addClass v r
             | "style",v -> addStyle v r
-            | _ -> addOrOverwrite a r
+            | a -> addOrOverwrite a r
         Seq.fold folder a2 a1
 
     let isNullOrWhiteSpace (s: string) =
@@ -172,7 +172,6 @@ module Helpers =
                 |> Option.getOrElseF (fun () -> failwith "Invalid color")
 
             member x.TryDeserialize s = 
-                let (>>=) = Option.(>>=)
                 let checkLength() = 
                     match s with
                     | null -> None
@@ -181,10 +180,12 @@ module Helpers =
                 let checkFirst() = if s.[0] = '#' then Some() else None
                 let getValue() = s.Substring(1) |> Int32.parseHex 
                 let color =
-                    checkLength() >>= fun() ->
-                    checkFirst() >>= fun() ->
-                    getValue() >>= fun rgb ->
-                    Some (Color.FromArgb rgb)
+                    Option.maybe {
+                        do! checkLength()
+                        do! checkFirst()
+                        let! rgb = getValue()
+                        return Color.FromArgb rgb
+                    }
                 match color with
                 | Some c -> true, c
                 | _ -> false, Color.Black }
@@ -259,13 +260,14 @@ module Helpers =
                     dt.Substring(6,2)
                     |> Int32.parse
                     |> Option.bind (fun v -> if v >= 1 && v <= 53 then Some v else None)
-                let (>>=) = Option.(>>=)
                 let v = 
-                    checkLength() >>= fun() ->
-                    yearParser() >>= fun year ->
-                    sepParser() >>= fun() ->
-                    weekParser() >>= fun week ->
-                    Some (year,week)
+                    Option.maybe {
+                        do! checkLength()
+                        let! year = yearParser()
+                        do! sepParser()
+                        let! week = weekParser()
+                        return year,week
+                    }
                 match v with
                 | None -> false, DateTime.MinValue
                 | Some (year,week) -> true, calendar.AddWeeks(DateTime(year,1,1), week) }
