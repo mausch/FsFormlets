@@ -50,62 +50,62 @@ module Formlet =
 
     let inline private ae_pure x : 'a AE = XmlWriter.puree (Environ.puree x)
     let inline private ae_ap (f: ('a -> 'b) AE) (x: 'a AE) : 'b AE =
-        (XmlWriter.map2 Environ.ap) f x
+        (XmlWriter.lift2 Environ.ap) f x
 
     let inline private nae_pure x : 'a NAE = NameGen.puree (ae_pure x)
     let inline private nae_ap (f: ('a -> 'b) NAE) (x: 'a NAE) : 'b NAE =
-        (NameGen.map2 ae_ap) f x
+        (NameGen.lift2 ae_ap) f x
     let inline private nae_map (f: 'a -> 'b) (x: 'a NAE) : 'b NAE = 
         nae_ap (nae_pure f) x
 
     let inline private ao_pure x : 'a AO = XmlWriter.puree (Some x)
     let inline private ao_ap (f: ('a -> 'b) AO) (x: 'a AO) : 'b AO = 
-        (XmlWriter.map2 (flip Option.ap)) f x
+        (XmlWriter.lift2 (flip Option.ap)) f x
 
     let inline private eao_pure x : 'a EAO = Environ.puree (ao_pure x)
     let inline private eao_ap (f: ('a -> 'b) EAO) (x: 'a EAO) : 'b EAO =
-        (Environ.map2 ao_ap) f x
+        (Environ.lift2 ao_ap) f x
 
     let inline private lo_pure x : 'a LO = ErrorList.puree (Some x)
     let inline private lo_ap (f: ('a -> 'b) LO) (x: 'a LO) : 'b LO =
-        (ErrorList.map2 (flip Option.ap)) f x
+        (ErrorList.lift2 (flip Option.ap)) f x
     let inline private lo_map (f: 'a -> 'b) (x: 'a LO) : 'b LO =
         lo_ap (lo_pure f) x
 
     let inline private alo_pure x : 'a ALO = XmlWriter.puree (lo_pure x)
     let inline private alo_ap (f: ('a -> 'b) ALO) (x: 'a ALO) : 'b ALO =
-        (XmlWriter.map2 lo_ap) f x
+        (XmlWriter.lift2 lo_ap) f x
 
     let inline private ealo_pure x : 'a EALO = Environ.puree (alo_pure x)
     let inline private ealo_ap (f: ('a -> 'b) EALO) (x: 'a EALO) : 'b EALO =
-        (Environ.map2 alo_ap) f x
+        (Environ.lift2 alo_ap) f x
 
     let inline private aealo_pure x: 'a AEALO = XmlWriter.puree (ealo_pure x)
     let inline private aealo_ap (f: ('a -> 'b) AEALO) (x: 'a AEALO) : 'b AEALO =
-        (XmlWriter.map2 ealo_ap) f x
+        (XmlWriter.lift2 ealo_ap) f x
 
     let puree x : 'a Formlet = NameGen.puree (aealo_pure x)
     let ap (f: ('a -> 'b) Formlet) (x: 'a Formlet) : 'b Formlet = 
-        (NameGen.map2 aealo_ap) f x
+        (NameGen.lift2 aealo_ap) f x
 
     let inline (<*>) f x = ap f x
     let inline map f a = puree f <*> a
 
     /// Convenience 'map' with flipped parameters
     let inline (|>>) x f = map f x
-    let inline map2 f a b = puree f <*> a <*> b
+    let inline lift2 f a b = puree f <*> a <*> b
     let inline map3 f a b c = puree f <*> a <*> b <*> c
     let inline map4 f a b c d = puree f <*> a <*> b <*> c <*> d
 
     /// Sequence actions, discarding the value of the first argument.
-    let inline apr x y = map2 (fun _ z -> z) x y
+    let inline apr x y = lift2 (fun _ z -> z) x y
     /// Sequence actions, discarding the value of the first argument.
     let inline ( *>) x y = apr x y
     /// Sequence actions, discarding the value of the second argument.
-    let inline apl x y = map2 (fun z _ -> z) x y
+    let inline apl x y = lift2 (fun z _ -> z) x y
     /// Sequence actions, discarding the value of the second argument.
     let inline (<*) x y = apl x y
-    let inline pair a b = map2 (fun x y -> x,y) a b
+    let inline pair a b = lift2 (fun x y -> x,y) a b
     let inline ( **) a b = pair a b
 
     let inline yields x = puree x // friendly alias

@@ -45,7 +45,7 @@ module Environ =
         fun (env: EnvDict) -> f env (a env)
     let inline (<*>) f x = ap f x
     let inline map f x : 'b Environ = puree f <*> x
-    let inline map2 f x y : 'c Environ = puree f <*> x <*> y
+    let inline lift2 f x y : 'c Environ = puree f <*> x <*> y
 
     let lookup (n: string) : InputValue list Environ = 
         fun (env: EnvDict) ->

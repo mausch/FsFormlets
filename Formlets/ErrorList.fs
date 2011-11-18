@@ -12,5 +12,5 @@ module ErrorList =
         ff @ fx, sf sx
     let inline (<*>) f x = ap f x
     let inline map f x = puree f <*> x
-    let inline map2 f x y = puree f <*> x <*> y
+    let inline lift2 f x y = puree f <*> x <*> y
     let inline append v (e: 'a ErrorList): 'a ErrorList = (fst e) @ v, snd e
