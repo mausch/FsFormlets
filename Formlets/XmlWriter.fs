@@ -115,7 +115,7 @@ module XmlWriter =
         let mergeInNode =
             function
             | TagA(name, attr, children) -> 
-                let attr = attr |> mergeAttr a
+                let attr = attr |> Helpers.mergeAttr a
                 xelem name attr children
             | x -> x
         plug (List.map mergeInNode) x

@@ -32,6 +32,14 @@ let layout (head: #seq<Xml.Node>) (body: #seq<Xml.Node>) =
     ]
 
 [<Fact>]
+let ``compare xnodes with different attribute order``() =
+    let x = XNode.Parse "<input name='f0' value='abc' type='number' maxlength='4' required='required' class='nice' />"
+    let x = x.[0]
+    let y = XNode.Parse "<input type='number' maxlength='4' required='required' name='f0' value='abc' class='nice' />"
+    let y = y.[0]
+    Assert.True (x =. y)
+
+[<Fact>]
 let ``first``() =
     let formlet = f.Text("a default value", ["class","nice"])
     let template form = 
@@ -65,7 +73,7 @@ let ``combine with wingbeats``() =
 let ``numbox render``() =
     let formlet = f.Float(required = true, maxlength = 4, attributes = ["class","nice"])
     let html = render formlet
-    Assert.Equal("<input type=\"number\" name=\"f0\" value=\"\" maxlength=\"4\" required=\"\" class=\"nice\" />", html)
+    Assert.Equal("<input type=\"number\" maxlength=\"4\" required=\"required\" name=\"f0\" value=\"\" class=\"nice\" />", html)
 
 [<Fact>]
 let ``numbox run failure``() =
@@ -74,7 +82,7 @@ let ``numbox run failure``() =
     match run formlet env with
     | Failure(errorForm, _) -> 
         let html = XmlWriter.render errorForm
-        let xml = XDocument.Parse "<r><span class='errorinput'><input name='f0' value='abc' type='number' maxlength='4' required='' class='nice' /></span><span class='error'>Invalid number</span></r>"
+        let xml = XDocument.Parse "<r><span class='errorinput'><input name='f0' value='abc' type='number' maxlength='4' required='required' class='nice' /></span><span class='error'>Invalid value</span></r>"
         Assert.XmlEqual(xml.Root, xelem "r" [] errorForm)
         printfn "%s" html
     | _ -> failwith "Formlet should not have succeeded"
@@ -83,10 +91,12 @@ let ``numbox run failure``() =
 let ``intbox doesn't accept float``() =
     let formlet = f.Int()
     let env = EnvDict.fromValueSeq ["f0","1.3"]
+    let html = render formlet
+    printfn "%s" html
     match run formlet env with
     | Failure(errorForm, _) ->
         let html = XmlWriter.render errorForm
-        let xml = XDocument.Parse "<r><span class='errorinput'><input name='f0' value='1.3' type='number' /></span><span class='error'>Invalid number</span></r>"
+        let xml = XDocument.Parse "<r><span class='errorinput'><input name='f0' value='1.3' type='number' /></span><span class='error'>1.3 is not a valid number</span></r>"
         Assert.XmlEqual(xml.Root, xelem "r" [] errorForm)
         printfn "%s" html
     | _ -> failwith "Formlet should not have succeeded"

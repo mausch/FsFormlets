@@ -14,12 +14,12 @@ type FormElements(validators: IValidationFunctions) =
         let formlet = Formlet.checkbox value attributes
         formlet |> Option.mapBoolOrId validators.Required required
    
-    member x.Textarea(?value, ?attributes: (string * string) list) =
+    member x.Textarea(?value, ?attributes) =
         let value = defaultArg value ""
         let attributes = defaultArg attributes []
         Formlet.textarea value attributes
 
-    member private x.iText(value: string option, attributes: (string*string) list option, required: bool option, maxlength: int option, pattern: string option) =
+    member private x.iText(value, attributes, required, maxlength, pattern) =
         let value = defaultArg value ""
         let attributes = defaultArg attributes []
         let formlet = Formlet.input value attributes
@@ -27,10 +27,10 @@ type FormElements(validators: IValidationFunctions) =
         let formlet = formlet |> Option.mapOrId validators.Maxlength maxlength
         formlet |> Option.mapOrId validators.Regex pattern
 
-    member x.Text(?value, ?attributes: (string * string) list, ?required: bool, ?maxlength: int, ?pattern: string) =
+    member x.Text(?value, ?attributes, ?required, ?maxlength, ?pattern) =
         x.iText(value, attributes, required, maxlength, pattern)
 
-    member private x.iFloat(value: float option, attributes: _ list option, required: bool option, maxlength: int option, min: float option, max: float option) =
+    member private x.iFloat(value: float option, attributes, required, maxlength, min, max) =
         let value = Option.map string value
         let formlet = 
             x.iText(value, attributes, required, maxlength, None)
@@ -47,17 +47,19 @@ type FormElements(validators: IValidationFunctions) =
         x.iFloat(value, attributes, required, maxlength, min, max)
 
     member private x.iInt(value: int option, attributes, required, maxlength, min, max) =
-        let value = Option.map string value
+        let value = value |> Option.map string
+        let attributes = defaultArg attributes []
+        let attributes = attributes |> mergeAttr ["type","number"]
         let formlet = 
-            x.iText(value, attributes, required, maxlength, None)
+            x.iText(value, Some attributes, required, maxlength, None)
             |> validators.Int
-        let formlet =
+        let applyMinMax = 
             match min,max with
-            | Some min, Some max -> formlet |> validators.InRange min max
-            | Some min, None -> formlet |> validators.GreaterOrEqual min
-            | None, Some max -> formlet |> validators.LessOrEqual max
-            | _ -> formlet
-        formlet
+            | Some min, Some max -> validators.InRange min max
+            | Some min, None -> validators.GreaterOrEqual min
+            | None, Some max -> validators.LessOrEqual max
+            | _ -> id
+        applyMinMax formlet
 
     member x.Int(?value: int, ?attributes, ?required, ?maxlength, ?min, ?max) =
         x.iInt(value, attributes, required, maxlength, min, max)
