@@ -89,9 +89,9 @@ module Helpers =
             else None
 
     type 'a ISerializer =
-        abstract member Serialize: 'a -> string
-        abstract member Deserialize: string -> 'a
-        abstract member TryDeserialize: string -> (bool * 'a)
+        abstract Serialize: 'a -> string
+        abstract Deserialize: string -> 'a
+        abstract TryDeserialize: string -> (bool * 'a)
     
     open System.IO
 

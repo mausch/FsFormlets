@@ -6,29 +6,29 @@ open System.Text.RegularExpressions
 open FSharpx
 
 type IValidationFunctions = 
-    abstract member Int: string Formlet -> int Formlet
-    abstract member Required: string Formlet -> string Formlet
-    abstract member Required: bool Formlet -> bool Formlet
-    abstract member CreditCard: string Formlet -> string Formlet
-    abstract member LessOrEqual: 'a -> 'a Formlet -> 'a Formlet when 'a:comparison
-    abstract member GreaterOrEqual: 'a -> 'a Formlet -> 'a Formlet when 'a: comparison
-    abstract member InRange: 'a -> 'a -> 'a Formlet -> 'a Formlet when 'a: comparison
-    abstract member Email: string Formlet -> string Formlet
-    abstract member Regex : string -> (string Formlet -> string Formlet)
-    abstract member Url: string Formlet -> string Formlet
-    abstract member Float: string Formlet -> float Formlet
-    abstract member Decimal: string Formlet -> decimal Formlet
-    abstract member Maxlength: int -> string Formlet -> string Formlet
-    abstract member DateTimeLocal: DateTime option -> DateTime option -> string Formlet -> DateTime Formlet
-    abstract member DateTime: DateTimeOffset option -> DateTimeOffset option -> string Formlet -> DateTimeOffset Formlet
-    abstract member Date: DateTime option -> DateTime option -> string Formlet -> DateTime Formlet
-    abstract member Month: DateTime option -> DateTime option -> string Formlet -> DateTime Formlet
-    abstract member Week: DateTime option -> DateTime option -> string Formlet -> DateTime Formlet
-    abstract member Time: DateTime option -> DateTime option -> string Formlet -> DateTime Formlet
-    abstract member Color: string Formlet -> Color Formlet
+    abstract Int: string Formlet -> int Formlet
+    abstract Required: string Formlet -> string Formlet
+    abstract Required: bool Formlet -> bool Formlet
+    abstract CreditCard: string Formlet -> string Formlet
+    abstract LessOrEqual: 'a -> 'a Formlet -> 'a Formlet when 'a:comparison
+    abstract GreaterOrEqual: 'a -> 'a Formlet -> 'a Formlet when 'a: comparison
+    abstract InRange: 'a -> 'a -> 'a Formlet -> 'a Formlet when 'a: comparison
+    abstract Email: string Formlet -> string Formlet
+    abstract Regex : string -> (string Formlet -> string Formlet)
+    abstract Url: string Formlet -> string Formlet
+    abstract Float: string Formlet -> float Formlet
+    abstract Decimal: string Formlet -> decimal Formlet
+    abstract Maxlength: int -> string Formlet -> string Formlet
+    abstract DateTimeLocal: DateTime option -> DateTime option -> string Formlet -> DateTime Formlet
+    abstract DateTime: DateTimeOffset option -> DateTimeOffset option -> string Formlet -> DateTimeOffset Formlet
+    abstract Date: DateTime option -> DateTime option -> string Formlet -> DateTime Formlet
+    abstract Month: DateTime option -> DateTime option -> string Formlet -> DateTime Formlet
+    abstract Week: DateTime option -> DateTime option -> string Formlet -> DateTime Formlet
+    abstract Time: DateTime option -> DateTime option -> string Formlet -> DateTime Formlet
+    abstract Color: string Formlet -> Color Formlet
 
 type IValidatorBuilder =
-    abstract member Build: ('a -> bool) -> ('a -> string) -> 'a Validator
+    abstract Build: ('a -> bool) -> ('a -> string) -> 'a Validator
 
 type Validate(validatorBuilder: IValidatorBuilder) as this =
     let v = this :> IValidationFunctions
