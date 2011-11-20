@@ -32,6 +32,39 @@
 <member name="">
 
 </member>
+<member name="M:FSharpx.BS.GetHashCode">
+<summary>
+ Gets the hash code for the byte string.
+</summary>
+</member>
+<member name="M:FSharpx.BS.System-Collections-Generic-IEnumerable`1-GetEnumerator">
+<summary>
+ Gets an enumerator for the bytes stored in the byte string.
+</summary>
+</member>
+<member name="M:FSharpx.BS.System-Collections-Generic-IEnumerable`1-GetEnumerator">
+<summary>
+ Gets an enumerator for the bytes stored in the byte string.
+</summary>
+</member>
+<member name="M:FSharpx.BS.GetEnumerator">
+<summary>
+ Gets an enumerator for the bytes stored in the byte string.
+</summary>
+</member>
+<member name="M:FSharpx.BS.Equals(System.Object)">
+<summary>
+ Compares two objects for equality. When both are byte strings, structural equality is used.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="M:FSharpx.BS.Compare(FSharpx.BS,FSharpx.BS)">
+<summary>
+ Compares two byte strings based on their structure.
+</summary>
+</member>
 <member name="">
 
 </member>
@@ -42,6 +75,65 @@
 <summary>
  An ArraySegment with structural comparison and equality.
 </summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharpx.DList`1">
+<summary>
+ The DList is an implementation of John Hughes&apos; append list.
+ See http://dl.acm.org/citation.cfm?id=8475 for more information.
+ This implementation adds an additional parameter to allow a more
+ efficient calculation of the list length.
+ Note that an alternate form would represent the DList as:
+ type DList&lt;&apos;a&gt; = DList of (&apos;a list -&gt; &apos;a list)
+ An example can be found at http://stackoverflow.com/questions/5324623/functional-o1-append-and-on-iteration-from-first-element-list-data-structure/5327209#5327209
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
 </member>
 <member name="">
 
@@ -352,7 +444,13 @@
 <member name="">
 
 </member>
-<member name="T:FSharpx.Array">
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharpx.ArrayModule">
 
 </member>
 <member name="M:FSharpx.Async.op_LessEqualsLess``3(Microsoft.FSharp.Core.FSharpFunc`2{``0,Microsoft.FSharp.Control.FSharpAsync{``1}})">
@@ -521,6 +619,15 @@
 </summary>
 </member>
 <member name="T:FSharpx.ByteString">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
 
 </member>
 <member name="">
@@ -748,6 +855,51 @@
 <member name="">
 
 </member>
+<member name="">
+
+</member>
+<member name="M:FSharpx.DList.fold``2(Microsoft.FSharp.Core.FSharpFunc`2{``0,Microsoft.FSharp.Core.FSharpFunc`2{``1,``0}},``0,FSharpx.DList{``1})">
+<summary>
+ Fold walks the DList using constant stack space. Implementation is from Norman Ramsey.
+ See http://stackoverflow.com/questions/5324623/functional-o1-append-and-on-iteration-from-first-element-list-data-structure/5334068#5334068
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharpx.DList">
+
+</member>
+<member name="">
+
+</member>
 <member name="T:FSharpx.DictionaryModule">
 
 </member>
@@ -868,6 +1020,102 @@
 <member name="">
 
 </member>
+<member name="M:FSharpx.Enumerator.scanUntil``2(Microsoft.FSharp.Core.FSharpFunc`2{``0,Microsoft.FSharp.Core.FSharpFunc`2{``1,``0}},``0,Microsoft.FSharp.Core.FSharpFunc`2{``0,System.Boolean},System.Collections.Generic.IEnumerator{``1})">
+<summary>
+ Scan progressively folds over the enumerator, returning a new enumerator
+ that lazily computes each state until the provided predicate is true.
+</summary>
+</member>
+<member name="M:FSharpx.Enumerator.scanWhile``2(Microsoft.FSharp.Core.FSharpFunc`2{``0,Microsoft.FSharp.Core.FSharpFunc`2{``1,``0}},``0,Microsoft.FSharp.Core.FSharpFunc`2{``0,System.Boolean},System.Collections.Generic.IEnumerator{``1})">
+<summary>
+ Scan progressively folds over the enumerator, returning a new enumerator
+ that lazily computes each state while the provided predicate is true.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="M:FSharpx.Enumerator.scan``2(Microsoft.FSharp.Core.FSharpFunc`2{``0,Microsoft.FSharp.Core.FSharpFunc`2{``1,``0}},``0,System.Collections.Generic.IEnumerator{``1})">
+<summary>
+ Scan progressively folds over the enumerator, returning a new enumerator
+ that lazily computes each state.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharpx.Enumerator">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
 <member name="">
 
 </member>
@@ -885,7 +1133,8 @@
 </member>
 <member name="T:FSharpx.Iteratee.Enumeratee`3">
 <summary>
- An Enumeratee is an Enumerator that feeds data streams to an internal iteratee.
+ An enumeratee is an enumerator that produces an iteratee using another iteratee as input.
+ Enumeratees can be used for tasks such as encoding or encrypting data.
 </summary>
 </member>
 <member name="T:FSharpx.Iteratee.Enumerator`2">
@@ -923,10 +1172,6 @@
 <summary>
  A stream of chunks of data generated by an Enumerator.
  The stream can be composed of chunks of &apos;a, empty blocks indicating a wait, or an EOF marker.
- In Haskell, the Chunk is usually composed of a list of ListLike type, but F# doesn&apos;t support
- Monad Transforms or ^M in type declarations. Thus, the Chunk is left open to various internal
- types, but a bit more work must be done in order to maintain the meaningfulness of &quot;chunk&quot;.
- That said, the &apos;a allows a large number of chunk-y types to be used, including other monads.
  Be aware that when using #seq&lt;_&gt; types, you will need to check for both Seq.empty ([]) and Empty.
 </summary>
 </member>
@@ -973,6 +1218,18 @@
 <summary>
  Sequential application
 </summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
 </member>
 <member name="">
 
@@ -1094,7 +1351,25 @@
 <member name="">
 
 </member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
 <member name="T:FSharpx.Iteratee.List">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
 
 </member>
 <member name="">
@@ -1136,7 +1411,162 @@
 <member name="">
 
 </member>
+<member name="M:FSharpx.LensModule.listToArray``2(FSharpx.Lens{``0,Microsoft.FSharp.Collections.FSharpList{``1}})">
+<summary>
+ Converts a lens that views a list into a lens that views an array
+</summary>
+</member>
+<member name="M:FSharpx.LensModule.xmap``3(Microsoft.FSharp.Core.FSharpFunc`2{``0,``1},Microsoft.FSharp.Core.FSharpFunc`2{``1,``0},FSharpx.Lens{``2,``0})">
+<summary>
+ Applies an isomorphism to the value viewed through a lens
+</summary>
+</member>
+<member name="M:FSharpx.LensModule.seqMap``2(FSharpx.Lens{``0,``1})">
+<summary>
+ Creates a lens that maps the given lens in a sequence
+</summary>
+</member>
+<member name="M:FSharpx.LensModule.arrayMap``2(FSharpx.Lens{``0,``1})">
+<summary>
+ Creates a lens that maps the given lens in an array
+</summary>
+</member>
+<member name="M:FSharpx.LensModule.listMap``2(FSharpx.Lens{``0,``1})">
+<summary>
+ Creates a lens that maps the given lens in a list
+</summary>
+</member>
 <member name="">
+
+</member>
+<member name="M:FSharpx.LensModule.forList``1(System.Int32)">
+<summary>
+ Lens for a particular position in a list
+</summary>
+</member>
+<member name="M:FSharpx.LensModule.forArray``1(System.Int32)">
+<summary>
+ Lens for a particular position in an array
+</summary>
+</member>
+<member name="M:FSharpx.LensModule.forMap``2(``0)">
+<summary>
+ Lens for a particular key in a map
+</summary>
+</member>
+<member name="M:FSharpx.LensModule.forSet``1(``0)">
+<summary>
+ Lens for a particular value in a set
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="M:FSharpx.LensModule.id``1">
+<summary>
+ Identity lens
+</summary>
+</member>
+<member name="M:FSharpx.LensModule.snd``2">
+<summary>
+ Gets/sets the snd element in a pair
+</summary>
+</member>
+<member name="M:FSharpx.LensModule.fst``2">
+<summary>
+ Gets/sets the fst element in a pair
+</summary>
+</member>
+<member name="M:FSharpx.LensModule.modifyAndGetState``2(FSharpx.Lens{``0,``1},Microsoft.FSharp.Core.FSharpFunc`2{``1,``1})">
+<summary>
+ Modifies the state in a state monad and returns the modified value.
+</summary>
+</member>
+<member name="M:FSharpx.LensModule.getAndModifyState``2(FSharpx.Lens{``0,``1},Microsoft.FSharp.Core.FSharpFunc`2{``1,``1})">
+<summary>
+ Modifies the state in a state monad and returns the original value.
+</summary>
+</member>
+<member name="M:FSharpx.LensModule.updateState``2(FSharpx.Lens{``0,``1},Microsoft.FSharp.Core.FSharpFunc`2{``1,``1},``0)">
+<summary>
+ Update through a lens within a state monad
+</summary>
+</member>
+<member name="M:FSharpx.LensModule.setState``2(FSharpx.Lens{``0,``1},``1,``0)">
+<summary>
+ Applies a lens in the &apos;set&apos; direction within a state monad
+</summary>
+</member>
+<member name="M:FSharpx.LensModule.getState``2(FSharpx.Lens{``0,``1},``0)">
+<summary>
+ Applies a lens in the &apos;get&apos; direction within a state monad      
+</summary>
+</member>
+<member name="M:FSharpx.LensModule.cond``3(Microsoft.FSharp.Core.FSharpFunc`2{``0,System.Boolean},``1,``1)">
+ <summary>
+ <paramref name="pred"/> is applied to source. 
+ If true, <paramref name="lensTrue"/> is selected.
+ If false, <paramref name="lensFalse"/> is selected.
+ </summary>
+</member>
+<member name="M:FSharpx.LensModule.pair``4(FSharpx.Lens{``0,``1},FSharpx.Lens{``2,``3})">
+<summary>
+ Pair two lenses  
+</summary>
+</member>
+<member name="M:FSharpx.LensModule.choice``3(FSharpx.Lens{``0,``1},FSharpx.Lens{``2,``1})">
+<summary>
+ Composes two lenses through a sum in the source
+</summary>
+</member>
+<member name="M:FSharpx.LensModule.compose``3(FSharpx.Lens{``0,``1},FSharpx.Lens{``2,``0})">
+<summary>
+ Sequentially composes two lenses
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharpx.LensModule.StateOperators">
 
 </member>
 <member name="">
@@ -1172,7 +1602,22 @@
 <member name="">
 
 </member>
-<member name="T:FSharpx.JoinList">
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharpx.LensModule.Operators">
+
+</member>
+<member name="T:FSharpx.LensModule">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
 
 </member>
 <member name="">
@@ -1592,6 +2037,24 @@
 <member name="T:FSharpx.Option">
 
 </member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
 <member name="M:FSharpx.Prelude.tuple6``6(``0,``1,``2,``3,``4,``5)">
 <summary>
  Creates a 6-tuple
@@ -1754,6 +2217,9 @@
 <member name="T:FSharpx.Reader">
 
 </member>
+<member name="">
+
+</member>
 <member name="M:FSharpx.Seq.tryFindWithIndex``1(Microsoft.FSharp.Core.FSharpFunc`2{``0,System.Boolean},System.Collections.Generic.IEnumerable{``0})">
  <summary>
  Returns the first element (with its index) for which the given function returns true.
@@ -1894,9 +2360,19 @@
 <member name="T:FSharpx.State">
 
 </member>
+<member name="M:FSharpx.Strings.contains(System.String,System.String)">
+<summary>
+ Returns a value indicating whether the specified substring occurs within this string
+</summary>
+</member>
+<member name="M:FSharpx.Strings.replace(System.String,System.String,System.String)">
+<summary>
+ Replaces the given &quot;replacement&quot; for every occurence of the pattern in the given text 
+</summary>
+</member>
 <member name="M:FSharpx.Strings.startsWith(System.String,System.String)">
 <summary>
- Checks wether the given text starts with the given prefix
+ Checks whether the given text starts with the given prefix
 </summary>
 </member>
 <member name="T:FSharpx.Strings">
