@@ -83,10 +83,10 @@ let radioRefill() =
     let input1 = r.[0]
     let input2 = r.[2]
     match input1 with
-    | TagA(_,attr,_) -> Assert.False(Seq.exists (fun (k,_) -> k = "checked") attr)
+    | TagA(_,attr,_) -> Assert.False(Seq.exists (fst >> (=) "checked") attr)
     | _ -> failwith "err"
     match input2 with
-    | TagA(_,attr,_) -> Assert.True(Seq.exists (fun (k,_) -> k = "checked") attr)
+    | TagA(_,attr,_) -> Assert.True(Seq.exists (fst >> (=) "checked") attr)
     | _ -> failwith "err"
 
 [<Fact>]
@@ -96,7 +96,7 @@ let checkboxRefill() =
     let r = run formlet env |> fst3
     printfn "%A" r
     match r.[0] with
-    | TagA(_,attr,_) -> Assert.True(Seq.exists (fun (k,_) -> k = "checked") attr)
+    | TagA(_,attr,_) -> Assert.True(Seq.exists (fst >> (=) "checked") attr)
     | _ -> failwith "err"
 
 [<Fact>]
@@ -105,7 +105,7 @@ let inputRefill() =
     let r = run input env |> fst3
     printfn "%A" r
     match r.[0] with
-    | TagA(_,attr,_) -> Assert.True(Seq.exists (fun (k,v) -> k = "value" && v = "pepe") attr)
+    | TagA(_,attr,_) -> Assert.True(Seq.exists ((=)("value","pepe")) attr)
     | _ -> failwith "err"
 
 [<Fact>]
@@ -264,7 +264,7 @@ let ``NameValueCollection to seq does not ignore duplicate keys``() =
     e.Add("1", "one")
     e.Add("1", "uno")
     let values = NameValueCollection.toSeq e
-    let values = values |> Seq.filter (fun (k,_) -> k = "1") |> Seq.toList
+    let values = values |> Seq.filter (fst >> (=) "1") |> Seq.toList
     Assert.Equal(2, values.Length)
 
 [<Fact>]
@@ -560,9 +560,8 @@ let ``Color serialize``() =
 
 [<Fact>]
 let ``Color deserialize ok``() =
-    let color = colorSerializer.TryDeserialize "#FF3A3B"
-    Assert.True(fst color)
-    let color = snd color
+    let ok,color = colorSerializer.TryDeserialize "#FF3A3B"
+    Assert.True ok
     Assert.Equal(0xFFuy, color.R)
     Assert.Equal(0x3Auy, color.G)
     Assert.Equal(0x3Buy, color.B)
@@ -584,7 +583,6 @@ let ``function pickle``() =
     match run f env with
     | Success ff -> Assert.Equal(5, ff 2 3)
     | _ -> failwith "should not have failed"
-    ()
 
 [<Fact>]
 let ``bin serializer string``() =
