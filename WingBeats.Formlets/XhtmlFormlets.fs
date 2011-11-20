@@ -71,8 +71,6 @@ module Integration =
     let inline (!+) x = List.map renderXNodeToWingBeats x
     let inline (!++) x = !+ (renderToXml x)
 
-[<AutoOpen>]
-module Integration2 =
     type WingBeats.Xhtml.XhtmlElement with
         member x.Formlets = FormElements Validate.Default
         member x.Formlets v = FormElements v
