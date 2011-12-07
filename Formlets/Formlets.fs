@@ -94,8 +94,8 @@ module Formlet =
     /// Convenience 'map' with flipped parameters
     let inline (|>>) x f = map f x
     let inline lift2 f a b = puree f <*> a <*> b
-    let inline map3 f a b c = puree f <*> a <*> b <*> c
-    let inline map4 f a b c d = puree f <*> a <*> b <*> c <*> d
+    let inline lift3 f a b c = puree f <*> a <*> b <*> c
+    let inline lift4 f a b c d = puree f <*> a <*> b <*> c <*> d
 
     /// Sequence actions, discarding the value of the first argument.
     let inline apr x y = lift2 (fun _ z -> z) x y
