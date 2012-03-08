@@ -83,7 +83,7 @@ let ``numbox run failure``() =
     | Failure(errorForm, _) -> 
         let html = XmlWriter.render errorForm
         let xml = XDocument.Parse "<r><span class='errorinput'><input name='f0' value='abc' type='number' maxlength='4' required='required' class='nice' /></span><span class='error'>Invalid value</span></r>"
-        Assert.XmlEqual(xml.Root, xelem "r" [] errorForm)
+        Assert.XmlEqual(xml.Root, XmlHelpers.xelem "r" [] errorForm)
         printfn "%s" html
     | _ -> failwith "Formlet should not have succeeded"
 
@@ -97,7 +97,7 @@ let ``intbox doesn't accept float``() =
     | Failure(errorForm, _) ->
         let html = XmlWriter.render errorForm
         let xml = XDocument.Parse "<r><span class='errorinput'><input name='f0' value='1.3' type='number' /></span><span class='error'>1.3 is not a valid number</span></r>"
-        Assert.XmlEqual(xml.Root, xelem "r" [] errorForm)
+        Assert.XmlEqual(xml.Root, XmlHelpers.xelem "r" [] errorForm)
         printfn "%s" html
     | _ -> failwith "Formlet should not have succeeded"
 
@@ -109,6 +109,6 @@ let ``intbox failure with range``() =
     | Failure(errorForm, _) ->
         let html = XmlWriter.render errorForm
         let xml = XDocument.Parse "<r><span class='errorinput'><input min='5' max='10' name='f0' value='3' type='number' /></span><span class='error'>Value must be between 5 and 10</span></r>"
-        Assert.XmlEqual(xml.Root, xelem "r" [] errorForm)
+        Assert.XmlEqual(xml.Root, XmlHelpers.xelem "r" [] errorForm)
         printfn "%s" html
     | _ -> failwith "Formlet should not have succeeded"

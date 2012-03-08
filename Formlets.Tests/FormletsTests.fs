@@ -70,6 +70,8 @@ let radioRun() =
     | Success r -> Assert.Equal("2", r)
     | _ -> failwith "shouldn't have failed"
 
+open XmlHelpers
+
 [<Fact>]
 let radioRefill() =
     let env = EnvDict.fromValueSeq ["f0", "2"]

@@ -20,7 +20,7 @@ module Helpers =
         function
         | XmlHelpers.TextV t -> Node.Text t
         | XmlHelpers.TagA(name, attr, children) -> 
-            if XmlWriter.emptyElems |> Set.contains name
+            if XmlHelpers.emptyElems |> Set.contains name
                 then SelfClosingNode(xName name, xAttrs attr)
                 else TagPairNode(xName name, xAttrs attr, children |> List.map renderXNodeToWingBeats)
         | e -> failwithf "Unsupported element %A" e        
@@ -34,11 +34,11 @@ module Helpers =
             let name = name.Name
             let attr = exAttrs attr
             let children = children |> Seq.map renderWingBeatsNodeToXNode |> Seq.toList
-            XmlWriter.xelem name attr children
+            XmlHelpers.xelem name attr children
         | SelfClosingNode(name, attr) -> 
             let name = name.Name
             let attr = exAttrs attr
-            XmlWriter.xelem name attr []
+            XmlHelpers.xelem name attr []
         | Node.Text t -> upcast XText t
         | LiteralText t -> upcast XText t // probably wrong
         | Placeholder i -> failwithf "Don't know what a placeholder %d is" i

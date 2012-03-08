@@ -4,8 +4,19 @@ open System.Xml.Linq
 
 type 'a XmlWriter = XNode list * 'a
 
-[<AutoOpen>]
 module XmlHelpers =
+    let emptyElems = set ["area"; "base"; "basefont"; "br"; "col"; "command"; "frame"; "hr"; "img"; "input"; "isindex"; "keygen"; "link"; "meta"; "param"; "source"; "track"; "wbr"]
+    let inline (!!) x = XName.op_Implicit x
+    let inline xattr (name, value: string) = XAttribute(!!name, value)
+    let xelem name (attributes: (string*string) list) (children: XNode list) = 
+        let isEmpty = emptyElems |> Set.contains name
+        let children = 
+            match children,isEmpty with
+            | [],false -> [(XText "") :> XObject]
+            | _ -> List.map (fun x -> upcast x) children
+        let attributes = List.map (fun a -> xattr a :> XObject) attributes
+        XElement(!!name, attributes @ children) :> XNode
+
     /// Gets attributes of an element as a tuple list
     let getAttr (e: XElement) =
         e.Attributes() 
@@ -72,17 +83,8 @@ module XmlHelpers =
 
 /// Applicative functor that manipulates HTML as XML
 module XmlWriter =
-    let emptyElems = set ["area"; "base"; "basefont"; "br"; "col"; "command"; "frame"; "hr"; "img"; "input"; "isindex"; "keygen"; "link"; "meta"; "param"; "source"; "track"; "wbr"]
-    let inline (!!) x = XName.op_Implicit x
-    let inline xattr (name, value: string) = XAttribute(!!name, value)
-    let xelem name (attributes: (string*string) list) (children: XNode list) = 
-        let isEmpty = emptyElems |> Set.contains name
-        let children = 
-            match children,isEmpty with
-            | [],false -> [(XText "") :> XObject]
-            | _ -> List.map (fun x -> upcast x) children
-        let attributes = List.map (fun a -> xattr a :> XObject) attributes
-        XElement(!!name, attributes @ children) :> XNode
+
+    open XmlHelpers
 
     let inline puree v : 'a XmlWriter = [],v
     //let ap (x: xml_item list,f) (y,a) = x @ y, f a

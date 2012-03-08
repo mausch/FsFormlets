@@ -220,8 +220,8 @@ module Formlet =
         let addError value xml = 
             let elems = 
                 [
-                    XmlWriter.xelem "span" ["class","errorinput"] xml
-                    XmlWriter.xelem "span" ["class","error"] [XText(errorMsg value)]
+                    XmlHelpers.xelem "span" ["class","errorinput"] xml
+                    XmlHelpers.xelem "span" ["class","error"] [XText(errorMsg value)]
                 ]
             List.map (fun e -> e :> XNode) elems
         { IsValid = isValid
@@ -274,7 +274,7 @@ module Formlet =
     let optionalInput defaultValue attributes: string option Formlet =
         let tag name (boundValue: InputValue list) = 
             let valueAttr = getValueAttr boundValue
-            [XmlWriter.xelem "input" (["name", name] @ valueAttr @ attributes) []]
+            [XmlHelpers.xelem "input" (["name", name] @ valueAttr @ attributes) []]
         generalGeneratedElement [Value defaultValue] tag |> extractOptional
 
     let internal generatedField =
@@ -300,7 +300,7 @@ module Formlet =
     let input value attributes : string Formlet = 
         let tag name boundValue = 
             let valueAttr = getValueAttr boundValue
-            [XmlWriter.xelem "input" (["name", name] @ valueAttr @ attributes) []]
+            [XmlHelpers.xelem "input" (["name", name] @ valueAttr @ attributes) []]
         generalGeneratedElement [Value value] tag |> extractString
 
     /// <summary>
@@ -312,7 +312,7 @@ module Formlet =
     let assignedInput name value attributes : string Formlet =
         let tag name boundValue = 
             let valueAttr = getValueAttr boundValue
-            [XmlWriter.xelem "input" (["name", name] @ valueAttr @ attributes) []]
+            [XmlHelpers.xelem "input" (["name", name] @ valueAttr @ attributes) []]
         generalAssignedElement name [Value value] tag |> extractString
 
     /// <summary>
@@ -353,7 +353,7 @@ module Formlet =
                 | _ -> []
             let attr = ["name",name; "type","checkbox"] @ valueAttr
             let attr = attributes |> mergeAttr attr
-            [XmlWriter.xelem "input" attr []]
+            [XmlHelpers.xelem "input" attr []]
         let on = if on then [Value ""] else []
         generalGeneratedElement on tag 
         |> extractOptional
@@ -373,7 +373,7 @@ module Formlet =
     let radio selected (choices: (string*string) seq): string Formlet =
         let makeRadio name value id selected = 
             let on = if selected then ["checked","checked"] else []
-            XmlWriter.xelem "input" (["type","radio"; "name",name; "id",id; "value",value] @ on) []
+            XmlHelpers.xelem "input" (["type","radio"; "name",name; "id",id; "value",value] @ on) []
         let tag name boundValue = 
             let selectedValue = extractOptionString boundValue |> Option.get
             choices
@@ -401,9 +401,9 @@ module Formlet =
             if Seq.exists ((=) value) selected
                 then ["selected","selected"] 
                 else []
-        XmlWriter.xelem "option" (["value",value] @ on) [XText text]
+        XmlHelpers.xelem "option" (["value",value] @ on) [XText text]
     let internal makeSelect name attr options = 
-        XmlWriter.xelem "select" (["name",name] @ attr) options
+        XmlHelpers.xelem "select" (["name",name] @ attr) options
     let internal selectTag selected choices attr name (boundValue: InputValue list) =
         let selected =
             match boundValue with
@@ -457,7 +457,7 @@ module Formlet =
                     | Value v -> v
                     | _ -> failwith "file not expected"
                 | _ -> ""
-            [XmlWriter.xelem "textarea" (["name",name] @ attr) [XText content]]
+            [XmlHelpers.xelem "textarea" (["name",name] @ attr) [XText content]]
         elemBuilder value tag
         |> extractString
 
@@ -479,7 +479,7 @@ module Formlet =
     /// </summary>
     let file attr : HttpPostedFileBase option Formlet = 
         let tag name boundValue = 
-            [XmlWriter.xelem "input" (["type", "file"; "name", name] @ attr) []]
+            [XmlHelpers.xelem "input" (["type", "file"; "name", name] @ attr) []]
         let r = generalGeneratedElement [] tag
         let oneFileOrNone =
             function
@@ -514,7 +514,7 @@ module Formlet =
     /// <param name="attr">Additional attributes</param>
     let image src alt attr : System.Drawing.Point option Formlet = 
         let tag name = 
-            [XmlWriter.xelem "input" (["name",name; "type","image"; "src",src; "alt",alt] @ attr) []]
+            [XmlHelpers.xelem "input" (["name",name; "type","image"; "src",src; "alt",alt] @ attr) []]
         fun i ->
             let name,nexti = NameGen.nextName i
             let xml = tag name

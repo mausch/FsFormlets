@@ -16,7 +16,7 @@ let inline (=.) x y =
         | XmlHelpers.TagA(name, attr, children) -> 
             let attr = attr |> List.sortBy fst
             let children = children |> List.map orderAttributes
-            XmlWriter.xelem name attr children
+            XmlHelpers.xelem name attr children
         | x -> x
     XNode.DeepEquals(orderAttributes x, orderAttributes y)
 
