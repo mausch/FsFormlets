@@ -73,22 +73,22 @@ module Formlet =
         lo_pure f |> lo_ap x
 
     let inline private alo_pure x : 'a ALO = XmlWriter.puree (lo_pure x)
-    let inline private alo_ap (f: ('a -> 'b) ALO) (x: 'a ALO) : 'b ALO =
+    let inline private alo_ap (x: 'a ALO) (f: ('a -> 'b) ALO) : 'b ALO =
         XmlWriter.lift2 lo_ap x f
 
     let inline private ealo_pure x : 'a EALO = Environ.puree (alo_pure x)
-    let inline private ealo_ap (f: ('a -> 'b) EALO) (x: 'a EALO) : 'b EALO =
-        Environ.lift2 alo_ap f x
+    let inline private ealo_ap (x: 'a EALO) (f: ('a -> 'b) EALO) : 'b EALO =
+        Environ.lift2 alo_ap x f
 
     let inline private aealo_pure x: 'a AEALO = XmlWriter.puree (ealo_pure x)
-    let inline private aealo_ap (f: ('a -> 'b) AEALO) (x: 'a AEALO) : 'b AEALO =
-        XmlWriter.lift2 ealo_ap f x
+    let inline private aealo_ap (x: 'a AEALO) (f: ('a -> 'b) AEALO) : 'b AEALO =
+        XmlWriter.lift2 ealo_ap x f
 
     let puree x : 'a Formlet = NameGen.puree (aealo_pure x)
-    let ap (f: ('a -> 'b) Formlet) (x: 'a Formlet) : 'b Formlet = 
-        NameGen.lift2 aealo_ap f x
+    let ap (x: 'a Formlet) (f: ('a -> 'b) Formlet) : 'b Formlet = 
+        NameGen.lift2 aealo_ap x f
 
-    let inline (<*>) f x = ap f x
+    let inline (<*>) f x = ap x f
     let inline map f a = puree f <*> a
 
     /// Convenience 'map' with flipped parameters
