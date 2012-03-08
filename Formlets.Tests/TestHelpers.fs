@@ -36,3 +36,7 @@ type Assert with
     static member XmlEqual(x: XNode list, y: XNode list) = Assert.Equal(x,y, xnodeListComparer)
     static member XmlEqual(x: XNode, y: XNode list) = Assert.XmlEqual([x],y)
     static member XmlEqual(x: XNode list, y: XNode) = Assert.XmlEqual(x,[y])
+    static member XmlEqual(x: string, y: XNode) = Assert.XmlEqual(XNode.Parse x, [y])
+    static member XmlEqual(x: XNode, y: string) = Assert.XmlEqual([x], XNode.Parse y)
+    static member XmlEqual(x: string, y: XNode list) = Assert.XmlEqual(XNode.Parse x, y)
+    static member XmlEqual(x: XNode list, y: string) = Assert.XmlEqual(x, XNode.Parse y)
