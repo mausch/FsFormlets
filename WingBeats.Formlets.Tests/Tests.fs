@@ -112,3 +112,38 @@ let ``intbox failure with range``() =
         Assert.XmlEqual(xml.Root, XmlHelpers.xelem "r" [] errorForm)
         printfn "%s" html
     | _ -> failwith "Formlet should not have succeeded"
+
+[<Fact>]
+let ``int with validation``() =
+    let formlet = f.Int(min = 18, max = 100)
+    let env = EnvDict.fromValueSeq ["f0", ""]
+    match run formlet env with
+    | Success v -> ()
+    | Failure(errorForm, errorList) ->
+        let expected = @"<span class='errorinput'>
+        <input name='f0' value='' type='number' max='100' min='18' />
+        </span>
+        <span class='error'> is not a valid number</span>"
+        Assert.XmlEqual(expected, errorForm)
+
+[<Fact>]
+let ``two formlets with validators and errors`` () =
+    let formlet = 
+        let age = f.Int(min = 18, max = 100) // |> f.Validate.Required
+        let name = f.Text(maxlength = 25) |> f.Validate.Required
+        div [] (pair age name)
+    let env = EnvDict.fromValueSeq ["f0",""; "f1",""]
+    match run formlet env with
+    | Success v -> ()
+    | Failure(errorForm, errorList) -> 
+        let expected = @"<div>
+        <span class='errorinput'>
+            <input required='required' max='100' min='18' type='number' name='f0' value='3' />
+        </span>
+        <span class='error'>Value must be between 18 and 100</span>
+        <span class='errorinput'>
+            <input required='required' maxlength='25' name='f1' value='' />
+        </span>
+        <span class='error'>Required field</span>
+        </div>"
+        Assert.XmlEqual(expected, errorForm)
