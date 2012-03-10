@@ -442,6 +442,12 @@ let ``non-rendering field render``() =
     Assert.Equal("", render field)
 
 [<Fact>]
+let ``two different formlets``() =
+    let formlet = pair input (Formlet.input "value" ["class","red"])
+    let expected = XmlWriter.parseRawXml "<input name='f0' value='' /><input name='f1' value='value' class='red' />"
+    Assert.XmlEqual(expected, renderToXml formlet)
+
+[<Fact>]
 let ``non-rendering field rendered with another formlet``() =
     let formlet = yields tuple2 <*> input <*> field
     let html = render formlet

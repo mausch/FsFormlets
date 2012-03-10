@@ -8,8 +8,8 @@ module NameGen =
     let inline puree v : 'a NameGen = fun (gen: int) -> v,gen
     let ap (a: 'a NameGen) (f: ('a -> 'b) NameGen) : 'b NameGen =
         fun (gen: int) ->
-            let v,gen = f gen
             let w,gen = a gen
+            let v,gen = f gen
             v w, gen
     let inline (<*>) f x = ap x f
     let inline map f x = puree f <*> x
