@@ -40,3 +40,4 @@ type Assert with
     static member XmlEqual(x: XNode, y: string) = Assert.XmlEqual([x], XNode.Parse y)
     static member XmlEqual(x: string, y: XNode list) = Assert.XmlEqual(XNode.Parse x, y)
     static member XmlEqual(x: XNode list, y: string) = Assert.XmlEqual(x, XNode.Parse y)
+    static member XmlEqual(x: string, y: string) = Assert.XmlEqual(XNode.Parse x, XNode.Parse y)

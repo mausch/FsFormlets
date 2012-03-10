@@ -47,7 +47,17 @@ let ``first``() =
             formPost "actionUrl" [ yield!!+form ]
         ]
     let html = renderToXml formlet |> template |> Renderer.RenderToString
-    Assert.Equal("<html xmlns=\"http://www.w3.org/1999/xhtml\"><head><link type=\"text/css\" rel=\"stylesheet\" media=\"all\" href=\"/Content/css/main.css\" /></head><body><form action=\"actionUrl\" method=\"post\"><input name=\"f0\" value=\"a default value\" class=\"nice\" /></form></body></html>", html)
+    let expected = @"<html xmlns='http://www.w3.org/1999/xhtml'>
+    <head>
+        <link type='text/css' rel='stylesheet' media='all' href='/Content/css/main.css' />
+    </head>
+    <body>
+        <form action='actionUrl' method='post'>
+            <input name='f0' value='a default value' class='nice' />
+        </form>
+    </body>
+    </html>"
+    Assert.XmlEqual(expected, html)
 
 [<Fact>]
 let ``render error form``() =
@@ -58,7 +68,13 @@ let ``render error form``() =
     let env = EnvDict.fromValueSeq ["f0","abc"]
     let errorForm,_,_ = run formlet env
     let html = template errorForm |> Renderer.RenderToString
-    Assert.Equal("<html xmlns=\"http://www.w3.org/1999/xhtml\"><span class=\"errorinput\"><input name=\"f0\" value=\"abc\" class=\"nice\" /></span><span class=\"error\">abc is not a valid number</span></html>", html)
+    let expected = @"<html xmlns='http://www.w3.org/1999/xhtml'>
+        <span class='errorinput'>
+            <input name='f0' value='abc' class='nice' />
+        </span>
+        <span class='error'>abc is not a valid number</span>
+    </html>"
+    Assert.XmlEqual(expected, html)
 
 [<Fact>]
 let ``combine with wingbeats``() =
@@ -67,56 +83,63 @@ let ``combine with wingbeats``() =
         s.Label id "a label" +> f.Text("a default value", ["id",id])
         <+ e.Br()
     let html = render formlet
-    Assert.Equal("<label for=\"abc\">a label</label><input name=\"f0\" value=\"a default value\" id=\"abc\" /><br />", html)
+    let expected = @"<label for='abc'>a label</label>
+    <input name='f0' value='a default value' id='abc' />
+    <br />"
+    Assert.XmlEqual(expected, html)
 
 [<Fact>]
-let ``numbox render``() =
+let ``float render``() =
     let formlet = f.Float(required = true, maxlength = 4, attributes = ["class","nice"])
     let html = render formlet
-    Assert.Equal("<input type=\"number\" maxlength=\"4\" required=\"required\" name=\"f0\" value=\"\" class=\"nice\" />", html)
+    let expected = "<input type='number' maxlength='4' required='required' name='f0' value='' class='nice' />"
+    Assert.XmlEqual(expected, html)
 
 [<Fact>]
-let ``numbox run failure``() =
+let ``float run failure``() =
     let formlet = f.Float(required = true, maxlength = 4, attributes = ["class","nice"])
     let env = EnvDict.fromValueSeq ["f0","abc"]
     match run formlet env with
     | Failure(errorForm, _) -> 
-        let html = XmlWriter.render errorForm
-        let xml = XDocument.Parse "<r><span class='errorinput'><input name='f0' value='abc' type='number' maxlength='4' required='required' class='nice' /></span><span class='error'>Invalid value</span></r>"
-        Assert.XmlEqual(xml.Root, XmlHelpers.xelem "r" [] errorForm)
-        printfn "%s" html
+        let expected = @"<span class='errorinput'>
+        <input name='f0' value='abc' type='number' maxlength='4' required='required' class='nice' />
+        </span>
+        <span class='error'>Invalid value</span>"
+        Assert.XmlEqual(expected, errorForm)
     | _ -> failwith "Formlet should not have succeeded"
 
 [<Fact>]
-let ``intbox doesn't accept float``() =
+let ``int doesn't accept float``() =
     let formlet = f.Int()
     let env = EnvDict.fromValueSeq ["f0","1.3"]
     let html = render formlet
     printfn "%s" html
     match run formlet env with
     | Failure(errorForm, _) ->
-        let html = XmlWriter.render errorForm
-        let xml = XDocument.Parse "<r><span class='errorinput'><input name='f0' value='1.3' type='number' /></span><span class='error'>1.3 is not a valid number</span></r>"
-        Assert.XmlEqual(xml.Root, XmlHelpers.xelem "r" [] errorForm)
-        printfn "%s" html
+        let expected = @"<span class='errorinput'>
+        <input name='f0' value='1.3' type='number' />
+        </span>
+        <span class='error'>1.3 is not a valid number</span>"
+        Assert.XmlEqual(expected, errorForm)
     | _ -> failwith "Formlet should not have succeeded"
 
 [<Fact>]
-let ``intbox failure with range``() =
+let ``int failure with range``() =
     let formlet = f.Int(min = 5, max = 10)
     let env = EnvDict.fromValueSeq ["f0","3"]
     match run formlet env with
     | Failure(errorForm, _) ->
-        let html = XmlWriter.render errorForm
-        let xml = XDocument.Parse "<r><span class='errorinput'><input min='5' max='10' name='f0' value='3' type='number' /></span><span class='error'>Value must be between 5 and 10</span></r>"
-        Assert.XmlEqual(xml.Root, XmlHelpers.xelem "r" [] errorForm)
-        printfn "%s" html
+        let expected = @"<span class='errorinput'>
+        <input min='5' max='10' name='f0' value='3' type='number' />
+        </span>
+        <span class='error'>Value must be between 5 and 10</span>"
+        Assert.XmlEqual(expected, errorForm)
     | _ -> failwith "Formlet should not have succeeded"
 
 [<Fact>]
-let ``int with validation``() =
+let ``int with validation error``() =
     let formlet = f.Int(min = 18, max = 100)
-    let env = EnvDict.fromValueSeq ["f0", ""]
+    let env = EnvDict.fromValueSeq ["f0", "abc"]
     match run formlet env with
     | Success v -> ()
     | Failure(errorForm, errorList) ->
