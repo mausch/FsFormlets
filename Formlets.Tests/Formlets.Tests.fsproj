@@ -36,8 +36,14 @@
   <ItemGroup>
     <Compile Include="TestHelpers.fs" />
     <Compile Include="FormletsTests.fs" />
+    <Compile Include="WingBeatsTests.fs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\WingBeats.Formlets\WingBeats.Formlets.fsproj">
+      <Name>WingBeats.Formlets</Name>
+      <Project>{c920fcb6-bf44-4884-a744-1409ac0a21c4}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <Reference Include="FSharpx.Core">
       <HintPath>..\lib\FSharpx.Core.dll</HintPath>
     </Reference>
@@ -50,6 +56,12 @@
     <Reference Include="System.Web.Abstractions" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
+    <Reference Include="WingBeats">
+      <HintPath>..\lib\WingBeats.dll</HintPath>
+    </Reference>
+    <Reference Include="WingBeats.Xhtml">
+      <HintPath>..\lib\WingBeats.Xhtml.dll</HintPath>
+    </Reference>
     <Reference Include="xunit">
       <HintPath>..\lib\xunit.dll</HintPath>
     </Reference>

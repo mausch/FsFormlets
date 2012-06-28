@@ -7,8 +7,6 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Formlets.Tests", "Formlets.
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "WingBeats.Formlets", "WingBeats.Formlets\WingBeats.Formlets.fsproj", "{C920FCB6-BF44-4884-A744-1409AC0A21C4}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "WingBeats.Formlets.Tests", "WingBeats.Formlets.Tests\WingBeats.Formlets.Tests.fsproj", "{7134FE07-DEDF-4077-9CC4-E75DDAF71100}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{DA5883F6-6580-4B88-AF2C-671101387676}"
 	ProjectSection(SolutionItems) = preProject
 		.nuget\packages.config = .nuget\packages.config
@@ -32,10 +30,6 @@ Global
 		{C920FCB6-BF44-4884-A744-1409AC0A21C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C920FCB6-BF44-4884-A744-1409AC0A21C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C920FCB6-BF44-4884-A744-1409AC0A21C4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7134FE07-DEDF-4077-9CC4-E75DDAF71100}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7134FE07-DEDF-4077-9CC4-E75DDAF71100}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7134FE07-DEDF-4077-9CC4-E75DDAF71100}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7134FE07-DEDF-4077-9CC4-E75DDAF71100}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

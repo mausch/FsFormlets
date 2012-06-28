@@ -1,4 +1,4 @@
-﻿module Tests
+﻿module WingBeatsTests
 
 open TestHelpers
 open Xunit
