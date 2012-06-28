@@ -9,6 +9,11 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "WingBeats.Formlets", "WingB
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "WingBeats.Formlets.Tests", "WingBeats.Formlets.Tests\WingBeats.Formlets.Tests.fsproj", "{7134FE07-DEDF-4077-9CC4-E75DDAF71100}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{DA5883F6-6580-4B88-AF2C-671101387676}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\packages.config = .nuget\packages.config
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
