@@ -25,15 +25,26 @@ let internal xnodeComparer =
         member x.Compare(a,b) = 
             if a =. b then 0 else 1 }
 
+let internal xnodeEqualityComparer = 
+    { new IEqualityComparer<XNode> with
+        member x.Equals(a,b) = a =. b
+        member x.GetHashCode a = a.GetHashCode() }
+
 let internal xnodeListComparer =
     { new IComparer<XNode list> with
         member x.Compare(a,b) = 
             let eq = a.Length = b.Length && List.forall2 (fun x y -> x =. y) a b
             if eq then 0 else 1 }
 
+let internal xnodeListEqualityComparer = 
+    { new IEqualityComparer<XNode list> with
+        member x.Equals(a,b) = 
+            a.Length = b.Length && List.forall2 (fun x y -> x =. y) a b
+        member x.GetHashCode a = a.GetHashCode() }
+
 type Assert with
-    static member XmlEqual(x: XNode, y: XNode) = Assert.Equal(x,y, xnodeComparer)
-    static member XmlEqual(x: XNode list, y: XNode list) = Assert.Equal(x,y, xnodeListComparer)
+    static member XmlEqual(x: XNode, y: XNode) = Assert.Equal(x,y, xnodeEqualityComparer)
+    static member XmlEqual(x: XNode list, y: XNode list) = Assert.Equal(x,y, xnodeListEqualityComparer)
     static member XmlEqual(x: XNode, y: XNode list) = Assert.XmlEqual([x],y)
     static member XmlEqual(x: XNode list, y: XNode) = Assert.XmlEqual(x,[y])
     static member XmlEqual(x: string, y: XNode) = Assert.XmlEqual(XNode.Parse x, [y])

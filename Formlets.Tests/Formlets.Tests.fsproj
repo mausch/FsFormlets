@@ -33,10 +33,12 @@
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath32)\FSharp\1.0\Microsoft.FSharp.Targets" Condition="!Exists('$(MSBuildBinPath)\Microsoft.Build.Tasks.v4.0.dll')" />
   <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft F#\v4.0\Microsoft.FSharp.Targets" Condition=" Exists('$(MSBuildBinPath)\Microsoft.Build.Tasks.v4.0.dll')" />
+  <Import Project="../.nuget/BuildMagic.targets" />
   <ItemGroup>
     <Compile Include="TestHelpers.fs" />
     <Compile Include="FormletsTests.fs" />
     <Compile Include="WingBeatsTests.fs" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WingBeats.Formlets\WingBeats.Formlets.fsproj">
@@ -64,22 +66,16 @@
     <Reference Include="WingBeats.Xhtml">
       <HintPath>..\lib\WingBeats.Xhtml.dll</HintPath>
     </Reference>
-    <Reference Include="xunit">
-      <HintPath>..\lib\xunit.dll</HintPath>
-    </Reference>
-    <Reference Include="xunit.runner.tdnet">
-      <HintPath>..\lib\xunit.runner.tdnet.dll</HintPath>
-    </Reference>
-    <Reference Include="xunit.runner.utility">
-      <HintPath>..\lib\xunit.runner.utility.dll</HintPath>
-    </Reference>
     <ProjectReference Include="..\Formlets\Formlets.fsproj">
       <Name>Formlets</Name>
       <Project>{d628a18c-7c64-48cd-bc52-add7a88a8770}</Project>
       <Private>True</Private>
     </ProjectReference>
+    <Reference Include="xunit">
+      <HintPath>..\packages\xunit.1.9.0.1566\lib\xunit.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
-  <Import Project="../.nuget/BuildMagic.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
 	     Other similar extension points exist, see Microsoft.Common.targets.
 	<Target Name="BeforeBuild">

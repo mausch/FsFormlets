@@ -67,7 +67,7 @@ let radioRender() =
 let radioRun() =
     let env = EnvDict.fromValueSeq ["f0", "2"]
     match run radioFormlet env with
-    | Success r -> Assert.Equal("2", r)
+    | Success r -> Assert.Equal<string>("2", r)
     | _ -> failwith "shouldn't have failed"
 
 open XmlHelpers
@@ -119,7 +119,7 @@ let textareaRefill() =
     match r.[0] with
     | TagA(_,_,content) -> 
         match content with
-        | [TextV t] -> Assert.Equal("pepe", t)
+        | [TextV t] -> Assert.Equal<string>("pepe", t)
         | _ -> failwithf "Unexpected content %A" content
     | _ -> failwith "err"
 
@@ -147,7 +147,7 @@ let ``select refill``() =
     let env = EnvDict.fromValueSeq ["f0", "b"]
     let errorForm, errorList, value = run f env
     Assert.True value.IsSome
-    Assert.Equal("b", value.Value)
+    Assert.Equal<string>("b", value.Value)
     Assert.Equal(0, errorList.Length)
     let errorForm = XmlWriter.render errorForm
     printfn "%s" errorForm
@@ -175,7 +175,7 @@ let ``image without values``() =
 let manualFormletRenderTest() =
     let html = render manualNameFormlet
     printfn "%s" html
-    Assert.Equal("<input name=\"somename\" value=\"\" />", html)
+    Assert.Equal<string>("<input name=\"somename\" value=\"\" />", html)
 
 [<Fact>]
 let manualFormletProcessTest() =
@@ -183,9 +183,9 @@ let manualFormletProcessTest() =
     let env = EnvDict.fromValueSeq env
     match run manualNameFormlet env with
     | err,_,Some r ->
-        Assert.Equal("somevalue", r)
+        Assert.Equal<string>("somevalue", r)
         match err with
-        | [TagA(_,attr,_)] -> Assert.Equal(["name","somename"; "value","somevalue"], attr)
+        | [TagA(_,attr,_)] -> Assert.Equal<list<string*string>>(["name","somename"; "value","somevalue"], attr)
         | _ -> failwithf "Unexpected content %A" err
     | _ -> failwith "Unexpected result"
 
@@ -213,11 +213,11 @@ let processTest() =
     match run fullFormlet env with
     | Success(dt,pass,chk,n,opt,t,many,f) ->
         Assert.Equal(DateTime(2010, 12, 22), dt)
-        Assert.Equal("", pass)
+        Assert.Equal<string>("", pass)
         Assert.False chk
-        Assert.Equal("1", n)
-        Assert.Equal("b", opt)
-        Assert.Equal("blah blah", t)
+        Assert.Equal<string>("1", n)
+        Assert.Equal<string>("b", opt)
+        Assert.Equal<string>("blah blah", t)
         Assert.Equal(2, many.Length)
         Assert.True(f.IsSome)
     | _ -> failwith "Shouldn't have failed"
@@ -287,25 +287,25 @@ let ``textarea encoded``() =
 let ``addClass with no previous class``() =
     let before = ["something","value"]
     let after = before |> addClass "aclass"
-    Assert.Equal(["class","aclass"; "something","value"], after)
+    Assert.Equal<list<string*string>>(["class","aclass"; "something","value"], after)
 
 [<Fact>]
 let ``addClass with existing class``() =
     let before = ["something","value"; "class","class1"]
     let after = before |> addClass "aclass"
-    Assert.Equal(["something","value"; "class","class1 aclass"], after)
+    Assert.Equal<list<string*string>>(["something","value"; "class","class1 aclass"], after)
     
 [<Fact>]
 let ``addStyle with no previous style``() =
     let before = ["something","value"]
     let after = before |> addStyle "border: 1px"
-    Assert.Equal(["style","border: 1px"; "something","value"], after)
+    Assert.Equal<list<string*string>>(["style","border: 1px"; "something","value"], after)
     
 [<Fact>]
 let ``addStyle with existing style``() =
     let before = ["something","value"; "style","color:red"]
     let after = before |> addStyle "border: 1px"
-    Assert.Equal(["something","value"; "style","color:red;border: 1px"], after)
+    Assert.Equal<list<string*string>>(["something","value"; "style","color:red;border: 1px"], after)
     
 [<Fact>]
 let ``mergeAttr with no dups``() =
@@ -407,7 +407,7 @@ let ``validation without xml and with string``() =
         printfn "Error form: %s" (XmlWriter.render errorForm)
         printfn "%A" errorMsg
         Assert.Equal(1, errorMsg.Length)
-        Assert.Equal("'abc' is not a valid number", errorMsg.[0])
+        Assert.Equal<string>("'abc' is not a valid number", errorMsg.[0])
 
 [<Fact>]
 let ``validation without xml and with string with multiple formlets``() =
@@ -427,19 +427,19 @@ let ``validation without xml and with string with multiple formlets``() =
         printfn "Error form: %s" (XmlWriter.render errorForm)
         printfn "%A" errorMsg
         Assert.Equal(2, errorMsg.Length)
-        Assert.Equal("'abc' is not a valid number", errorMsg.[0])
-        Assert.Equal("'def' is not a valid number", errorMsg.[1])
+        Assert.Equal<string>("'abc' is not a valid number", errorMsg.[0])
+        Assert.Equal<string>("'def' is not a valid number", errorMsg.[1])
 
 [<Fact>]
 let ``parse raw xml ``() =
     let formlet = rawXml "something <a href='someurl'>a link</a>"
     let html = render formlet
     printfn "%s" html
-    Assert.Equal("something <a href=\"someurl\">a link</a>", html)
+    Assert.Equal<string>("something <a href=\"someurl\">a link</a>", html)
 
 [<Fact>]
 let ``non-rendering field render``() =
-    Assert.Equal("", render field)
+    Assert.Equal<string>("", render field)
 
 [<Fact>]
 let ``two different formlets``() =
@@ -451,13 +451,13 @@ let ``two different formlets``() =
 let ``non-rendering field rendered with another formlet``() =
     let formlet = yields tuple2 <*> input <*> field
     let html = render formlet
-    Assert.Equal("<input name=\"f0\" value=\"\" />", html)
+    Assert.Equal<string>("<input name=\"f0\" value=\"\" />", html)
 
 [<Fact>]
 let ``non-rendering field run``() =
     let env = EnvDict.fromValueSeq ["f0","def"]
     match run field env with
-    | Success v -> Assert.Equal("def", v)
+    | Success v -> Assert.Equal<string>("def", v)
     | _ -> failwith "failed"
     ()
 
@@ -469,7 +469,7 @@ let ``validation error in non-rendering field``() =
     | Success _ -> failwith "Should not have succeeded"
     | Failure(errorForm,errorList) ->
         Assert.Equal(1, errorList.Length)
-        Assert.Equal("def is not a valid number", errorList.[0])
+        Assert.Equal<string>("def is not a valid number", errorList.[0])
         printfn "%s" (XmlWriter.render errorForm)
         //Assert.Equal(0, errorForm.Length)
 
@@ -477,7 +477,7 @@ let ``validation error in non-rendering field``() =
 let ``merge attr``() =
     let formlet = input |> mergeAttributes ["id","pepe"]
     let html = render formlet
-    Assert.Equal("<input id=\"pepe\" name=\"f0\" value=\"\" />", html)
+    Assert.Equal<string>("<input id=\"pepe\" name=\"f0\" value=\"\" />", html)
 
 [<Fact>]
 let ``merge attr in error form``() =
@@ -486,13 +486,13 @@ let ``merge attr in error form``() =
     match run formlet env with
     | Failure(errorForm,_) -> 
         let html = XmlWriter.render errorForm
-        Assert.Equal("<span class=\"errorinput\"><input id=\"pepe\" name=\"f0\" value=\"a\" /></span><span class=\"error\">a is not a valid number</span>", html)
+        Assert.Equal<string>("<span class=\"errorinput\"><input id=\"pepe\" name=\"f0\" value=\"a\" /></span><span class=\"error\">a is not a valid number</span>", html)
     | _ -> failwith "Should not have succeeded"
 
 [<Fact>]
 let SerializeDateTime() =
     let v = DateTimeOffset(2011,1,1, 12,34,56, TimeSpan(0L)) |> dateTimeSerializer.Serialize
-    Assert.Equal("2011-01-01T12:34:56.00Z", v)
+    Assert.Equal<string>("2011-01-01T12:34:56.00Z", v)
 
 [<Fact>]
 let ``DateTime ok``() =
@@ -521,17 +521,17 @@ let ``Date ok``() =
 [<Fact>]
 let ``Week serialization``() =
     let w = DateTime(2011,4,3) |> weekSerializer.Serialize
-    Assert.Equal("2011-W13", w)
+    Assert.Equal<string>("2011-W13", w)
 
 [<Fact>]
 let ``Week serialization first day of year``() =
     let w = DateTime(2011,1,1) |> weekSerializer.Serialize
-    Assert.Equal("2010-W52", w)
+    Assert.Equal<string>("2010-W52", w)
 
 [<Fact>]
 let ``Week serialization padded``() =
     let w = DateTime(2011,2,1) |> weekSerializer.Serialize
-    Assert.Equal("2011-W04", w)
+    Assert.Equal<string>("2011-W04", w)
 
 [<Fact>]
 let ``Week deserialization``() =
@@ -564,7 +564,7 @@ let ``Time deserialize without second``() =
 [<Fact>]
 let ``Color serialize``() =
     let color = colorSerializer.Serialize Color.Red
-    Assert.Equal("#FF0000", color)
+    Assert.Equal<string>("#FF0000", color)
 
 [<Fact>]
 let ``Color deserialize ok``() =
@@ -597,7 +597,7 @@ let ``bin serializer string``() =
     let s = "toto"
     let r = binSerializer.Serialize s
     printfn "length: %d, content: %s" r.Length r
-    Assert.Equal(s, binSerializer.Deserialize r |> string)
+    Assert.Equal<string>(s, binSerializer.Deserialize r |> string)
 
 [<Fact>]
 let ``bin serializer fun``() =
@@ -611,14 +611,14 @@ let ``bin serializer xtext``() =
     let r = binSerializer.Serialize x
     printfn "length: %d, content: %s" r.Length r
     let x2 = binSerializer.Deserialize r :?> XText
-    Assert.Equal(x.Value, x2.Value)
+    Assert.Equal<string>(x.Value, x2.Value)
 
 [<Fact>]
 let ``los serializer string``() =
     let s = "toto"
     let r = losSerializer.Serialize s
     printfn "length: %d, content: %s" r.Length r
-    Assert.Equal(s, losSerializer.Deserialize r |> string)
+    Assert.Equal<string>(s, losSerializer.Deserialize r |> string)
 
 [<Fact>]
 let ``los serializer fun``() =
