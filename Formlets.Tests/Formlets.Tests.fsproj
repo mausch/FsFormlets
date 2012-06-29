@@ -6,7 +6,7 @@
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{300fb450-0ca2-435d-b41e-a9399594fc83}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <OutputType>Exe</OutputType>
     <RootNamespace>FSharpMVC.Tests</RootNamespace>
     <AssemblyName>Formlets.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
@@ -38,6 +38,7 @@
     <Compile Include="TestHelpers.fs" />
     <Compile Include="FormletsTests.fs" />
     <Compile Include="WingBeatsTests.fs" />
+    <Compile Include="Main.fs" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -48,6 +49,10 @@
     </ProjectReference>
     <Reference Include="FSharpx.Core">
       <HintPath>..\packages\FSharpx.Core.1.6.4\lib\40\Fsharpx.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Fuchu">
+      <HintPath>..\packages\Fuchu.0.1.2\lib\net40-client\Fuchu.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="mscorlib" />

@@ -1,9 +1,20 @@
 ﻿module TestHelpers
 
 open Xunit
+open System
+open System.Xml
 open System.Xml.Linq
 open System.Collections.Generic
 open Formlets
+
+// DSL for XML literals, from http://fssnip.net/U
+let inline (!) s = XName.Get(s)
+let inline (@=) xn value = XAttribute(xn, value)
+let (@?=) xn value = match value with Some s -> XAttribute(xn, s) | None -> null
+type XName with 
+    member xn.Item 
+        with get([<ParamArray>] objs: obj[]) = 
+            if objs = null then null else XElement(xn, objs)
 
 let assertThrows<'e when 'e :> exn> f = 
     Assert.Throws<'e>(Assert.ThrowsDelegate(f)) |> ignore
