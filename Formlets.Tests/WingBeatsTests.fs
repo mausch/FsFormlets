@@ -1,8 +1,6 @@
-﻿module WingBeatsTests
+﻿module Formlets.Tests.WingBeats
 
 open Fuchu
-open TestHelpers
-open Xunit
 open Formlets.XmlWriter
 open Formlets
 open WingBeats
@@ -37,10 +35,8 @@ let tests =
     testList "WingBeats integration" [
         testCase "compare xnodes with different attribute order" <| fun _ ->
             let x = XNode.Parse "<input name='f0' value='abc' type='number' maxlength='4' required='required' class='nice' />"
-            let x = x.[0]
             let y = XNode.Parse "<input type='number' maxlength='4' required='required' name='f0' value='abc' class='nice' />"
-            let y = y.[0]
-            Assert.True (x =. y)
+            Assert.XmlEqual(x,y)
 
         testCase "simple" <| fun _ ->
             let formlet = f.Text("a default value", ["class","nice"])
@@ -110,7 +106,7 @@ let tests =
             let formlet = f.Int()
             let env = EnvDict.fromValueSeq ["f0","1.3"]
             let html = render formlet
-            printfn "%s" html
+            //printfn "%s" html
             match run formlet env with
             | Failure(errorForm, _) ->
                 let expected = @"<span class='errorinput'>
@@ -163,5 +159,5 @@ let tests =
                 </span>
                 <span class='error'>Required field</span>
                 </div>"
-                Assert.XmlEqual(expected, errorForm)    
+                Assert.XmlEqual(expected, errorForm)
     ]

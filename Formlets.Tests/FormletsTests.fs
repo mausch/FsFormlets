@@ -1,7 +1,5 @@
-﻿module FormletsTests
+﻿module Formlets.Tests.Formlets
 
-open TestHelpers
-open Xunit
 open System
 open System.Collections.Specialized
 open System.Drawing
@@ -18,7 +16,7 @@ let e = FormElements(Validate.Default)
 
 let input = input "" [] // no additional attributes
 
-let inputInt = input |> Validate.Default.Int
+let inputInt = Validate.Default.Int input
 
 let inline fst3 (a,_,_) = a
 let inline snd3 (_,b,_) = b
@@ -66,12 +64,13 @@ let tests =
         testList "Radio" [
             testCase "render" <| fun _ ->
                 let html = render radioFormlet
-                printfn "%s" html
+                //printfn "%s" html
+                ()
 
             testCase "run" <| fun _ ->
                 let env = EnvDict.fromValueSeq ["f0", "2"]
                 match run radioFormlet env with
-                | Success r -> Assert.Equal<string>("2", r)
+                | Success r -> assertEqual "collected formlet value" "2" r
                 | _ -> failtest "shouldn't have failed"
 
             testCase "refill" <| fun _ ->
@@ -82,14 +81,21 @@ let tests =
                     | Tag e -> e.Nodes() |> Seq.toArray
                     | _ -> failtest "Expected tag, got text"
                 let r = run radioFormlet env |> fst3 |> nth 0 |> getChildren
-                printfn "%A" r
+                //printfn "%A" r
+
                 let input1 = r.[0]
                 let input2 = r.[2]
+
                 match input1 with
-                | TagA(_,attr,_) -> Assert.False(Seq.exists (fst >> (=) "checked") attr)
+                | TagA(_,attr,_) -> 
+                    if Seq.exists (fst >> (=) "checked") attr
+                        then failtest "unexpected checked attribute found"
                 | _ -> failtest "err"
+
                 match input2 with
-                | TagA(_,attr,_) -> Assert.True(Seq.exists (fst >> (=) "checked") attr)
+                | TagA(_,attr,_) -> 
+                    if not (Seq.exists (fst >> (=) "checked") attr)
+                        then failtest "checked attribute not found"
                 | _ -> failtest "err"
 
         ]
@@ -98,28 +104,32 @@ let tests =
             let formlet = checkbox false []
             let env = EnvDict.fromValueSeq ["f0", "on"]
             let r = run formlet env |> fst3
-            printfn "%A" r
+            //printfn "%A" r
             match r.[0] with
-            | TagA(_,attr,_) -> Assert.True(Seq.exists (fst >> (=) "checked") attr)
+            | TagA(_,attr,_) ->     
+                if not (Seq.exists (fst >> (=) "checked") attr)
+                    then failtest "checked attribute not found"
             | _ -> failtest "err"
 
         testCase "input refill" <| fun _ ->
             let env = EnvDict.fromValueSeq ["f0", "pepe"]
             let r = run input env |> fst3
-            printfn "%A" r
+            //printfn "%A" r
             match r.[0] with
-            | TagA(_,attr,_) -> Assert.True(Seq.exists ((=)("value","pepe")) attr)
+            | TagA(_,attr,_) -> 
+                if not (Seq.exists ((=)("value","pepe")) attr)
+                    then failtestf "Expected value=pepe, found %A" attr
             | _ -> failtest "err"
 
         testCase "textarea refill" <| fun _ ->
             let env = EnvDict.fromValueSeq ["f0", "pepe"]
             let formlet = textarea "" []
             let r = run formlet env |> fst3
-            printfn "%A" r
+            //printfn "%A" r
             match r.[0] with
             | TagA(_,_,content) -> 
                 match content with
-                | [TextV t] -> Assert.Equal<string>("pepe", t)
+                | [TextV t] -> assertEqual "populated formlet value" "pepe" t
                 | _ -> failtestf "Unexpected content %A" content
             | _ -> failtest "err"
 
@@ -128,35 +138,34 @@ let tests =
             let env = ["f0", "pepe"] |> EnvDict.fromValueSeq
             let r = run f env |> fst3
             let errorForm = XmlWriter.render r
-            printfn "%s" errorForm
-            Assert.Contains("name=\"f0\" value=\"pepe\"", errorForm)
+            //printfn "%s" errorForm
+            assertContains "name=\"f0\" value=\"pepe\"" errorForm
 
         testCase "optionalInput refill without value" <| fun _ ->
             let f = Formlet.optionalInput "ovalue" []
             let r,_,v = run f []
-            Assert.True v.Value.IsNone
+            assertNone "collected value" v.Value
             let errorForm = XmlWriter.render r
-            printfn "%s" errorForm
-            Assert.Contains("name=\"f0\" value=\"ovalue\"", errorForm)
+            //printfn "%s" errorForm
+            assertContains "name=\"f0\" value=\"ovalue\"" errorForm
 
         testCase "select refill" <| fun _ ->
             let f = select "a" ["a","a"; "b","b"] []
             let env = EnvDict.fromValueSeq ["f0", "b"]
             let errorForm, errorList, value = run f env
-            Assert.True value.IsSome
-            Assert.Equal<string>("b", value.Value)
-            Assert.Equal(0, errorList.Length)
+            assertEqual "" "b" value.Value
+            assertEqual "error count" 0 errorList.Length
             let errorForm = XmlWriter.render errorForm
-            printfn "%s" errorForm
-            Assert.Contains("value=\"b\" selected=\"selected\"", errorForm)
+            //printfn "%s" errorForm
+            assertContains "value=\"b\" selected=\"selected\"" errorForm
 
         testCase "image with values" <| fun _ ->
             let f = Formlet.image "src" "alt" []
             let env = EnvDict.fromValueSeq ["f0.x","12"; "f0.y","23"]
             match run f env with
             | Success (Some p) ->
-                Assert.Equal(12, p.X)
-                Assert.Equal(23, p.Y)
+                assertEqual "x" 12 p.X
+                assertEqual "y" 23 p.Y
             | _ -> failtest "Should not have failed"
 
         testCase "image without values" <| fun _ ->
@@ -168,22 +177,24 @@ let tests =
 
         testCase "manual name formlet render" <| fun _ ->
             let html = render manualNameFormlet
-            printfn "%s" html
-            Assert.Equal<string>("<input name=\"somename\" value=\"\" />", html)
+            //printfn "%s" html
+            assertEqual "html" "<input name=\"somename\" value=\"\" />" html
 
         testCase "manual name formlet process" <| fun _ ->
             let env = ["somename", "somevalue"]
             let env = EnvDict.fromValueSeq env
             match run manualNameFormlet env with
             | err,_,Some r ->
-                Assert.Equal<string>("somevalue", r)
+                assertEqual "collected value" "somevalue" r
                 match err with
-                | [TagA(_,attr,_)] -> Assert.Equal<list<string*string>>(["name","somename"; "value","somevalue"], attr)
+                | [TagA(_,attr,_)] -> assertEqual "element attributes" ["name","somename"; "value","somevalue"] attr
                 | _ -> failtestf "Unexpected content %A" err
             | _ -> failtest "Unexpected result"
 
         testCase "render" <| fun _ ->
-            printfn "%s" (render fullFormlet)
+            let html = render fullFormlet
+            //printfn "%s" html
+            ()
 
         testCase "process" <| fun _ ->
             let env = EnvDict.fromValueSeq [
@@ -203,14 +214,14 @@ let tests =
             let env = env |> EnvDict.addFromFileSeq ["f9", filemock]
             match run fullFormlet env with
             | Success(dt,pass,chk,n,opt,t,many,f) ->
-                Assert.Equal(DateTime(2010, 12, 22), dt)
-                Assert.Equal<string>("", pass)
-                Assert.False chk
-                Assert.Equal<string>("1", n)
-                Assert.Equal<string>("b", opt)
-                Assert.Equal<string>("blah blah", t)
-                Assert.Equal(2, many.Length)
-                Assert.True(f.IsSome)
+                assertEqual "date" (DateTime(2010, 12, 22)) dt
+                assertEqual "password" "" pass
+                assertEqual "checkbox" false chk
+                assertEqual "" "1" n
+                assertEqual "" "b" opt
+                assertEqual "" "blah blah" t
+                assertEqual "" 2 many.Length
+                assertEqual "" true f.IsSome
             | _ -> failtest "Shouldn't have failed"
 
         testCase "process with invalid int" <| fun _ ->
@@ -220,8 +231,8 @@ let tests =
                       ]
             let env = EnvDict.fromValueSeq env
             let err,_,value = run dateFormlet env
-            printfn "Error form:\n%s" (XmlWriter.render err)
-            Assert.True(value.IsNone)
+            //printfn "Error form:\n%s" (XmlWriter.render err)
+            assertNone "collected value" value
 
         testCase "process with invalid ints" <| fun _ ->
             let env = [
@@ -230,8 +241,8 @@ let tests =
                       ]
             let env = EnvDict.fromValueSeq env
             let err,_,value = run dateFormlet env
-            printfn "Error form:\n%s" (XmlWriter.render err)
-            Assert.True(value.IsNone)
+            //printfn "Error form:\n%s" (XmlWriter.render err)
+            assertNone "collected value" value
 
         testCase "process with invalid date" <| fun _ ->
             let env = [
@@ -240,12 +251,12 @@ let tests =
                       ]
             let env = EnvDict.fromValueSeq env
             let err,_,value = run dateFormlet env
-            printfn "Error form:\n%s" (XmlWriter.render err)
-            Assert.True(value.IsNone)
+            //printfn "Error form:\n%s" (XmlWriter.render err)
+            assertNone "collected value" value
 
         testCase "process with missing field" <| fun _ ->
             let env = ["f0", "22"] |> EnvDict.fromValueSeq
-            assertThrows<ArgumentException>(fun() -> run dateFormlet env |> ignore)
+            assertRaise typeof<ArgumentException> (fun() -> run dateFormlet env |> ignore)
 
         testCase "NameValueCollection to seq does not ignore duplicate keys" <| fun _ ->
             let e = NameValueCollection()
@@ -253,75 +264,75 @@ let tests =
             e.Add("1", "uno")
             let values = NameValueCollection.toSeq e
             let values = values |> Seq.filter (fst >> (=) "1") |> Seq.toList
-            Assert.Equal(2, values.Length)
+            assertEqual "collection count" 2 values.Length
 
         testCase "input encoded" <| fun _ ->
             let formlet = Formlet.input "<script>" []
             let html = render formlet
-            printfn "%s" html
-            Assert.Contains("&lt;script&gt;", html)
+            //printfn "%s" html
+            assertContains "&lt;script&gt;" html
 
         testCase "textarea encoded" <| fun _ ->
             let formlet = textarea "<script>" []
             let html = render formlet
-            printfn "%s" html
-            Assert.Contains("&lt;script&gt;", html)
+            //printfn "%s" html
+            assertContains "&lt;script&gt;" html
 
         testCase "addClass with no previous class" <| fun _ ->
             let before = ["something","value"]
             let after = before |> addClass "aclass"
-            Assert.Equal<list<string*string>>(["class","aclass"; "something","value"], after)
+            assertEqual "element attributes" ["class","aclass"; "something","value"] after
 
         testCase "addClass with existing class" <| fun _ ->
             let before = ["something","value"; "class","class1"]
             let after = before |> addClass "aclass"
-            Assert.Equal<list<string*string>>(["something","value"; "class","class1 aclass"], after)
+            assertEqual "element attributes" ["something","value"; "class","class1 aclass"] after
 
         testCase "addStyle with no previous style" <| fun _ ->
             let before = ["something","value"]
             let after = before |> addStyle "border: 1px"
-            Assert.Equal<list<string*string>>(["style","border: 1px"; "something","value"], after)
+            assertEqual "element attributes" ["style","border: 1px"; "something","value"] after
 
         testCase "addStyle with existing style" <| fun _ ->
             let before = ["something","value"; "style","color:red"]
             let after = before |> addStyle "border: 1px"
-            Assert.Equal<list<string*string>>(["something","value"; "style","color:red;border: 1px"], after)
+            assertEqual "element attributes" ["something","value"; "style","color:red;border: 1px"] after
 
         testCase "mergeAttr with no dups" <| fun _ ->
             let a1 = ["something","value"]
             let a2 = ["style","color:red"]
             let r = mergeAttr a1 a2
-            printfn "%A" r
-            Assert.Equal(2, r.Length)
-            Assert.True(r |> List.exists ((=) ("something","value")))
-            Assert.True(r |> List.exists ((=) ("style","color:red")))
+            //printfn "%A" r
+            assertEqual "merged length" 2 r.Length
+            assertListExists ("something","value") r
+            assertListExists ("style","color:red") r
 
         testCase "mergeAttr with dups" <| fun _ ->
             let a1 = ["something","value"; "else","1"]
             let a2 = ["something","red"]
             let r = a1 |> mergeAttr a2
-            printfn "%A" r
-            Assert.Equal(2, r.Length)
-            Assert.True(r |> List.exists ((=) ("something","red")))
-            Assert.True(r |> List.exists ((=) ("else","1")))
+            //printfn "%A" r
+            assertEqual "attribute count" 2 r.Length
+            assertListExists ("something","red") r
+            assertListExists ("else","1") r
 
         testCase "mergeAttr with dup class" <| fun _ ->
             let a1 = ["something","value"; "class","1"]
             let a2 = ["something","red"; "class","bla"]
             let r = a1 |> mergeAttr a2
-            printfn "%A" r
-            Assert.Equal(2, r.Length)
-            Assert.True(r |> List.exists ((=) ("something","red")))
-            Assert.True(r |> List.exists ((=) ("class","1 bla")))
+            //printfn "%A" r
+            assertEqual "attribute count" 2 r.Length
+            assertListExists ("something","red") r
+            assertListExists ("class","1 bla") r
 
         testCase "mergeAttr with dup style" <| fun _ ->
             let a1 = ["something","value"; "style","1"]
             let a2 = ["something","red"; "style","bla"]
             let r = a1 |> mergeAttr a2
-            printfn "%A" r
-            Assert.Equal(2, r.Length)
-            Assert.True(r |> List.exists ((=) ("something","red")))
-            Assert.True(r |> List.exists ((=) ("style","1;bla")))
+            //printfn "%A" r
+            assertEqual "attribute count" 2 r.Length
+            assertListExists ("something","red") r
+            assertListExists ("style","1;bla") r
 
         testCase "from XElement" <| fun _ ->
             let div = !"div"
@@ -333,10 +344,10 @@ let tests =
         testCase "radio with int values" <| fun _ ->
             let formlet = radioA 5 [2,"dos"; 5,"cinco"]
             let html = render formlet
-            printfn "%s" html
+            //printfn "%s" html
             let env = EnvDict.fromValueSeq ["f0","2"]
             match run formlet env with
-            | Success v -> Assert.Equal(2,v)
+            | Success v -> assertEqual "" 2 v
             | _ -> failtest "Shouldn't have failed"
 
         testCase "radio with record values" <| fun _ ->
@@ -344,10 +355,10 @@ let tests =
             let r2 = { PublicKey = "abc"; PrivateKey = "def"; MockedResult = Some false }
             let formlet = radioA r1 [r1,"dos"; r2,"cinco"]
             let html = render formlet
-            printfn "%s" html
+            //printfn "%s" html
             let env = EnvDict.fromValueSeq ["f0", hashs r2]
             match run formlet env with
-            | Success v -> Assert.Equal(r2,v)
+            | Success v -> assertEqual "" r2 v
             | _ -> failtest "Shouldn't have failed"
 
         testCase "validation without xml and with string" <| fun _ ->
@@ -363,10 +374,10 @@ let tests =
             match run formlet env with
             | Success _ -> failtest "Formlet shouldn't have succeeded"
             | Failure(errorForm,errorMsg) -> 
-                printfn "Error form: %s" (XmlWriter.render errorForm)
-                printfn "%A" errorMsg
-                Assert.Equal(1, errorMsg.Length)
-                Assert.Equal<string>("'abc' is not a valid number", errorMsg.[0])
+                //printfn "Error form: %s" (XmlWriter.render errorForm)
+                //printfn "%A" errorMsg
+                assertEqual "error count" 1 errorMsg.Length
+                assertEqual "Error message" "'abc' is not a valid number" errorMsg.[0]
 
         testCase "validation without xml and with string with multiple formlets" <| fun _ ->
             let validator = 
@@ -382,20 +393,20 @@ let tests =
             match run formlet env with
             | Success _ -> failtest "Formlet shouldn't have succeeded"
             | Failure(errorForm,errorMsg) -> 
-                printfn "Error form: %s" (XmlWriter.render errorForm)
-                printfn "%A" errorMsg
-                Assert.Equal(2, errorMsg.Length)
-                Assert.Equal<string>("'abc' is not a valid number", errorMsg.[0])
-                Assert.Equal<string>("'def' is not a valid number", errorMsg.[1])
+                //printfn "Error form: %s" (XmlWriter.render errorForm)
+                //printfn "%A" errorMsg
+                assertEqual "error count" 2 errorMsg.Length
+                assertEqual "First error message" "'abc' is not a valid number" errorMsg.[0]
+                assertEqual "second error message" "'def' is not a valid number" errorMsg.[1]
 
         testCase "parse raw xml" <| fun _ ->
             let formlet = rawXml "something <a href='someurl'>a link</a>"
             let html = render formlet
-            printfn "%s" html
-            Assert.Equal<string>("something <a href=\"someurl\">a link</a>", html)
+            //printfn "%s" html
+            assertEqual "html" "something <a href=\"someurl\">a link</a>" html
 
         testCase "non-rendering field render" <| fun _ ->
-            Assert.Equal<string>("", render field)
+            assertEqual "render result" "" (render field)
 
         testCase "two different formlets" <| fun _ ->
             let formlet = pair input (Formlet.input "value" ["class","red"])
@@ -405,12 +416,12 @@ let tests =
         testCase "non-rendering field rendered with another formlet" <| fun _ ->
             let formlet = yields tuple2 <*> input <*> field
             let html = render formlet
-            Assert.Equal<string>("<input name=\"f0\" value=\"\" />", html)
+            assertEqual "render result" "<input name=\"f0\" value=\"\" />" html
 
         testCase "non-rendering field run" <| fun _ ->
             let env = EnvDict.fromValueSeq ["f0","def"]
             match run field env with
-            | Success v -> Assert.Equal<string>("def", v)
+            | Success v -> assertEqual "" "def" v
             | _ -> failtest "failed"
 
         testCase "validation error in non-rendering field" <| fun _ ->
@@ -419,14 +430,15 @@ let tests =
             match run fieldInt env with
             | Success _ -> failtest "Should not have succeeded"
             | Failure(errorForm,errorList) ->
-                Assert.Equal(1, errorList.Length)
-                Assert.Equal<string>("def is not a valid number", errorList.[0])
-                printfn "%s" (XmlWriter.render errorForm)
+                assertEqual "error count" 1 errorList.Length
+                assertEqual "error message" "def is not a valid number" errorList.[0]
+                //printfn "%s" (XmlWriter.render errorForm)
+                ()
 
         testCase "merge attributes" <| fun _ ->
             let formlet = input |> mergeAttributes ["id","pepe"]
             let html = render formlet
-            Assert.Equal<string>("<input id=\"pepe\" name=\"f0\" value=\"\" />", html)
+            assertEqual "render result" "<input id=\"pepe\" name=\"f0\" value=\"\" />" html
 
         testCase "merge attributes in error form" <| fun _ ->
             let formlet = input |> mergeAttributes ["id","pepe"] |> Validate.Default.Int
@@ -434,18 +446,18 @@ let tests =
             match run formlet env with
             | Failure(errorForm,_) -> 
                 let html = XmlWriter.render errorForm
-                Assert.Equal<string>("<span class=\"errorinput\"><input id=\"pepe\" name=\"f0\" value=\"a\" /></span><span class=\"error\">a is not a valid number</span>", html)
+                assertEqual "html" "<span class=\"errorinput\"><input id=\"pepe\" name=\"f0\" value=\"a\" /></span><span class=\"error\">a is not a valid number</span>" html
             | _ -> failtest "Should not have succeeded"
 
         testCase "serialize DateTime" <| fun _ ->
             let v = DateTimeOffset(2011,1,1, 12,34,56, TimeSpan(0L)) |> dateTimeSerializer.Serialize
-            Assert.Equal<string>("2011-01-01T12:34:56.00Z", v)
+            assertEqual "" "2011-01-01T12:34:56.00Z" v
 
         testCase "DateTime ok" <| fun _ ->
             let f = e.DateTime()
             let env = EnvDict.fromValueSeq ["f0","0037-12-13T02:10:33.00Z"]
             match run f env with
-            | Success v -> Assert.Equal(DateTimeOffset(37,12,13,2,10,33, TimeSpan(0L)), v)
+            | Success v -> assertEqual "" (DateTimeOffset(37,12,13,2,10,33, TimeSpan(0L))) v
             | _ -> failtest "should not have failed"
 
         testCase "DateTime min error" <| fun _ ->
@@ -459,24 +471,24 @@ let tests =
             let f = e.Date()
             let env = EnvDict.fromValueSeq ["f0","0037-12-13"]
             match run f env with
-            | Success v -> Assert.Equal(DateTime(37,12,13), v)
+            | Success v -> assertEqual "" (DateTime(37,12,13)) v
             | _ -> failtest "should not have failed"
             
         testCase "Week serialization" <| fun _ ->
             let w = DateTime(2011,4,3) |> weekSerializer.Serialize
-            Assert.Equal<string>("2011-W13", w)
+            assertEqual "" "2011-W13" w
 
         testCase "Week serialization first day of year" <| fun _ ->
             let w = DateTime(2011,1,1) |> weekSerializer.Serialize
-            Assert.Equal<string>("2010-W52", w)
+            assertEqual "" "2010-W52" w
 
         testCase "Week serialization padded" <| fun _ ->
             let w = DateTime(2011,2,1) |> weekSerializer.Serialize
-            Assert.Equal<string>("2011-W04", w)
+            assertEqual "" "2011-W04" w
 
         testCase "Week deserialization" <| fun _ ->
             let dt = weekSerializer.Deserialize "2011-W13"
-            Assert.Equal(DateTime(2011,4,2), dt)
+            assertEqual "" (DateTime(2011,4,2)) dt
 
         testCase "Week tryDeserialize fail" <| fun _ ->
             let r = weekSerializer.TryDeserialize "pepe"
@@ -486,73 +498,75 @@ let tests =
 
         testCase "Time deserialize without second fraction" <| fun _ ->
             let dt = timeSerializer.Deserialize "23:45:56"
-            Assert.Equal(23, dt.Hour)
-            Assert.Equal(45, dt.Minute)
-            Assert.Equal(56, dt.Second)
-            Assert.Equal(00, dt.Millisecond)
+            assertEqual "hour" 23 dt.Hour
+            assertEqual "minute" 45 dt.Minute
+            assertEqual "second" 56 dt.Second
+            assertEqual "ms" 00 dt.Millisecond
 
         testCase "Time deserialize without second" <| fun _ ->
             let dt = timeSerializer.Deserialize "23:45"
-            Assert.Equal(23, dt.Hour)
-            Assert.Equal(45, dt.Minute)
-            Assert.Equal(00, dt.Second)
-            Assert.Equal(00, dt.Millisecond)
+            assertEqual "hour" 23 dt.Hour
+            assertEqual "minute" 45 dt.Minute
+            assertEqual "second" 00 dt.Second
+            assertEqual "ms" 0 dt.Millisecond
 
         testCase "Color serialize" <| fun _ ->
             let color = colorSerializer.Serialize Color.Red
-            Assert.Equal<string>("#FF0000", color)
+            assertEqual "" "#FF0000" color
 
         testCase "Color deserialize ok" <| fun _ ->
             let ok,color = colorSerializer.TryDeserialize "#FF3A3B"
-            Assert.True ok
-            Assert.Equal(0xFFuy, color.R)
-            Assert.Equal(0x3Auy, color.G)
-            Assert.Equal(0x3Buy, color.B)
+            assertEqual "ok" true ok
+            assertEqual "red" 0xFFuy color.R
+            assertEqual "green" 0x3Auy color.G
+            assertEqual "blue" 0x3Buy color.B
 
         testCase "hidden with initial value" <| fun _ ->
             let f = hidden "blabla"
             let html = render f
-            Assert.Contains("value=\"blabla\"", html)
+            assertContains "value=\"blabla\"" html
 
         testCase "function pickle" <| fun _ ->
             let afunction a b = a + b
             let f = pickler afunction
             let html = render f
-            printfn "%s" html
+            //printfn "%s" html
             let bin = losSerializer.Serialize afunction
             let env = EnvDict.fromValueSeq ["f0",bin]
             match run f env with
-            | Success ff -> Assert.Equal(5, ff 2 3)
+            | Success ff -> assertEqual "Unpickled function result" 5 (ff 2 3)
             | _ -> failtest "should not have failed"
 
         testCase "bin serializer string" <| fun _ ->
             let s = "toto"
             let r = binSerializer.Serialize s
-            printfn "length: %d, content: %s" r.Length r
-            Assert.Equal<string>(s, binSerializer.Deserialize r |> string)
+            //printfn "length: %d, content: %s" r.Length r
+            assertEqual "Deserialized string" s (binSerializer.Deserialize r |> string)
 
         testCase "bin serializer fun" <| fun _ ->
             let f a b = a + b
             let r = binSerializer.Serialize f
-            printfn "length: %d, content: %s" r.Length r
+            //printfn "length: %d, content: %s" r.Length r
+            ()
 
         testCase "bin serializer xtext" <| fun _ ->
             let x = XText("something")
             let r = binSerializer.Serialize x
-            printfn "length: %d, content: %s" r.Length r
+            //printfn "length: %d, content: %s" r.Length r
             let x2 = binSerializer.Deserialize r :?> XText
-            Assert.Equal<string>(x.Value, x2.Value)
+            assertEqual "deserialized xtext" x.Value x2.Value
 
         testCase "los serializer string" <| fun _ ->
             let s = "toto"
             let r = losSerializer.Serialize s
-            printfn "length: %d, content: %s" r.Length r
-            Assert.Equal<string>(s, losSerializer.Deserialize r |> string)
+            //printfn "length: %d, content: %s" r.Length r
+            assertEqual "deserialized string" s (losSerializer.Deserialize r |> string)
 
         testCase "los serializer function" <| fun _ ->
             let f a b = a + b
             let r = losSerializer.Serialize f
-            printfn "length: %d, content: %s" r.Length r
+            //printfn "length: %d, content: %s" r.Length r
+            ()
 
         testCase "regex with empty value is valid" <| fun _ ->
             let f = Validate.Default.Regex "\\d" input

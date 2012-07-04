@@ -35,7 +35,7 @@
   <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft F#\v4.0\Microsoft.FSharp.Targets" Condition=" Exists('$(MSBuildBinPath)\Microsoft.Build.Tasks.v4.0.dll')" />
   <Import Project="../.nuget/BuildMagic.targets" />
   <ItemGroup>
-    <Compile Include="TestHelpers.fs" />
+    <Compile Include="Prelude.fs" />
     <Compile Include="FormletsTests.fs" />
     <Compile Include="WingBeatsTests.fs" />
     <Compile Include="Main.fs" />
@@ -76,10 +76,6 @@
       <Project>{d628a18c-7c64-48cd-bc52-add7a88a8770}</Project>
       <Private>True</Private>
     </ProjectReference>
-    <Reference Include="xunit">
-      <HintPath>..\packages\xunit.1.9.0.1566\lib\xunit.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
 	     Other similar extension points exist, see Microsoft.Common.targets.
