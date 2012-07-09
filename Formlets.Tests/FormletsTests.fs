@@ -18,10 +18,6 @@ let input = input "" [] // no additional attributes
 
 let inputInt = Validate.Default.Int input
 
-let inline fst3 (a,_,_) = a
-let inline snd3 (_,b,_) = b
-let inline thd3 (_,_,c) = c
-
 let dateFormlet =
     let baseFormlet = 
         div ["style","padding:8px"] (
@@ -80,7 +76,8 @@ let tests =
                     match n with
                     | Tag e -> e.Nodes() |> Seq.toArray
                     | _ -> failtest "Expected tag, got text"
-                let r = run radioFormlet env |> fst3 |> nth 0 |> getChildren
+                let { FormletResult.Form = form } = run radioFormlet env
+                let r = form |> nth 0 |> getChildren
                 //printfn "%A" r
 
                 let input1 = r.[0]
@@ -103,9 +100,9 @@ let tests =
         testCase "checkbox refill" <| fun _ ->
             let formlet = checkbox false []
             let env = EnvDict.fromValueSeq ["f0", "on"]
-            let r = run formlet env |> fst3
+            let { FormletResult.Form = form } = run formlet env
             //printfn "%A" r
-            match r.[0] with
+            match form.[0] with
             | TagA(_,attr,_) ->     
                 if not (Seq.exists (fst >> (=) "checked") attr)
                     then failtest "checked attribute not found"
@@ -113,9 +110,9 @@ let tests =
 
         testCase "input refill" <| fun _ ->
             let env = EnvDict.fromValueSeq ["f0", "pepe"]
-            let r = run input env |> fst3
+            let { FormletResult.Form = form } = run input env
             //printfn "%A" r
-            match r.[0] with
+            match form.[0] with
             | TagA(_,attr,_) -> 
                 if not (Seq.exists ((=)("value","pepe")) attr)
                     then failtestf "Expected value=pepe, found %A" attr
@@ -124,9 +121,9 @@ let tests =
         testCase "textarea refill" <| fun _ ->
             let env = EnvDict.fromValueSeq ["f0", "pepe"]
             let formlet = textarea "" []
-            let r = run formlet env |> fst3
+            let { FormletResult.Form = form } = run formlet env
             //printfn "%A" r
-            match r.[0] with
+            match form.[0] with
             | TagA(_,_,content) -> 
                 match content with
                 | [TextV t] -> assertEqual "populated formlet value" "pepe" t
@@ -136,26 +133,26 @@ let tests =
         testCase "optionalInput refill with value" <| fun _ ->
             let f = Formlet.optionalInput "ovalue" []
             let env = ["f0", "pepe"] |> EnvDict.fromValueSeq
-            let r = run f env |> fst3
-            let errorForm = XmlWriter.render r
+            let { FormletResult.Form = form } = run f env
+            let errorForm = XmlWriter.render form
             //printfn "%s" errorForm
             assertContains "name=\"f0\" value=\"pepe\"" errorForm
 
         testCase "optionalInput refill without value" <| fun _ ->
             let f = Formlet.optionalInput "ovalue" []
-            let r,_,v = run f []
-            assertNone "collected value" v.Value
-            let errorForm = XmlWriter.render r
+            let result = run f []
+            assertNone "collected value" result.Value
+            let errorForm = XmlWriter.render result.Form
             //printfn "%s" errorForm
             assertContains "name=\"f0\" value=\"ovalue\"" errorForm
 
         testCase "select refill" <| fun _ ->
             let f = select "a" ["a","a"; "b","b"] []
             let env = EnvDict.fromValueSeq ["f0", "b"]
-            let errorForm, errorList, value = run f env
-            assertEqual "" "b" value.Value
-            assertEqual "error count" 0 errorList.Length
-            let errorForm = XmlWriter.render errorForm
+            let result = run f env
+            assertEqual "collected value" (Some "b") result.Value
+            assertEqual "error count" 0 result.Errors.Length
+            let errorForm = XmlWriter.render result.Form
             //printfn "%s" errorForm
             assertContains "value=\"b\" selected=\"selected\"" errorForm
 
@@ -183,13 +180,11 @@ let tests =
         testCase "manual name formlet process" <| fun _ ->
             let env = ["somename", "somevalue"]
             let env = EnvDict.fromValueSeq env
-            match run manualNameFormlet env with
-            | err,_,Some r ->
-                assertEqual "collected value" "somevalue" r
-                match err with
-                | [TagA(_,attr,_)] -> assertEqual "element attributes" ["name","somename"; "value","somevalue"] attr
-                | _ -> failtestf "Unexpected content %A" err
-            | _ -> failtest "Unexpected result"
+            let result = run manualNameFormlet env
+            assertEqual "collected value" (Some "somevalue") result.Value
+            match result.Form with
+            | [TagA(_,attr,_)] -> assertEqual "element attributes" ["name","somename"; "value","somevalue"] attr
+            | _ -> failtestf "Unexpected content %A" result.Form
 
         testCase "render" <| fun _ ->
             let html = render fullFormlet
@@ -222,7 +217,7 @@ let tests =
                 assertEqual "" "blah blah" t
                 assertEqual "" 2 many.Length
                 assertEqual "" true f.IsSome
-            | _ -> failtest "Shouldn't have failed"
+            | x -> failtestf "Shouldn't have failed. Actual result: %A" x
 
         testCase "process with invalid int" <| fun _ ->
             let env = [
@@ -230,7 +225,7 @@ let tests =
                         "f1", "22"
                       ]
             let env = EnvDict.fromValueSeq env
-            let err,_,value = run dateFormlet env
+            let { FormletResult.Value = value } = run dateFormlet env
             //printfn "Error form:\n%s" (XmlWriter.render err)
             assertNone "collected value" value
 
@@ -240,7 +235,7 @@ let tests =
                         "f1", "bb"
                       ]
             let env = EnvDict.fromValueSeq env
-            let err,_,value = run dateFormlet env
+            let { FormletResult.Value = value } = run dateFormlet env
             //printfn "Error form:\n%s" (XmlWriter.render err)
             assertNone "collected value" value
 
@@ -250,7 +245,7 @@ let tests =
                         "f1", "22"
                       ]
             let env = EnvDict.fromValueSeq env
-            let err,_,value = run dateFormlet env
+            let { FormletResult.Value = value } = run dateFormlet env
             //printfn "Error form:\n%s" (XmlWriter.render err)
             assertNone "collected value" value
 

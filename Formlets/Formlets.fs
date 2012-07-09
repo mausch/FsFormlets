@@ -31,6 +31,16 @@ type 'a ValidationResult =
     | Fail of 'a
     | Dead
 
+type 'a FormletResult = {
+    /// Form with collected values and rendered errors
+    Form: XNode list
+    /// Error list
+    Errors: string list 
+    /// Collected value
+    Value: 'a option
+}
+    
+
 type private 'a LO = 'a option ErrorList
 type private 'a ELO = 'a LO Environ
 type private 'a AELO = 'a ELO XmlWriter
@@ -150,19 +160,22 @@ module Formlet =
 
     /// Runs a formlet.
     /// Returns a populated form with error messages and the result value
-    let inline run (v: 'a Formlet) : EnvDict -> (XNode list * string list * 'a option) = 
-        (NameGen.run v |> snd) >> (fun (a,(b,c)) -> a,b,c)
+    let inline run (formlet: _ Formlet) env = 
+        let form, (errors, value) = (NameGen.run formlet |> snd) env
+        { FormletResult.Form = form
+          Errors = errors
+          Value = value }
 
-
-    let (|Success|Failure|) a =
+    /// Simplified view of formlet result
+    let (|Success|Failure|) (a: _ FormletResult) =
         match a with
-        | _,_,Some v -> Success v
-        | errorForm,errorMsgs,None -> Failure(errorForm, errorMsgs)
+        | { FormletResult.Value = Some v } -> Success v
+        | _ -> Failure(a.Form, a.Errors)
 
     let inline runToChoice f env =
         match run f env with
         | Success v -> Choice1Of2 v
-        | Failure e -> Choice2Of2 e        
+        | Failure e -> Choice2Of2 e
     
     /// Renders a formlet to XNode
     let inline renderToXml (v: _ Formlet) = 

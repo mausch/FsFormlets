@@ -63,7 +63,7 @@ let tests =
             let template form =
                 e.Html [ yield!!+form ]
             let env = EnvDict.fromValueSeq ["f0","abc"]
-            let errorForm,_,_ = run formlet env
+            let { Form = errorForm } = run formlet env
             let html = template errorForm |> Renderer.RenderToString
             let expected = @"<html xmlns='http://www.w3.org/1999/xhtml'>
                 <span class='errorinput'>
