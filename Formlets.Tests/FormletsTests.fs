@@ -55,6 +55,7 @@ let radioFormlet =
     div [] (radio "1" ["1","uno"; "2","dos"])
 
 open Formlets.Helpers
+open Formlets.Tests.TestHelpers
 
 [<Tests>]
 let tests = 

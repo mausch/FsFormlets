@@ -1,6 +1,5 @@
 ﻿namespace Formlets.Tests
 
-[<AutoOpen>]
 module TestHelpers =
     open System
     open System.Xml

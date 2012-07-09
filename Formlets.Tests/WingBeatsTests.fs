@@ -31,6 +31,8 @@ let layout (head: #seq<Xml.Node>) (body: #seq<Xml.Node>) =
         e.Body body
     ]
 
+open Formlets.Tests.TestHelpers
+
 [<Tests>]
 let tests = 
     testList "WingBeats integration" [
