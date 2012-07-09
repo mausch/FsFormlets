@@ -39,6 +39,7 @@
     <Compile Include="FormletsTests.fs" />
     <Compile Include="WingBeatsTests.fs" />
     <Compile Include="Main.fs" />
+    <None Include="Tests.fsx" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

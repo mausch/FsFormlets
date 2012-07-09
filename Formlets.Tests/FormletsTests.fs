@@ -144,7 +144,7 @@ let tests =
         testCase "optionalInput refill without value" <| fun _ ->
             let f = Formlet.optionalInput "ovalue" []
             let result = run f []
-            assertNone "collected value" result.Value
+            assertNone "collected value" result.Value.Value
             let errorForm = XmlWriter.render result.Form
             //printfn "%s" errorForm
             assertContains "name=\"f0\" value=\"ovalue\"" errorForm
