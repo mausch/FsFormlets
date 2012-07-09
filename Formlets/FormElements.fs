@@ -1,6 +1,7 @@
 ﻿namespace Formlets
 
 open System
+open Formlets.Helpers
 
 /// <summary>
 /// Validated form elements.

@@ -57,6 +57,7 @@ type 'a Formlet = 'a option ErrorList XmlWriter Environ XmlWriter NameGen
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Formlet =
     open FSharpx
+    open Formlets.Helpers
 
     let inline private ae_pure x : 'a AE = XmlWriter.puree (Environ.puree x)
     let private ae_ap (x: 'a AE) (f: ('a -> 'b) AE) : 'b AE =

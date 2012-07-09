@@ -29,7 +29,6 @@ module Option =
         | Some true -> f
         | _ -> id
 
-[<AutoOpen>]
 module Helpers = 
     open FSharpx
 

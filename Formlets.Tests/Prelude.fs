@@ -77,6 +77,8 @@ module TestHelpers =
         if not (List.exists ((=) element) list)
             then failtestf "Expected element not found: %A\nActual: %A" element list
 
+    open Formlets.Helpers
+
     type Assert =
         static member inline XmlEqual(x: XNode, y: XNode) = 
             if not (xnodeEqualityComparer.Equals(x,y))

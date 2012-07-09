@@ -83,7 +83,7 @@ module XmlHelpers =
 
 /// Applicative functor that manipulates HTML as XML
 module XmlWriter =
-
+    open Formlets.Helpers
     open XmlHelpers
 
     let inline puree v : 'a XmlWriter = [],v

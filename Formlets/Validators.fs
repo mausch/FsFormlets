@@ -4,6 +4,7 @@ open System
 open System.Drawing
 open System.Text.RegularExpressions
 open FSharpx
+open Formlets.Helpers
 
 type IValidationFunctions = 
     abstract Int: string Formlet -> int Formlet

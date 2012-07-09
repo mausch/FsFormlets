@@ -3,6 +3,7 @@
 open Fuchu
 open Formlets.XmlWriter
 open Formlets
+open Formlets.Helpers
 open WingBeats
 open WingBeats.Xml
 open WingBeats.Xhtml
