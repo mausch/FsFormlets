@@ -36,19 +36,19 @@ module EnvDict =
         let fields = seq { 0..Int32.MaxValue } |> Seq.map (sprintf "%s%d" NameGen.prefix)
         Seq.zip fields l |> fromValueSeq
 
-type 'a Environ = EnvDict -> 'a
+type 'a Environ = Reader.Reader<EnvDict, 'a>
 
 /// Applicative functor that handles value lookup from submitted form
 module Environ = 
-    let inline puree v : 'a Environ = fun (env: EnvDict) -> v
-    let inline ap (a: 'a Environ) (f: ('a -> 'b) Environ) : 'b Environ = 
-        fun (env: EnvDict) -> f env (a env)
-    let inline (<*>) f x = ap x f
-    let inline map f x : 'b Environ = puree f <*> x
-    let inline lift2 f x y : 'c Environ = puree f <*> x <*> y
+    open FSharpx
+
+    let inline puree v : 'a Environ = Reader.returnM v
+    let inline ap (a: _ Environ) (f: _ Environ) : _ Environ = Reader.ap a f
+    let inline map f x = puree f |> ap x
+    let inline lift2 f x y = puree f |> ap x |> ap y
 
     let lookup (n: string) : InputValue list Environ = 
-        fun (env: EnvDict) ->
+        fun env ->
             let folder acc elem = 
                 let key,value = elem
                 if key = n
