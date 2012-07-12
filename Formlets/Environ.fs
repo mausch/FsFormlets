@@ -33,7 +33,7 @@ module EnvDict =
         let env = fromNV r.Form
         env |> addFromFileSeq (requestFiles r)
     let fromStrings l = 
-        let fields = seq { 0..Int32.MaxValue } |> Seq.map (sprintf "%s%d" NameGen.prefix)
+        let fields = Seq.initInfinite (sprintf "%s%d" NameGen.prefix)
         Seq.zip fields l |> fromValueSeq
 
 type 'a Environ = Reader.Reader<EnvDict, 'a>
