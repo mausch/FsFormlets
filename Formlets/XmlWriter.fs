@@ -4,105 +4,19 @@ open System.Xml.Linq
 
 type 'a XmlWriter = XNode list * 'a
 
-module XmlHelpers =
-    let emptyElems = set ["area"; "base"; "basefont"; "br"; "col"; "command"; "frame"; "hr"; "img"; "input"; "isindex"; "keygen"; "link"; "meta"; "param"; "source"; "track"; "wbr"]
-    let inline (!!) x = XName.op_Implicit x
-    let inline xattr (name, value: string) = XAttribute(!!name, value)
-    let xelem name (attributes: (string*string) list) (children: XNode list) = 
-        let isEmpty = emptyElems |> Set.contains name
-        let children = 
-            match children,isEmpty with
-            | [],false -> [(XText "") :> XObject]
-            | _ -> List.map (fun x -> upcast x) children
-        let attributes = List.map (fun a -> xattr a :> XObject) attributes
-        XElement(!!name, attributes @ children) :> XNode
-
-    /// Gets attributes of an element as a tuple list
-    let getAttr (e: XElement) =
-        e.Attributes() 
-        |> Seq.map (fun a -> a.Name.LocalName,a.Value)
-        |> Seq.toList
-
-    /// <summary>
-    /// Matches a <see cref="XElement"/>
-    /// </summary>
-    /// <param name="n"></param>
-    let (|Tag|_|) (n: XNode) = 
-        match n with
-        | :? XElement as e -> Some e
-        | _ -> None
-
-    /// <summary>
-    /// Matches a <see cref="XElement"/>, splitting name, attributes and children
-    /// </summary>
-    /// <param name="n"></param>
-    let (|TagA|_|) (n : XNode) =
-        match n with
-        | Tag t -> 
-            let name = t.Name.LocalName
-            let attr = getAttr t
-            let children = t.Nodes() |> Seq.toList
-            Some(name,attr,children)
-        | _ -> None
-
-    /// <summary>
-    /// Matches a <see cref="XText"/>
-    /// </summary>
-    /// <param name="n"></param>
-    let (|Text|_|) (n: XNode) =
-        match n with
-        | :? XText as t -> Some t
-        | _ -> None
-
-    /// <summary>
-    /// Matches a <see cref="XText"/>, extracting the actual text value
-    /// </summary>
-    /// <param name="n"></param>
-    let (|TextV|_|) (n: XNode) =
-        match n with
-        | Text t -> Some t.Value
-        | _ -> None
-
-    /// <summary>
-    /// Matches a <see cref="XComment"/>
-    /// </summary>
-    /// <param name="n"></param>
-    let (|Comment|_|) (n: XNode) =
-        match n with
-        | :? XComment as c -> Some c
-        | _ -> None
-
-    /// <summary>
-    /// Matches a <see cref="XComment"/>, extract the actual text value
-    /// </summary>
-    /// <param name="n"></param>
-    let (|CommentV|_|) (n: XNode) =
-        match n with
-        | Comment c -> Some c.Value
-        | _ -> None
-
 /// Applicative functor that manipulates HTML as XML
 module XmlWriter =
     open Formlets.Helpers
     open XmlHelpers
 
-    let inline puree v : 'a XmlWriter = [],v
-    //let ap (x: xml_item list,f) (y,a) = x @ y, f a
-    let ap (x: 'a XmlWriter) (f: ('a -> 'b) XmlWriter) : 'b XmlWriter =
-        let ff, sf = f
-        let fx, sx = x
-        fx @ ff, sf sx
-    let inline (<*>) f x = ap x f
-    let inline map f x = puree f <*> x
-    let inline lift2 f x y = puree f <*> x <*> y
-    let inline plug (k: XNode list -> XNode list) (v: 'a XmlWriter): 'a XmlWriter = 
-        k (fst v), snd v
+    let applicative = ListPairApplicative<XNode>()
+
     let inline xml (e: XNode list) : unit XmlWriter = e,()
     let inline parseRawXml x = XNode.Parse x
     let rawXml = parseRawXml >> xml
     let inline text (s: string) = xml [XText s]
     let inline tag name attributes (v: 'a XmlWriter) : 'a XmlWriter = 
-        plug (fun x -> [xelem name attributes x]) v
+        applicative.plug (fun x -> [xelem name attributes x]) v
 
     let inline xnode (e: XNode) : unit XmlWriter = [e],()
     let render (e: XNode seq) : string =
@@ -118,7 +32,7 @@ module XmlWriter =
                 let attr = attr |> Helpers.mergeAttr a
                 xelem name attr children
             | x -> x
-        plug (List.map mergeInNode) x
+        applicative.plug (List.map mergeInNode) x
 
     let getId =
         function

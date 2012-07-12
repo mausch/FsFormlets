@@ -38,6 +38,8 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Helpers.fs" />
+    <Compile Include="MonoidPairApplicative.fs" />
+    <Compile Include="XmlHelpers.fs" />
     <Compile Include="XmlWriter.fs" />
     <Compile Include="ErrorList.fs" />
     <Compile Include="NameGen.fs" />

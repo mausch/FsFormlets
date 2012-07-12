@@ -59,9 +59,9 @@ module Formlet =
     open FSharpx
     open Formlets.Helpers
 
-    let inline private ae_pure x : 'a AE = XmlWriter.puree (Environ.puree x)
+    let inline private ae_pure x : 'a AE = XmlWriter.applicative.puree (Environ.puree x)
     let private ae_ap (x: 'a AE) (f: ('a -> 'b) AE) : 'b AE =
-        XmlWriter.lift2 Environ.ap x f
+        XmlWriter.applicative.lift2 Environ.ap x f
 
     let inline private nae_pure x : 'a NAE = NameGen.puree (ae_pure x)
     let inline private nae_ap (x: 'a NAE) (f: ('a -> 'b) NAE) : 'b NAE =
@@ -69,31 +69,31 @@ module Formlet =
     let private nae_map (f: 'a -> 'b) (x: 'a NAE) : 'b NAE = 
         nae_pure f |> nae_ap x
 
-    let inline private ao_pure x : 'a AO = XmlWriter.puree (Some x)
+    let inline private ao_pure x : 'a AO = XmlWriter.applicative.puree (Some x)
     let private ao_ap (x: 'a AO) (f: ('a -> 'b) AO) : 'b AO = 
-        XmlWriter.lift2 Option.ap x f
+        XmlWriter.applicative.lift2 Option.ap x f
 
     let inline private eao_pure x : 'a EAO = Environ.puree (ao_pure x)
     let private eao_ap (x: 'a EAO) (f: ('a -> 'b) EAO) : 'b EAO =
         Environ.lift2 ao_ap x f
 
-    let inline private lo_pure x : 'a LO = ErrorList.puree (Some x)
+    let inline private lo_pure x : 'a LO = ErrorList.applicative.puree (Some x)
     let inline private lo_ap (x: 'a LO) (f: ('a -> 'b) LO) : 'b LO =
-        ErrorList.lift2 Option.ap x f
+        ErrorList.applicative.lift2 Option.ap x f
     let private lo_map (f: 'a -> 'b) (x: 'a LO) : 'b LO =
         lo_pure f |> lo_ap x
 
-    let inline private alo_pure x : 'a ALO = XmlWriter.puree (lo_pure x)
+    let inline private alo_pure x : 'a ALO = XmlWriter.applicative.puree (lo_pure x)
     let private alo_ap (x: 'a ALO) (f: ('a -> 'b) ALO) : 'b ALO =
-        XmlWriter.lift2 lo_ap x f
+        XmlWriter.applicative.lift2 lo_ap x f
 
     let inline private ealo_pure x : 'a EALO = Environ.puree (alo_pure x)
     let private ealo_ap (x: 'a EALO) (f: ('a -> 'b) EALO) : 'b EALO =
         Environ.lift2 alo_ap x f
 
-    let inline private aealo_pure x: 'a AEALO = XmlWriter.puree (ealo_pure x)
+    let inline private aealo_pure x: 'a AEALO = XmlWriter.applicative.puree (ealo_pure x)
     let private aealo_ap (x: 'a AEALO) (f: ('a -> 'b) AEALO) : 'b AEALO =
-        XmlWriter.lift2 ealo_ap x f
+        XmlWriter.applicative.lift2 ealo_ap x f
 
     let puree x : 'a Formlet = NameGen.puree (aealo_pure x)
     let ap (x: 'a Formlet) (f: ('a -> 'b) Formlet) : 'b Formlet = 
@@ -122,8 +122,8 @@ module Formlet =
     let inline yields x = puree x // friendly alias
 
     let private mapXml (v: 'a XmlWriter) : 'a Formlet =
-        let xml1 = XmlWriter.map (Some >> ErrorList.puree) v |> Environ.puree
-        let xml2 = XmlWriter.map (fun _ -> xml1) v
+        let xml1 = XmlWriter.applicative.map (Some >> ErrorList.applicative.puree) v |> Environ.puree
+        let xml2 = XmlWriter.applicative.map (fun _ -> xml1) v
         NameGen.puree xml2
 
     /// Maps a xml forest to formlet
@@ -154,9 +154,9 @@ module Formlet =
     /// <param name="f">Inner formlet</param>
     let tag name attributes (f: 'a Formlet) : 'a Formlet = 
         let xtag x = XmlWriter.tag name attributes x
-        let xml1 x = XmlWriter.map id (xtag x)
+        let xml1 x = XmlWriter.applicative.map id (xtag x)
         let xml2 x = Environ.map xml1 x
-        let xml3 x = XmlWriter.map xml2 (xtag x)
+        let xml3 x = XmlWriter.applicative.map xml2 (xtag x)
         NameGen.map xml3 f
 
     /// Runs a formlet.
@@ -187,9 +187,9 @@ module Formlet =
 
     let inline mergeAttributes (a: (string * string) seq) (f: 'a Formlet) : 'a Formlet =
         let merge x = XmlWriter.mergeAttr a x
-        let xml1 x = XmlWriter.map id (merge x)
+        let xml1 x = XmlWriter.applicative.map id (merge x)
         let xml2 x = Environ.map xml1 x
-        let xml3 x = XmlWriter.map xml2 (merge x)
+        let xml3 x = XmlWriter.applicative.map xml2 (merge x)
         NameGen.map xml3 f
 
     let inline getId f = f |> NameGen.run |> XmlWriter.getId
@@ -207,18 +207,18 @@ module Formlet =
                 match mappedCheck o with
                 | _,Some v -> v
                 | _ -> Dead
-            XmlWriter.map errorToValidationResult a
+            XmlWriter.applicative.map errorToValidationResult a
         let validationResultToError: 'b ValidationResult -> 'b LO = 
             function 
             | Pass v -> lo_pure v
-            | _ -> ErrorList.puree None
-        let w = XmlWriter.map validationResultToError result
+            | _ -> ErrorList.applicative.puree None
+        let w = XmlWriter.applicative.map validationResultToError result
         match result with
         | x, Fail v -> 
             let w =
-                let append a = ErrorList.append (validator.ErrorList v) a
-                XmlWriter.map append w
-            XmlWriter.plug (validator.ErrorForm v) w
+                let append a = ErrorList.applicative.append (validator.ErrorList v) a
+                XmlWriter.applicative.map append w
+            XmlWriter.applicative.plug (validator.ErrorForm v) w
         | x -> w
 
     /// Applies a validator to a formlet
@@ -253,7 +253,7 @@ module Formlet =
                     let dvalue = if value.Length = 0 then defaultValue else value
                     let xml = tag dvalue
                     xml,([],Some value)
-            XmlWriter.plug (fun _ -> tag defaultValue) (XmlWriter.puree ealo)
+            XmlWriter.applicative.plug (fun _ -> tag defaultValue) (XmlWriter.applicative.puree ealo)
         NameGen.map t nameGen
             
     let generalGeneratedElement x = generalElement NameGen.nextName x
