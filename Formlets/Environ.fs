@@ -48,10 +48,9 @@ module Environ =
     let inline lift2 f x y = puree f |> ap x |> ap y
 
     let lookup (n: string) : InputValue list Environ = 
-        fun env ->
-            let folder acc elem = 
-                let key,value = elem
-                if key = n
-                    then value::acc
-                    else acc
-            List.fold folder [] env
+        let folder acc elem = 
+            let key,value = elem
+            if key = n
+                then value::acc
+                else acc
+        List.fold folder []
