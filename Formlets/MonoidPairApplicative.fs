@@ -6,7 +6,7 @@ type MonoidPairApplicative<'m>(m: 'm Monoid) =
     member this.puree a = 
         m.mempty, a
     member this.ap (xa,xb) (fa,fb) = 
-        m.mappend xa fa, fb xb
+        m.mappend fa xa, fb xb
     member this.map f x = 
         this.puree f |> this.ap x
     member this.lift2 f a b = 

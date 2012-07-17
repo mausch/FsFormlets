@@ -61,43 +61,43 @@ module Formlet =
 
     let inline private ae_pure x : 'a AE = XmlWriter.applicative.puree (Environ.puree x)
     let private ae_ap (x: 'a AE) (f: ('a -> 'b) AE) : 'b AE =
-        XmlWriter.applicative.lift2 Environ.ap x f
+        flip (XmlWriter.applicative.lift2 (flip Environ.ap)) x f
 
     let inline private nae_pure x : 'a NAE = NameGen.puree (ae_pure x)
     let inline private nae_ap (x: 'a NAE) (f: ('a -> 'b) NAE) : 'b NAE =
-        NameGen.lift2 ae_ap x f
+        flip (NameGen.lift2 (flip ae_ap)) x f
     let private nae_map (f: 'a -> 'b) (x: 'a NAE) : 'b NAE = 
         nae_pure f |> nae_ap x
 
     let inline private ao_pure x : 'a AO = XmlWriter.applicative.puree (Some x)
     let private ao_ap (x: 'a AO) (f: ('a -> 'b) AO) : 'b AO = 
-        XmlWriter.applicative.lift2 Option.ap x f
+        flip (XmlWriter.applicative.lift2 (flip Option.ap)) x f
 
     let inline private eao_pure x : 'a EAO = Environ.puree (ao_pure x)
     let private eao_ap (x: 'a EAO) (f: ('a -> 'b) EAO) : 'b EAO =
-        Environ.lift2 ao_ap x f
+        flip (Environ.lift2 (flip ao_ap)) x f
 
     let inline private lo_pure x : 'a LO = ErrorList.applicative.puree (Some x)
     let inline private lo_ap (x: 'a LO) (f: ('a -> 'b) LO) : 'b LO =
-        ErrorList.applicative.lift2 Option.ap x f
+        flip (ErrorList.applicative.lift2 (flip Option.ap)) x f
     let private lo_map (f: 'a -> 'b) (x: 'a LO) : 'b LO =
         lo_pure f |> lo_ap x
 
     let inline private alo_pure x : 'a ALO = XmlWriter.applicative.puree (lo_pure x)
     let private alo_ap (x: 'a ALO) (f: ('a -> 'b) ALO) : 'b ALO =
-        XmlWriter.applicative.lift2 lo_ap x f
+        flip (XmlWriter.applicative.lift2 (flip lo_ap)) x f
 
     let inline private ealo_pure x : 'a EALO = Environ.puree (alo_pure x)
     let private ealo_ap (x: 'a EALO) (f: ('a -> 'b) EALO) : 'b EALO =
-        Environ.lift2 alo_ap x f
+        flip (Environ.lift2 (flip alo_ap)) x f
 
     let inline private aealo_pure x: 'a AEALO = XmlWriter.applicative.puree (ealo_pure x)
     let private aealo_ap (x: 'a AEALO) (f: ('a -> 'b) AEALO) : 'b AEALO =
-        XmlWriter.applicative.lift2 ealo_ap x f
+        flip (XmlWriter.applicative.lift2 (flip ealo_ap)) x f
 
     let puree x : 'a Formlet = NameGen.puree (aealo_pure x)
     let ap (x: 'a Formlet) (f: ('a -> 'b) Formlet) : 'b Formlet = 
-        NameGen.lift2 aealo_ap x f
+        flip (NameGen.lift2 (flip aealo_ap)) x f
 
     let inline (<*>) f x = ap x f
     let inline map f a = puree f <*> a

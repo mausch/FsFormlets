@@ -10,5 +10,5 @@
 open Fuchu
 
 Formlets.Tests.Formlets.tests
-|> Test.filter (fun s -> s.Contains "optionalInput")
+|> Test.filter (fun s -> s.Contains "Applicatives")
 |> run
