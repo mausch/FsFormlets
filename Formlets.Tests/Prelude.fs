@@ -29,21 +29,10 @@ module TestHelpers =
             | x -> x
         XNode.DeepEquals(orderAttributes x, orderAttributes y)
 
-    let xnodeComparer = 
-        { new IComparer<XNode> with
-            member x.Compare(a,b) = 
-                if a =. b then 0 else 1 }
-
     let xnodeEqualityComparer = 
         { new IEqualityComparer<XNode> with
             member x.Equals(a,b) = a =. b
             member x.GetHashCode a = a.GetHashCode() }
-
-    let xnodeListComparer =
-        { new IComparer<XNode list> with
-            member x.Compare(a,b) = 
-                let eq = a.Length = b.Length && List.forall2 (fun x y -> x =. y) a b
-                if eq then 0 else 1 }
 
     let xnodeListEqualityComparer = 
         { new IEqualityComparer<XNode list> with
