@@ -40,34 +40,12 @@ module TestHelpers =
                 a.Length = b.Length && List.forall2 (fun x y -> x =. y) a b
             member x.GetHashCode a = a.GetHashCode() }
 
-    let inline assertEqual msg expected actual =
-        if expected <> actual
-            then failtestf "%s\nExpected: %A\nActual: %A" msg expected actual
-
-    let inline assertNone msg = 
-        function
-        | Some x -> failtestf "Expected None, Actual: Some (%A)" x
-        | _ -> ()
-
-    let inline assertContains expected (actual: string) = 
-        if not (actual.Contains expected)
-            then failtestf "Expected string containing: %s\nActual: %s" expected actual
-
-    let inline assertRaise (ex: Type) f =
-        try
-            f()
-            failtestf "Expected exception '%s' but no exception was raised" ex.FullName
-        with e ->
-            if e.GetType() <> ex
-                then failtestf "Expected exception '%s' but raised:\n%A" ex.FullName e
-
-    let inline assertListExists element list =
-        if not (List.exists ((=) element) list)
-            then failtestf "Expected element not found: %A\nActual: %A" element list
-
     open Formlets.Helpers
 
     type Assert =
+        static member inline ListExists(element, list) =
+            if not (List.exists ((=) element) list)
+                then failtestf "Expected element not found: %A\nActual: %A" element list
         static member inline XmlEqual(x: XNode, y: XNode) = 
             if not (xnodeEqualityComparer.Equals(x,y))
                 then failtestf "Expected: %A\nActual: %A" x y
