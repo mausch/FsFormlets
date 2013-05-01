@@ -1,16 +1,16 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{DA5883F6-6580-4B88-AF2C-671101387676}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\packages.config = .nuget\packages.config
+	EndProjectSection
+EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Formlets.Tests", "Formlets.Tests\Formlets.Tests.fsproj", "{300FB450-0CA2-435D-B41E-A9399594FC83}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Formlets", "Formlets\Formlets.fsproj", "{D628A18C-7C64-48CD-BC52-ADD7A88A8770}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "WingBeats.Formlets", "WingBeats.Formlets\WingBeats.Formlets.fsproj", "{C920FCB6-BF44-4884-A744-1409AC0A21C4}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{DA5883F6-6580-4B88-AF2C-671101387676}"
-	ProjectSection(SolutionItems) = preProject
-		.nuget\packages.config = .nuget\packages.config
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
